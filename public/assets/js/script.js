@@ -247,7 +247,14 @@ $(function () {
       type: 'line',
       data: {
         labels: months,
-        datasets: [{ data, borderColor: color, borderWidth: 2, pointRadius: 0, tension: .45, fill: true, backgroundColor: grad }]
+        datasets: [{ 
+          data, borderColor: 
+          color, borderWidth: 
+          2, pointRadius: 0, 
+          tension: .45, fill: 
+          true, backgroundColor: 
+          grad 
+        }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
@@ -262,49 +269,82 @@ $(function () {
   mkLine('chartUsers',   [3200,4100,3800,4600,4200,5000,4700,5200,4900,5600,5100,5800], '#2196f3');
   mkLine('chartGrowth',  [60,80,70,90,85,100,95,110,105,120,115,130], '#26c6da');
 
-  chartInstances['chartTasks'] = new Chart(document.getElementById('chartTasks'), {
-    type: 'doughnut',
-    data: { datasets: [{ data: [88,12], backgroundColor: ['#4a90d9','#e8edf5'], borderWidth: 0, borderRadius: 4 }] },
-    options: { cutout: '72%', responsive: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, animation: { duration: 900 } }
-  });
+  const chartTasksEl = document.getElementById('chartTasks');
+
+  if (chartTasksEl) {
+    chartInstances['chartTasks'] = new Chart(chartTasksEl, {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: [88,12],
+          backgroundColor: ['#4a90d9','#e8edf5'],
+          borderWidth: 0,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        cutout: '72%',
+        responsive: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+      }
+    });
+  }
 
   /* Sales & Revenue */
-  (() => {
-    const ctx = document.getElementById('chartSales').getContext('2d');
+  const chartSalesEl = document.getElementById('chartSales');
+
+  if (chartSalesEl) {
+    const ctx = chartSalesEl.getContext('2d');
+
     const g1 = ctx.createLinearGradient(0,0,0,220);
-    g1.addColorStop(0,'rgba(74,144,217,.6)'); g1.addColorStop(1,'rgba(74,144,217,.05)');
+    g1.addColorStop(0,'rgba(74,144,217,.6)');
+    g1.addColorStop(1,'rgba(74,144,217,.05)');
+
     const g2 = ctx.createLinearGradient(0,0,0,220);
-    g2.addColorStop(0,'rgba(144,200,248,.5)'); g2.addColorStop(1,'rgba(144,200,248,.03)');
+    g2.addColorStop(0,'rgba(144,200,248,.5)');
+    g2.addColorStop(1,'rgba(144,200,248,.03)');
+
     chartInstances['chartSales'] = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'],
         datasets: [
-          { label:'Sales',   data:[200,350,300,600,500,800,700,900,750,950,850], borderColor:'#4a90d9', borderWidth:2.5, backgroundColor:g1, fill:true, tension:.45, pointRadius:0 },
-          { label:'Revenue', data:[100,200,180,400,320,550,480,700,600,800,750], borderColor:'#90c8f8', borderWidth:2.5, backgroundColor:g2, fill:true, tension:.45, pointRadius:0 }
+          { 
+            label:'Sales', 
+            data:[10, 20, 30, 25, 40, 35, 50, 60, 55, 70, 65], 
+            borderColor:'#4a90d9', 
+            backgroundColor:g1, 
+            fill:true 
+          },
+          { 
+            label:'Revenue', 
+            data:[5, 15, 25, 20, 30, 28, 45, 50, 48, 60, 58], 
+            borderColor:'#90c8f8', 
+            backgroundColor:g2, 
+            fill:true 
+          }
         ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        plugins: { legend:{display:false}, tooltip:{mode:'index',intersect:false} },
-        scales: {
-          x: { grid:{display:false}, ticks:{font:{size:10,family:"'Open Sans'"},color:'#8a9bb5'} },
-          y: { grid:{color:'#f0f4fa'}, ticks:{font:{size:10,family:"'Open Sans'"},color:'#8a9bb5',callback:v=>v+'k'}, min:0, max:1000 }
-        },
-        animation:{duration:1000}
       }
     });
-  })();
+  }
 
   /* Traffic donut */
-  chartInstances['chartTraffic'] = new Chart(document.getElementById('chartTraffic'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Paid Search','Direct','Social Media','Other','Email'],
-      datasets: [{ data:[43,30,14,8,5], backgroundColor:['#4a90d9','#ef5350','#ffb830','#26c6da','#ab47bc'], borderWidth:3, borderColor:'#fff', borderRadius:4 }]
-    },
-    options: { cutout:'58%', responsive:true, maintainAspectRatio:true, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>` ${c.label}: ${c.parsed}%` } } }, animation:{duration:1000} }
-  });
+  const chartTrafficEl = document.getElementById('chartTraffic');
+
+  if (chartTrafficEl) {
+    chartInstances['chartTraffic'] = new Chart(chartTrafficEl, {
+      type: 'doughnut',
+      data: {
+        labels: ['Paid Search','Direct','Social Media','Other','Email'],
+        datasets: [{
+          data:[43,30,14,8,5],
+          backgroundColor:['#4a90d9','#ef5350','#ffb830','#26c6da','#ab47bc'],
+          borderWidth:3,
+          borderColor:'#fff'
+        }]
+      }
+    });
+  }
 
   /* ─── Update charts for dark theme ─── */
   function updateChartsForTheme(dark) {

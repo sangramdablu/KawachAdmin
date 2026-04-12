@@ -4,7 +4,7 @@
   :root {
     --sidebar-bg:   #0d1b3e;
     --sidebar-width: 220px;
-    --navbar-h:     64px;
+    --navbar-h:     70px;
     --primary:      #1a73e8;
     --accent:       #2196f3;
     --bg-body:      #eef2f9;
@@ -886,8 +886,15 @@ html[data-theme="dark"] .ql-editor {
   gap: 8px;
   margin: 0;
 }
-#blogEditor .be-card-header h2 i { color: var(--primary); font-size: .9rem; }
-#blogEditor .be-card-body { padding: 22px; }
+
+#blogEditor .be-card-header h2 i { 
+  color: var(--primary); 
+  font-size: .9rem; 
+}
+
+#blogEditor .be-card-body { 
+  padding: 22px; 
+}
 
 /* ── Form elements ── */
 #blogEditor .be-form-group { margin-bottom: 18px; }

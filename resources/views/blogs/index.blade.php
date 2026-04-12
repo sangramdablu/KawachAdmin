@@ -1,5 +1,5 @@
 @extends('layouts.master')
-
+@section('title', 'Blogs — KawachTech Software Solutions')
 @section('content')
 
 {{-- ================== STYLES ================== --}}
@@ -574,7 +574,9 @@ html[data-theme="dark"] #blogList .badge-scheduled  { background: rgba(26,115,23
   align-items: center; justify-content: center;
   backdrop-filter: blur(3px);
 }
-#blogList .bl-modal-overlay.show { display: flex; }
+#blogList .bl-modal-overlay.show { 
+    display: flex; 
+}
 #blogList .bl-modal {
   background: var(--card);
   border-radius: 16px;
@@ -582,13 +584,27 @@ html[data-theme="dark"] #blogList .badge-scheduled  { background: rgba(26,115,23
   max-width: 600px; width: 95%;
   box-shadow: 0 24px 64px rgba(0,0,0,.25);
   animation: blModalPop .2s ease;
-  max-height: 92vh; overflow-y: auto;
+  max-height: 92vh; 
+  overflow-y: auto;
   position: relative;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-#blogList .bl-modal.modal-sm { max-width: 420px; }
+#blogList .bl-modal::-webkit-scrollbar {
+  display: none;
+}
+#blogList .bl-modal.modal-sm { 
+    max-width: 420px; 
+}
 @keyframes blModalPop {
-  from { opacity:0; transform: scale(.93); }
-  to   { opacity:1; transform: scale(1); }
+  from { 
+    opacity:0; 
+    transform: scale(.93); 
+}
+  to   { 
+    opacity:1; 
+    transform: scale(1); 
+}
 }
 #blogList .modal-header {
   padding: 20px 24px 16px;
@@ -944,7 +960,7 @@ html[data-theme="dark"] #blogList .share-url-row input {
                 <a href="/blog/{{ $post['slug'] }}" target="_blank" class="btn-icon success-h" title="View post">
                   <i class="fas fa-eye"></i>
                 </a>
-                <a href="{{ route('blogs.edit.page', [$post->id, $post->slug]) }}" class="btn-icon" title="Edit post">
+                <a href="{{ route('blogs.edit', $post->id) }}" class="btn-icon" title="Edit post">
                     <i class="fas fa-pen"></i>
                 </a>
                 <button class="btn-icon" title="Share post" onclick="openShareModal('{{ $post->title }}', '/blog/{{ $post['slug'] }}')">
@@ -953,7 +969,7 @@ html[data-theme="dark"] #blogList .share-url-row input {
                 <button class="btn-icon" title="View stats" onclick="openStatsModal( '{{ addslashes($post->title) }}', {{ $post->views ?? 0 }}, {{ $post->likes ?? 0 }}, {{ $post->comments ?? 0 }} )">
                   <i class="fas fa-chart-line"></i>
                 </button>
-                <button class="btn-icon danger" title="Delete post" onclick="openDeleteModal({{ $post['id'] }}, '{{ addslashes($post->title) }}')">
+                <button class="btn-icon danger" title="Delete post" onclick="openDeleteModal('{{ encrypt($post->id) }}', '{{ addslashes($post->title) }}')">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -1038,7 +1054,7 @@ html[data-theme="dark"] #blogList .share-url-row input {
             <a href="/blog/{{ $post['slug'] }}" target="_blank" class="btn-bl btn-outline btn-xs">
               <i class="fas fa-eye"></i> View
             </a>
-            <a href="{{ route('blogs.edit.page', [$post->id, $post->slug]) }}" class="btn-bl btn-outline btn-xs">
+            <a href="{{ route('blogs.edit', $post->id) }}" class="btn-bl btn-outline btn-xs">
               <i class="fas fa-pen"></i> Edit
             </a>
             <button class="btn-bl btn-outline btn-xs" onclick="openShareModal('{{ $post->title }}', '/blog/{{ $post['slug'] }}')">
@@ -1047,7 +1063,7 @@ html[data-theme="dark"] #blogList .share-url-row input {
             <button class="btn-bl btn-outline btn-xs" onclick="openStatsModal('{{ $post->title }}', {{ number_format($post->views ?? 0) }}, {{ $post['likes'] ?? 0 }}, {{ $post['comments'] ?? 0 }})">
               <i class="fas fa-chart-line"></i> Stats
             </button>
-            <button class="btn-bl btn-danger btn-xs ms-auto" onclick="openDeleteModal({{ $post['id'] }}, '{{ addslashes($post->title) }}')">
+            <button class="btn-bl btn-danger btn-xs ms-auto" onclick="openDeleteModal('{{ encrypt($post->id) }}', '{{ addslashes($post->title) }}')">
               <i class="fas fa-trash"></i>
             </button>
           </div>
@@ -1571,20 +1587,31 @@ $(function () {
     if (!deletePostId) return;
     // AJAX delete (or form submit)
     $.ajax({
-      url: '/admin/blogs/' + deletePostId,
-      method: 'DELETE',
-      data: { _token: $('meta[name="csrf-token"]').attr('content') },
-      success: function () {
-        $('tr[data-id="' + deletePostId + '"], .blog-card[data-id="' + deletePostId + '"]')
-          .fadeOut(300, function(){ $(this).remove(); });
-        toast('Post deleted successfully', 'var(--danger)', 'fas fa-trash');
-      },
-      error: function () {
-        // Fallback: remove from DOM for demo
-        $('tr[data-id="' + deletePostId + '"], .blog-card[data-id="' + deletePostId + '"]')
-          .fadeOut(300, function(){ $(this).remove(); });
-        toast('Post removed', 'var(--danger)', 'fas fa-trash');
-      }
+        url: '/blogs/' + deletePostId,
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function (res) {
+            if (res.success) {
+                $('tr[data-id="' + deletePostId + '"], .blog-card[data-id="' + deletePostId + '"]').fadeOut(300, function(){ $(this).remove(); });
+                toast(res.message, 'var(--danger)', 'fas fa-trash');
+                setTimeout(function () {
+                    location.reload();
+                }, 800);
+            } else {
+                toast(res.message, '#ff4d6d', 'fas fa-exclamation-circle');
+            }
+        },
+        error: function (xhr) {
+            let msg = 'Delete failed';
+
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                msg = xhr.responseJSON.message;
+            }
+
+            toast(msg, '#ff4d6d', 'fas fa-times-circle');
+        }
     });
 
     closeModal('deleteModal');

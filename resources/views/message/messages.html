@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Messages — InnovateTech Solutions</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+  /* ═══════════════════════════════════════════
+     CSS VARIABLES — Light & Dark
+  ═══════════════════════════════════════════ */
+  :root {
+    --primary:      #1a73e8;
+    --primary-dark: #1558b0;
+    --accent:       #2196f3;
+    --success:      #00c896;
+    --warning:      #ffb830;
+    --danger:       #ff4d6d;
+    --bg:           #f0f4fb;
+    --white:        #ffffff;
+    --card:         #ffffff;
+    --border:       #e2e8f0;
+    --text:         #1a1a2e;
+    --muted:        #6b7a99;
+    /* extra dashboard tokens */
+    --navy:         #0d1b3e;
+    --navy-mid:     #162447;
+    --sidebar-width: 220px;
+    --topbar-h:     64px;
+    --radius:       12px;
+    --shadow:       0 2px 20px rgba(26,115,232,.08);
+    --shadow-md:    0 6px 32px rgba(26,115,232,.13);
+  }
+  html[data-theme="dark"] {
+    --bg:     #0f172a;
+    --white:  #1e293b;
+    --card:   #1e293b;
+    --text:   #e2e8f0;
+    --border: #334155;
+    --muted:  #94a3b8;
+    --shadow:    0 2px 20px rgba(0,0,0,.35);
+    --shadow-md: 0 8px 40px rgba(0,0,0,.45);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background .3s, color .3s;
+  }
+
+  /* ═══════════════════════════════════════════
+     SIDEBAR  (dashboard-identical)
+  ═══════════════════════════════════════════ */
+  .sidebar {
+    position: fixed; top:0; left:0;
+    width: var(--sidebar-width); height: 100vh;
+    background: var(--navy);
+    display: flex; flex-direction: column;
+    z-index: 300;
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar-overlay {
+    display: none; position: fixed; inset:0;
+    background: rgba(0,0,0,.45); z-index: 299;
+    backdrop-filter: blur(2px);
+  }
+  .sidebar-overlay.show { display: block; }
+
+  .sidebar-brand {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+  }
+  .brand-main {
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 1.25rem; color: #fff; letter-spacing: .5px;
+  }
+  .brand-main span { color: var(--accent); }
+  .brand-sub {
+    font-size: .48rem; font-weight: 600; letter-spacing: 4.5px;
+    color: #7a9cc4; display: block; margin-top: -3px;
+  }
+
+  .sidebar-nav { flex:1; padding: 14px 0; overflow-y: auto; }
+  .sidebar-nav::-webkit-scrollbar { width:0; }
+
+  .nav-link-item {
+    display: flex; align-items: center; gap: 13px;
+    padding: 11px 20px; color: #9ab0cc;
+    font-size: .88rem; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+    transition: background .18s, color .18s;
+    user-select: none; position: relative;
+  }
+  .nav-link-item i.nav-icon { font-size: 1rem; width:20px; text-align:center; flex-shrink:0; }
+  .nav-link-item .nav-arrow { margin-left:auto; font-size:.65rem; transition: transform .25s; }
+  .nav-link-item:hover { background: rgba(255,255,255,.06); color:#fff; }
+  .nav-link-item.active {
+    background: var(--primary); color: #fff;
+    border-radius: 8px; margin: 2px 10px; padding: 11px 14px;
+  }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: #fff;
+    font-size: .6rem; font-weight: 800;
+    padding: 2px 6px; border-radius: 10px;
+    min-width: 18px; text-align: center;
+  }
+
+  .sidebar-logout {
+    padding: 14px 10px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+  }
+  .btn-logout {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 14px;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px; color: #9ab0cc;
+    font-size: .85rem; font-weight: 700; cursor: pointer;
+    transition: background .18s, color .18s;
+    font-family: 'Open Sans', sans-serif;
+  }
+  .btn-logout:hover { background: rgba(255,75,111,.22); color: var(--danger); border-color: rgba(255,75,111,.3); }
+
+  /* ═══════════════════════════════════════════
+     TOPBAR
+  ═══════════════════════════════════════════ */
+  .topbar {
+    position: fixed; top:0;
+    left: var(--sidebar-width); right:0;
+    height: var(--topbar-h);
+    background: var(--navy);
+    display: flex; align-items: center;
+    padding: 0 20px 0 24px; gap: 12px; z-index: 200;
+    transition: left .3s;
+  }
+  .toggle-btn {
+    display: none; align-items:center; justify-content:center;
+    width:36px; height:36px; background: rgba(255,255,255,.1);
+    border:none; border-radius:8px; color:#fff; font-size:1rem;
+    cursor:pointer; flex-shrink:0; transition: background .2s;
+  }
+  .toggle-btn:hover { background: rgba(255,255,255,.18); }
+  .topbar-search {
+    flex:1; max-width:360px; position:relative;
+  }
+  .topbar-search i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#7a9cc4; font-size:.85rem; }
+  .topbar-search input {
+    width:100%; background: rgba(255,255,255,.07);
+    border: 1.5px solid rgba(255,255,255,.1); border-radius:24px;
+    padding: 9px 18px 9px 38px; font-size:.85rem; color:#fff;
+    outline:none; font-family:'Open Sans',sans-serif; transition: border-color .2s;
+  }
+  .topbar-search input::placeholder { color:#6a87a8; }
+  .topbar-search input:focus { border-color: var(--accent); }
+  .topbar-spacer { flex:1; }
+  .topbar-icons { display:flex; align-items:center; gap:4px; }
+  .icon-btn {
+    position:relative; width:40px; height:40px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition: background .18s;
+    border:none; background:transparent; flex-shrink:0;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,.12); }
+  .icon-btn i { font-size:1.1rem; color:#fff; }
+  .badge-dot {
+    position:absolute; top:3px; right:3px;
+    width:18px; height:18px; border-radius:50%;
+    font-size:.58rem; font-weight:800; color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    border: 2px solid var(--navy);
+  }
+  .badge-red  { background: var(--danger); }
+  .badge-blue { background: var(--accent); }
+  .icon-btn-round {
+    width:36px; height:36px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; border:none; transition: opacity .2s, transform .2s;
+    flex-shrink:0;
+  }
+  .icon-btn-round:hover { opacity:.85; transform:scale(1.07); }
+  .ib-yellow { background: var(--warning); }
+  .ib-teal   { background: #26c6da; }
+  .ib-blue   { background: var(--primary); }
+  .icon-btn-round i { font-size:.95rem; color:#fff; }
+
+  /* ═══════════════════════════════════════════
+     MAIN CONTENT WRAPPER
+  ═══════════════════════════════════════════ */
+  .main-content {
+    margin-left: var(--sidebar-width);
+    padding-top: var(--topbar-h);
+    height: 100vh; display:flex; flex-direction:column;
+    background: var(--bg); transition: margin-left .3s, background .3s;
+    overflow: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     MESSAGE PAGE HEADER
+  ═══════════════════════════════════════════ */
+  .msg-page-header {
+    padding: 18px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+    flex-shrink: 0;
+    transition: background .3s;
+  }
+  .msg-page-header-left { display:flex; align-items:center; gap:12px; }
+  .breadcrumb-bar { font-size:.75rem; color: var(--muted); display:flex; align-items:center; gap:5px; }
+  .breadcrumb-bar a { color: var(--primary); text-decoration:none; font-weight:600; }
+  .breadcrumb-bar a:hover { text-decoration:underline; }
+  .page-title-h { font-family:'Nunito',sans-serif; font-weight:900; font-size:1.4rem; color: var(--text); }
+  .header-actions { display:flex; gap:8px; }
+  .btn-hdr {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 8px 16px; border-radius:8px; font-size:.83rem;
+    font-weight:700; cursor:pointer; border:none;
+    transition: all .2s; font-family:'Open Sans',sans-serif; white-space:nowrap;
+  }
+  .btn-hdr:hover { transform:translateY(-1px); }
+  .btn-primary-hdr { background: var(--primary); color:#fff; }
+  .btn-primary-hdr:hover { background: var(--primary-dark); box-shadow:0 4px 14px rgba(26,115,232,.35); color:#fff; }
+  .btn-outline-hdr { background: var(--card); color: var(--text); border: 1.5px solid var(--border); }
+  .btn-outline-hdr:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* ═══════════════════════════════════════════
+     MESSAGING LAYOUT
+  ═══════════════════════════════════════════ */
+  .msg-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr 280px;
+    flex: 1;
+    overflow: hidden;
+    transition: background .3s;
+  }
+
+  /* ── CONVERSATIONS PANEL ── */
+  .conv-panel {
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    background: var(--card);
+    overflow: hidden;
+    transition: background .3s;
+  }
+  .conv-search-bar {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .conv-search-wrap { position: relative; }
+  .conv-search-wrap i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color: var(--muted); font-size:.8rem; }
+  .conv-search-input {
+    width:100%; border: 1.5px solid var(--border); border-radius:24px;
+    padding: 8px 16px 8px 34px; font-size:.82rem;
+    color: var(--text); background: var(--bg);
+    outline:none; font-family:'Open Sans',sans-serif;
+    transition: border-color .2s, background .3s;
+  }
+  .conv-search-input:focus { border-color: var(--primary); }
+
+  /* filter tabs */
+  .conv-filter-tabs {
+    display: flex; padding: 0 16px 12px; gap: 4px;
+    border-bottom: 1px solid var(--border); flex-shrink:0;
+  }
+  .conv-tab {
+    flex:1; padding: 6px 0; text-align:center;
+    font-size:.75rem; font-weight:700; cursor:pointer;
+    border:none; background:transparent; color: var(--muted);
+    border-radius:6px; transition: all .18s;
+    font-family:'Open Sans',sans-serif;
+  }
+  .conv-tab.active { background: var(--primary); color:#fff; }
+  .conv-tab:not(.active):hover { background: var(--bg); color: var(--primary); }
+
+  .conv-list { flex:1; overflow-y:auto; }
+  .conv-list::-webkit-scrollbar { width:4px; }
+  .conv-list::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
+
+  .conv-item {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 13px 16px; cursor:pointer;
+    border-bottom: 1px solid rgba(0,0,0,.04);
+    transition: background .15s; position: relative;
+  }
+  html[data-theme="dark"] .conv-item { border-bottom-color: rgba(255,255,255,.04); }
+  .conv-item:hover { background: rgba(26,115,232,.05); }
+  .conv-item.active {
+    background: rgba(26,115,232,.08);
+    border-left: 3px solid var(--primary);
+  }
+  html[data-theme="dark"] .conv-item.active { background: rgba(26,115,232,.15); }
+  .conv-item.unread .conv-name { font-weight:800; }
+  .conv-item.unread .conv-preview { color: var(--text); font-weight:600; }
+
+  .conv-avatar {
+    width:44px; height:44px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:.9rem;
+    color:#fff; flex-shrink:0; position:relative;
+  }
+  .conv-avatar .online-ring {
+    position:absolute; bottom:1px; right:1px;
+    width:11px; height:11px; border-radius:50%;
+    background: var(--success); border: 2px solid var(--card);
+  }
+  .conv-avatar .away-ring {
+    position:absolute; bottom:1px; right:1px;
+    width:11px; height:11px; border-radius:50%;
+    background: var(--warning); border: 2px solid var(--card);
+  }
+  .conv-body { flex:1; min-width:0; }
+  .conv-name { font-size:.85rem; font-weight:700; color: var(--text); display:block; margin-bottom:2px; }
+  .conv-preview {
+    font-size:.75rem; color: var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;
+  }
+  .conv-meta { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+  .conv-time { font-size:.68rem; color: var(--muted); white-space:nowrap; }
+  .conv-unread-badge {
+    background: var(--primary); color:#fff;
+    font-size:.6rem; font-weight:800;
+    min-width:18px; height:18px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center; padding:0 5px;
+  }
+  .conv-pin { color: var(--muted); font-size:.65rem; }
+
+  /* group badge */
+  .conv-group-badge {
+    position:absolute; bottom:0; right:0;
+    width:16px; height:16px; border-radius:50%;
+    background: var(--primary); border: 2px solid var(--card);
+    display:flex; align-items:center; justify-content:center;
+    font-size:.5rem; color:#fff;
+  }
+
+  /* ── CHAT AREA ── */
+  .chat-area {
+    display: flex; flex-direction: column;
+    overflow: hidden; background: var(--bg);
+    transition: background .3s;
+  }
+
+  /* chat header */
+  .chat-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+    transition: background .3s;
+  }
+  .chat-header-avatar {
+    width:42px; height:42px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:.88rem;
+    color:#fff; flex-shrink:0; position:relative;
+  }
+  .chat-header-info { flex:1; min-width:0; }
+  .chat-header-name {
+    font-family:'Nunito',sans-serif; font-weight:900;
+    font-size:.95rem; color: var(--text);
+  }
+  .chat-header-status { font-size:.72rem; color: var(--muted); display:flex; align-items:center; gap:5px; }
+  .chat-header-status .status-dot { width:7px; height:7px; border-radius:50%; }
+  .status-online { background: var(--success); }
+  .status-away   { background: var(--warning); }
+  .status-offline{ background: var(--muted); }
+  .chat-header-actions { display:flex; gap:6px; }
+  .chat-action-btn {
+    width:36px; height:36px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    border: 1.5px solid var(--border); background: var(--card);
+    color: var(--muted); cursor:pointer; font-size:.85rem;
+    transition: all .18s; flex-shrink:0;
+  }
+  .chat-action-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .chat-action-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* messages scroll area */
+  .chat-messages {
+    flex:1; overflow-y:auto; padding: 20px;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .chat-messages::-webkit-scrollbar { width:5px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius:3px; }
+
+  /* date separator */
+  .msg-date-sep {
+    display:flex; align-items:center; gap:12px;
+    margin: 14px 0 10px;
+  }
+  .msg-date-sep::before, .msg-date-sep::after {
+    content:''; flex:1; height:1px; background: var(--border);
+  }
+  .msg-date-sep span {
+    font-size:.68rem; font-weight:700; color: var(--muted);
+    white-space:nowrap; padding: 2px 10px;
+    background: var(--bg); border-radius:10px;
+    border: 1px solid var(--border);
+  }
+
+  /* message bubble */
+  .msg-row {
+    display:flex; align-items:flex-end; gap:8px;
+    margin-bottom: 2px; max-width: 70%;
+  }
+  .msg-row.mine { align-self:flex-end; flex-direction:row-reverse; }
+  .msg-row.theirs { align-self:flex-start; }
+
+  .msg-avatar-sm {
+    width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:.6rem;
+    color:#fff; flex-shrink:0; margin-bottom:2px;
+  }
+  .msg-avatar-sm.hide { visibility:hidden; }
+
+  .msg-bubble {
+    padding: 9px 14px; border-radius:16px;
+    font-size:.85rem; line-height:1.55; position:relative;
+    max-width: 100%; word-wrap:break-word;
+    animation: bubbleIn .18s ease;
+  }
+  @keyframes bubbleIn {
+    from { opacity:0; transform:scale(.96) translateY(4px); }
+    to   { opacity:1; transform:none; }
+  }
+  .msg-row.mine .msg-bubble {
+    background: var(--primary); color:#fff;
+    border-radius: 16px 16px 4px 16px;
+  }
+  .msg-row.theirs .msg-bubble {
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 16px 16px 16px 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .msg-bubble.deleted {
+    background: transparent;
+    border: 1.5px dashed var(--border);
+    color: var(--muted);
+    font-style: italic;
+    font-size:.78rem;
+  }
+
+  /* image in bubble */
+  .msg-img {
+    max-width:220px; border-radius:10px;
+    display:block; cursor:pointer;
+    transition: opacity .2s;
+    margin-bottom:4px;
+  }
+  .msg-img:hover { opacity:.9; }
+
+  /* file attachment */
+  .msg-file {
+    display:flex; align-items:center; gap:10px;
+    padding: 8px 12px;
+    background: rgba(0,0,0,.08); border-radius:8px;
+    margin-bottom:4px; cursor:pointer;
+    transition: background .15s;
+  }
+  .msg-row.mine .msg-file { background: rgba(255,255,255,.18); }
+  .msg-file:hover { background: rgba(0,0,0,.14); }
+  .msg-row.mine .msg-file:hover { background: rgba(255,255,255,.28); }
+  .msg-file i { font-size:1.1rem; flex-shrink:0; }
+  .msg-file-info { flex:1; min-width:0; }
+  .msg-file-name { font-size:.78rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .msg-file-size { font-size:.65rem; opacity:.7; }
+
+  /* reaction row */
+  .msg-reactions {
+    display:flex; gap:4px; margin-top:4px; flex-wrap:wrap;
+  }
+  .msg-reaction {
+    display:inline-flex; align-items:center; gap:3px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius:10px; padding: 2px 8px;
+    font-size:.72rem; cursor:pointer;
+    transition: all .15s;
+  }
+  html[data-theme="dark"] .msg-reaction { background: rgba(255,255,255,.05); }
+  .msg-reaction:hover { border-color: var(--primary); background: #e8f1fd; }
+  html[data-theme="dark"] .msg-reaction:hover { background: rgba(26,115,232,.18); }
+  .msg-reaction.mine-react { border-color: var(--primary); background: #e8f1fd; }
+  html[data-theme="dark"] .msg-reaction.mine-react { background: rgba(26,115,232,.25); }
+  .msg-reaction-count { font-weight:700; color: var(--primary); }
+
+  /* meta under bubble */
+  .msg-meta-row {
+    display:flex; align-items:center; gap:5px;
+    padding: 2px 4px; font-size:.65rem; color: var(--muted);
+  }
+  .msg-row.mine .msg-meta-row { flex-direction:row-reverse; }
+  .msg-status i { font-size:.65rem; }
+  .msg-status.sent      i { color: var(--muted); }
+  .msg-status.delivered i { color: var(--muted); }
+  .msg-status.read      i { color: var(--accent); }
+  .msg-hover-actions {
+    display:none; position:absolute;
+    top:-28px; right:0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius:8px; box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    display:none; align-items:center; gap:2px; padding: 3px 5px;
+    z-index: 10;
+  }
+  .msg-bubble-wrap { position:relative; }
+  .msg-bubble-wrap:hover .msg-hover-actions { display:flex; }
+  .hover-act-btn {
+    width:26px; height:26px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    border:none; background:transparent; color: var(--muted);
+    font-size:.72rem; cursor:pointer; transition: all .15s;
+  }
+  .hover-act-btn:hover { background: var(--bg); color: var(--primary); }
+
+  /* typing indicator */
+  .typing-indicator {
+    display:none; align-items:center; gap:8px;
+    padding: 0 20px 12px; font-size:.75rem; color: var(--muted);
+  }
+  .typing-indicator.show { display:flex; }
+  .typing-dots { display:flex; gap:3px; }
+  .typing-dot {
+    width:6px; height:6px; border-radius:50%;
+    background: var(--muted); animation: typingPulse 1.4s ease infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay:.2s; }
+  .typing-dot:nth-child(3) { animation-delay:.4s; }
+  @keyframes typingPulse {
+    0%, 80%, 100% { transform:scale(1); opacity:.5; }
+    40% { transform:scale(1.3); opacity:1; }
+  }
+
+  /* ── CHAT INPUT AREA ── */
+  .chat-input-area {
+    border-top: 1px solid var(--border);
+    background: var(--card);
+    flex-shrink: 0;
+    transition: background .3s;
+  }
+
+  /* reply bar */
+  .reply-bar {
+    display:none; align-items:center; gap:10px;
+    padding: 8px 16px; border-bottom: 1px solid var(--border);
+    background: rgba(26,115,232,.06); font-size:.78rem;
+  }
+  .reply-bar.show { display:flex; }
+  .reply-bar-line { width:3px; border-radius:2px; height:28px; flex-shrink:0; background: var(--primary); }
+  .reply-bar-body { flex:1; min-width:0; }
+  .reply-bar-name { font-weight:700; color: var(--primary); font-size:.75rem; }
+  .reply-bar-text { color: var(--muted); font-size:.73rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .reply-bar-close { background:none; border:none; cursor:pointer; color: var(--muted); font-size:.8rem; padding:4px; transition: color .15s; }
+  .reply-bar-close:hover { color: var(--danger); }
+
+  /* input row */
+  .chat-input-row {
+    display:flex; align-items:flex-end; gap:8px; padding: 12px 16px;
+  }
+  .input-action-btn {
+    width:36px; height:36px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    border: 1.5px solid var(--border); background: var(--white);
+    color: var(--muted); cursor:pointer; font-size:.88rem;
+    transition: all .18s; flex-shrink:0;
+  }
+  .input-action-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .input-action-btn.active { background: var(--primary); border-color: var(--primary); color:#fff; }
+
+  .chat-textarea-wrap { flex:1; position:relative; }
+  .chat-textarea {
+    width:100%; min-height:40px; max-height:120px;
+    border: 1.5px solid var(--border); border-radius:20px;
+    padding: 10px 16px; font-size:.875rem;
+    color: var(--text); background: var(--white);
+    outline:none; resize:none; overflow-y:auto;
+    font-family:'Open Sans',sans-serif; line-height:1.5;
+    transition: border-color .2s, box-shadow .2s, background .3s;
+  }
+  .chat-textarea:focus { border-color: var(--primary); box-shadow:0 0 0 3px rgba(26,115,232,.1); }
+  .chat-textarea::-webkit-scrollbar { width:3px; }
+  .chat-textarea::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
+
+  .send-btn {
+    width:40px; height:40px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--primary); border:none; color:#fff;
+    cursor:pointer; font-size:.9rem; flex-shrink:0;
+    transition: all .2s;
+  }
+  .send-btn:hover { background: var(--primary-dark); transform:scale(1.08); box-shadow:0 4px 14px rgba(26,115,232,.4); }
+  .send-btn:disabled { background: var(--border); color: var(--muted); transform:none; box-shadow:none; cursor:default; }
+
+  /* emoji picker */
+  .emoji-picker {
+    position:absolute; bottom:56px; left:0; z-index:100;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius:12px; padding:12px; box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    display:none; width:280px;
+    animation: emojiIn .15s ease;
+  }
+  @keyframes emojiIn { from { opacity:0; transform:translateY(8px) scale(.96); } to { opacity:1; transform:none; } }
+  .emoji-picker.show { display:block; }
+  .emoji-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:4px; }
+  .emoji-btn {
+    width:30px; height:30px; border:none; background:transparent;
+    border-radius:6px; cursor:pointer; font-size:1.15rem;
+    display:flex; align-items:center; justify-content:center;
+    transition: background .15s;
+  }
+  .emoji-btn:hover { background: var(--bg); }
+
+  /* ── INFO PANEL ── */
+  .info-panel {
+    border-left: 1px solid var(--border);
+    display:flex; flex-direction:column;
+    background: var(--card);
+    overflow-y: auto;
+    transition: background .3s, transform .3s;
+  }
+  .info-panel::-webkit-scrollbar { width:4px; }
+  .info-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
+
+  .info-panel-header {
+    padding: 16px; border-bottom: 1px solid var(--border); flex-shrink:0;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .info-panel-title {
+    font-family:'Nunito',sans-serif; font-weight:900;
+    font-size:.88rem; color: var(--text);
+  }
+  .info-close-btn {
+    width:28px; height:28px; border-radius:6px;
+    border: 1.5px solid var(--border); background:transparent;
+    color: var(--muted); cursor:pointer; font-size:.72rem;
+    display:flex; align-items:center; justify-content:center;
+    transition: all .15s;
+  }
+  .info-close-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  .info-profile-section {
+    padding: 20px 16px; text-align:center;
+    border-bottom: 1px solid var(--border);
+  }
+  .info-avatar {
+    width:64px; height:64px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:1.25rem;
+    color:#fff; margin: 0 auto 10px;
+    border: 3px solid rgba(26,115,232,.2);
+    position:relative;
+  }
+  .info-avatar .status-dot-lg {
+    position:absolute; bottom:2px; right:2px;
+    width:13px; height:13px; border-radius:50%;
+    border: 2px solid var(--card);
+  }
+  .info-name { font-family:'Nunito',sans-serif; font-weight:900; font-size:1rem; color: var(--text); margin-bottom:3px; }
+  .info-role { font-size:.73rem; color: var(--muted); margin-bottom:8px; }
+  .info-status-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:.7rem; font-weight:700;
+    padding: 3px 10px; border-radius:10px;
+  }
+
+  .info-stats-row {
+    display:grid; grid-template-columns:1fr 1fr 1fr;
+    gap:0; border-bottom: 1px solid var(--border);
+  }
+  .info-stat {
+    text-align:center; padding: 12px 8px;
+    border-right: 1px solid var(--border);
+  }
+  .info-stat:last-child { border-right:none; }
+  .info-stat-val {
+    font-family:'Nunito',sans-serif; font-weight:900;
+    font-size:1rem; color: var(--text); display:block;
+  }
+  .info-stat-lbl { font-size:.62rem; color: var(--muted); font-weight:600; display:block; }
+
+  .info-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .info-section-title {
+    font-family:'Nunito',sans-serif; font-weight:900;
+    font-size:.75rem; text-transform:uppercase; letter-spacing:.5px;
+    color: var(--muted); margin-bottom:10px;
+  }
+
+  /* shared media grid */
+  .media-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; }
+  .media-thumb {
+    aspect-ratio:1; border-radius:6px;
+    background: linear-gradient(135deg,#1a3a6e,#2196f3);
+    display:flex; align-items:center; justify-content:center;
+    color: rgba(255,255,255,.35); font-size:.9rem; cursor:pointer;
+    overflow:hidden; transition: opacity .2s;
+    position:relative;
+  }
+  .media-thumb:hover { opacity:.85; }
+  .media-thumb img { width:100%; height:100%; object-fit:cover; }
+  .media-thumb .thumb-overlay {
+    position:absolute; inset:0;
+    background: rgba(0,0,0,.35);
+    display:flex; align-items:center; justify-content:center;
+    font-size:.8rem; color:#fff; font-weight:700; opacity:0;
+    transition: opacity .2s;
+  }
+  .media-thumb:hover .thumb-overlay { opacity:1; }
+
+  /* shared files list */
+  .file-item {
+    display:flex; align-items:center; gap:10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    cursor:pointer; transition: opacity .15s;
+  }
+  .file-item:last-child { border-bottom:none; }
+  .file-item:hover { opacity:.75; }
+  .file-icon {
+    width:32px; height:32px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.85rem; flex-shrink:0;
+  }
+  .file-item-info { flex:1; min-width:0; }
+  .file-item-name { font-size:.78rem; font-weight:700; color: var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .file-item-meta { font-size:.65rem; color: var(--muted); }
+
+  /* info action buttons */
+  .info-actions-row { display:flex; flex-direction:column; gap:6px; }
+  .info-action-btn {
+    display:flex; align-items:center; gap:10px;
+    padding: 9px 12px; border-radius:8px;
+    border: 1.5px solid var(--border); background:transparent;
+    color: var(--text); font-size:.8rem; font-weight:600;
+    cursor:pointer; transition: all .18s; width:100%;
+    font-family:'Open Sans',sans-serif; text-align:left;
+  }
+  .info-action-btn i { width:16px; color: var(--primary); font-size:.82rem; }
+  .info-action-btn:hover { border-color: var(--primary); background: #e8f1fd; color: var(--primary); }
+  .info-action-btn.danger { color: var(--danger); }
+  .info-action-btn.danger i { color: var(--danger); }
+  .info-action-btn.danger:hover { border-color: var(--danger); background: #fff0f3; }
+  html[data-theme="dark"] .info-action-btn:hover { background: rgba(26,115,232,.15); }
+  html[data-theme="dark"] .info-action-btn.danger:hover { background: rgba(255,77,109,.12); }
+
+  /* new conversation modal */
+  .nc-overlay {
+    display:none; position:fixed; inset:0;
+    background: rgba(0,0,0,.5); z-index:900;
+    align-items:center; justify-content:center;
+    backdrop-filter: blur(3px);
+  }
+  .nc-overlay.show { display:flex; }
+  .nc-modal {
+    background: var(--card); border-radius:16px;
+    padding:0; max-width:480px; width:95%;
+    box-shadow: 0 24px 64px rgba(0,0,0,.25);
+    animation: modalPop .2s ease; overflow:hidden;
+  }
+  @keyframes modalPop { from { opacity:0; transform:scale(.93); } to { opacity:1; transform:scale(1); } }
+  .nc-header {
+    padding: 18px 22px 16px; border-bottom: 1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nc-header h3 {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:1.05rem;
+    color: var(--text); display:flex; align-items:center; gap:8px; margin:0;
+  }
+  .nc-header h3 i { color: var(--primary); }
+  .nc-close {
+    width:28px; height:28px; border-radius:50%; border:none;
+    background: var(--bg); color: var(--muted); font-size:.8rem;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition: background .15s;
+  }
+  .nc-close:hover { background: var(--border); }
+  .nc-body { padding: 20px 22px; }
+  .nc-search {
+    position:relative; margin-bottom:16px;
+  }
+  .nc-search i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color: var(--muted); font-size:.82rem; }
+  .nc-search input {
+    width:100%; border: 1.5px solid var(--border); border-radius:8px;
+    padding: 10px 16px 10px 34px; font-size:.85rem;
+    color: var(--text); background: var(--white); outline:none;
+    font-family:'Open Sans',sans-serif; transition: border-color .2s;
+  }
+  .nc-search input:focus { border-color: var(--primary); }
+  .nc-user-list { max-height:260px; overflow-y:auto; }
+  .nc-user-list::-webkit-scrollbar { width:4px; }
+  .nc-user-list::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
+  .nc-user-item {
+    display:flex; align-items:center; gap:12px;
+    padding: 10px 12px; border-radius:8px; cursor:pointer;
+    transition: background .15s;
+  }
+  .nc-user-item:hover { background: var(--bg); }
+  .nc-user-item.selected { background: rgba(26,115,232,.1); }
+  html[data-theme="dark"] .nc-user-item.selected { background: rgba(26,115,232,.2); }
+  .nc-user-avatar {
+    width:38px; height:38px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:.8rem;
+    color:#fff; flex-shrink:0;
+  }
+  .nc-user-name { font-weight:700; font-size:.85rem; color: var(--text); }
+  .nc-user-role { font-size:.72rem; color: var(--muted); }
+  .nc-check { margin-left:auto; width:20px; height:20px; border-radius:50%; border: 2px solid var(--border); flex-shrink:0; transition: all .15s; display:flex; align-items:center; justify-content:center; font-size:.65rem; color:#fff; }
+  .nc-user-item.selected .nc-check { background: var(--primary); border-color: var(--primary); }
+  .nc-footer { padding: 14px 22px; border-top: 1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; }
+  .nc-btn-cancel { padding: 9px 18px; border-radius:8px; border: 1.5px solid var(--border); background:transparent; color: var(--text); font-size:.84rem; font-weight:700; cursor:pointer; font-family:'Open Sans',sans-serif; transition: background .15s; }
+  .nc-btn-cancel:hover { background: var(--bg); }
+  .nc-btn-start { padding: 9px 20px; border-radius:8px; border:none; background: var(--primary); color:#fff; font-size:.84rem; font-weight:700; cursor:pointer; font-family:'Open Sans',sans-serif; transition: all .2s; display:flex; align-items:center; gap:7px; }
+  .nc-btn-start:hover { background: var(--primary-dark); box-shadow:0 4px 14px rgba(26,115,232,.35); }
+
+  /* toast */
+  .toast-stack { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+  .toast-msg {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius:10px; padding: 12px 16px;
+    display:flex; align-items:center; gap:10px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.15); font-size:.82rem; color: var(--text);
+    pointer-events:all; animation: toastIn .2s ease; max-width:300px;
+  }
+  @keyframes toastIn { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:none; } }
+  .toast-msg i { font-size:.92rem; flex-shrink:0; }
+
+  /* responsive */
+  @media (max-width:1200px) { .msg-layout { grid-template-columns: 280px 1fr; } .info-panel { display:none; } }
+  @media (max-width:991px) {
+    .sidebar { transform:translateX(-100%); }
+    .sidebar.open { transform:translateX(0); }
+    .topbar { left:0; }
+    .main-content { margin-left:0; }
+    .toggle-btn { display:flex !important; }
+    .msg-layout { grid-template-columns: 1fr; }
+    .conv-panel { display:none; }
+    .conv-panel.mobile-show { display:flex; position:fixed; inset:0; top:var(--topbar-h); z-index:250; }
+  }
+  @media (max-width:640px) {
+    .topbar-search { max-width:160px; }
+  }
+
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius:3px; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-main">INNOVATE<span>TECH</span></div>
+    <span class="brand-sub">S O L U T I O N S</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div><a class="nav-link-item" href="#"><i class="fas fa-th-large nav-icon"></i> Dashboard</a></div>
+    <div><a class="nav-link-item" href="#"><i class="fas fa-chart-bar nav-icon"></i> Projects<i class="fas fa-chevron-right nav-arrow"></i></a></div>
+    <div><a class="nav-link-item" href="#"><i class="far fa-file-alt nav-icon"></i> Reports</a></div>
+    <div>
+      <a class="nav-link-item active" href="#">
+        <i class="fas fa-comment-dots nav-icon"></i> Messages
+        <span class="nav-badge">7</span>
+      </a>
+    </div>
+    <div><a class="nav-link-item" href="#"><i class="fas fa-users nav-icon"></i> Team<i class="fas fa-chevron-right nav-arrow"></i></a></div>
+    <div><a class="nav-link-item" href="#"><i class="fas fa-tasks nav-icon"></i> Tasks</a></div>
+    <div><a class="nav-link-item" href="#"><i class="fas fa-calendar-check nav-icon"></i> Calendar</a></div>
+    <div><a class="nav-link-item" href="#"><i class="fas fa-newspaper nav-icon"></i> Blog</a></div>
+    <div><a class="nav-link-item" href="#"><i class="fas fa-cog nav-icon"></i> Settings</a></div>
+  </nav>
+  <div class="sidebar-logout">
+    <button class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+</aside>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<header class="topbar">
+  <button class="toggle-btn" id="toggleSidebar"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Search…"/>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-icons">
+    <button class="icon-btn" id="topbarNotif"><i class="fas fa-bell"></i><span class="badge-dot badge-red">3</span></button>
+    <button class="icon-btn" id="topbarMsg"><i class="fas fa-comment-dots"></i><span class="badge-dot badge-blue">7</span></button>
+    <button class="icon-btn-round ib-yellow" id="themeToggle"><i class="fas fa-moon" id="themeIcon"></i></button>
+    <button class="icon-btn-round ib-teal"><i class="fas fa-user"></i></button>
+    <button class="icon-btn-round ib-blue"><i class="fas fa-cog"></i></button>
+  </div>
+</header>
+
+<!-- ══════════ MAIN CONTENT ══════════ -->
+<main class="main-content">
+
+  <!-- Page Header -->
+  <div class="msg-page-header">
+    <div class="msg-page-header-left">
+      <div>
+        <div class="breadcrumb-bar">
+          <a href="#"><i class="fas fa-home"></i> Dashboard</a>
+          <i class="fas fa-chevron-right" style="font-size:.52rem;"></i>
+          <span>Messages</span>
+        </div>
+        <div class="page-title-h">💬 Messages</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-hdr btn-outline-hdr" id="btnTheme2">
+        <i class="fas fa-moon" id="themeIcon2"></i> Theme
+      </button>
+      <button class="btn-hdr btn-outline-hdr" id="btnNewGroup">
+        <i class="fas fa-users"></i> New Group
+      </button>
+      <button class="btn-hdr btn-primary-hdr" id="btnNewConv">
+        <i class="fas fa-edit"></i> New Message
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ MESSAGING LAYOUT ══ -->
+  <div class="msg-layout">
+
+    <!-- ── CONVERSATION LIST ── -->
+    <div class="conv-panel" id="convPanel">
+
+      <!-- Search -->
+      <div class="conv-search-bar">
+        <div class="conv-search-wrap">
+          <i class="fas fa-search"></i>
+          <input type="text" class="conv-search-input" id="convSearch" placeholder="Search conversations…" autocomplete="off"/>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="conv-filter-tabs">
+        <button class="conv-tab active" data-tab="all">All</button>
+        <button class="conv-tab" data-tab="unread">Unread</button>
+        <button class="conv-tab" data-tab="groups">Groups</button>
+        <button class="conv-tab" data-tab="pinned">Pinned</button>
+      </div>
+
+      <!-- Conversations -->
+      <div class="conv-list" id="convList">
+
+        <!-- Pinned separator -->
+        <div style="padding:8px 16px 4px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">📌 Pinned</div>
+
+        <div class="conv-item active unread" data-conv="1" data-type="direct">
+          <div class="conv-avatar" style="background:#1a73e8;">
+            AK<div class="online-ring"></div>
+          </div>
+          <div class="conv-body">
+            <span class="conv-name">Alex Kumar</span>
+            <span class="conv-preview">Can you review the Q3 analytics report?</span>
+          </div>
+          <div class="conv-meta">
+            <span class="conv-time">2m</span>
+            <span class="conv-unread-badge">2</span>
+          </div>
+        </div>
+
+        <div class="conv-item unread" data-conv="2" data-type="group">
+          <div class="conv-avatar" style="background: linear-gradient(135deg,#1a73e8,#26c6da);position:relative;">
+            <i class="fas fa-users" style="font-size:.85rem;"></i>
+            <div class="conv-group-badge"><i class="fas fa-users" style="font-size:.45rem;"></i></div>
+          </div>
+          <div class="conv-body">
+            <span class="conv-name">Dev Team 🚀</span>
+            <span class="conv-preview">Sarah: The deployment is live!</span>
+          </div>
+          <div class="conv-meta">
+            <span class="conv-time">8m</span>
+            <span class="conv-unread-badge">5</span>
+          </div>
+        </div>
+
+        <!-- All separator -->
+        <div style="padding:8px 16px 4px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">💬 Recent</div>
+
+        <div class="conv-item" data-conv="3" data-type="direct">
+          <div class="conv-avatar" style="background:#e91e63;">SJ<div class="online-ring"></div></div>
+          <div class="conv-body">
+            <span class="conv-name">Sarah Johnson</span>
+            <span class="conv-preview">👍 Perfect, I'll send the design files</span>
+          </div>
+          <div class="conv-meta"><span class="conv-time">23m</span></div>
+        </div>
+
+        <div class="conv-item unread" data-conv="4" data-type="direct">
+          <div class="conv-avatar" style="background:#388e3c;">JB<div class="away-ring"></div></div>
+          <div class="conv-body">
+            <span class="conv-name">John Brown</span>
+            <span class="conv-preview">Can we push the deadline by 2 days?</span>
+          </div>
+          <div class="conv-meta"><span class="conv-time">1h</span><span class="conv-unread-badge">1</span></div>
+        </div>
+
+        <div class="conv-item" data-conv="5" data-type="group">
+          <div class="conv-avatar" style="background:linear-gradient(135deg,#7c4dff,#e91e63);position:relative;">
+            <i class="fas fa-users" style="font-size:.85rem;"></i>
+            <div class="conv-group-badge"><i class="fas fa-users" style="font-size:.45rem;"></i></div>
+          </div>
+          <div class="conv-body">
+            <span class="conv-name">Design & Content ✨</span>
+            <span class="conv-preview">You: Sent the wireframes to review</span>
+          </div>
+          <div class="conv-meta"><span class="conv-time">2h</span></div>
+        </div>
+
+        <div class="conv-item" data-conv="6" data-type="direct">
+          <div class="conv-avatar" style="background:#ff7043;">RP</div>
+          <div class="conv-body">
+            <span class="conv-name">Ryan Patel</span>
+            <span class="conv-preview">Thanks for the update 🙏</span>
+          </div>
+          <div class="conv-meta"><span class="conv-time">4h</span></div>
+        </div>
+
+        <div class="conv-item unread" data-conv="7" data-type="direct">
+          <div class="conv-avatar" style="background:#7c4dff;">MK</div>
+          <div class="conv-body">
+            <span class="conv-name">Maya Kim</span>
+            <span class="conv-preview">Meeting rescheduled to Friday 3pm</span>
+          </div>
+          <div class="conv-meta"><span class="conv-time">Yesterday</span><span class="conv-unread-badge">1</span></div>
+        </div>
+
+        <div class="conv-item" data-conv="8" data-type="direct">
+          <div class="conv-avatar" style="background:#0097a7;">LN</div>
+          <div class="conv-body">
+            <span class="conv-name">Lena Novak</span>
+            <span class="conv-preview">Great work on the blog editor 🎉</span>
+          </div>
+          <div class="conv-meta"><span class="conv-time">Yesterday</span></div>
+        </div>
+
+      </div>
+    </div><!-- /conv-panel -->
+
+    <!-- ── CHAT AREA ── -->
+    <div class="chat-area" id="chatArea">
+
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="chat-header-avatar" style="background:#1a73e8;">
+          AK
+          <span class="status-dot-lg status-online" style="position:absolute;bottom:2px;right:2px;width:11px;height:11px;border-radius:50%;border:2px solid var(--card);"></span>
+        </div>
+        <div class="chat-header-info">
+          <div class="chat-header-name" id="chatName">Alex Kumar</div>
+          <div class="chat-header-status">
+            <span class="status-dot status-online"></span>
+            <span id="chatStatus">Online · Lead Developer</span>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="chat-action-btn" id="btnCall" title="Voice call"><i class="fas fa-phone"></i></button>
+          <button class="chat-action-btn" id="btnVideo" title="Video call"><i class="fas fa-video"></i></button>
+          <button class="chat-action-btn" id="btnSearch" title="Search in chat"><i class="fas fa-search"></i></button>
+          <button class="chat-action-btn" id="btnInfoToggle" title="Contact info"><i class="fas fa-info-circle"></i></button>
+          <button class="chat-action-btn danger" id="btnMoreChat" title="More options"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages" id="chatMessages">
+
+        <div class="msg-date-sep"><span>Monday, March 18</span></div>
+
+        <!-- Theirs -->
+        <div class="msg-row theirs">
+          <div class="msg-avatar-sm" style="background:#1a73e8;">AK</div>
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble">Hey! Can you review the Q3 analytics report I sent earlier? Want to make sure the numbers are accurate before the presentation.</div>
+              <div class="msg-hover-actions">
+                <button class="hover-act-btn" title="React" onclick="addReaction(this, '👍')"><i class="fas fa-smile"></i></button>
+                <button class="hover-act-btn" title="Reply" onclick="setReply('Alex Kumar', 'Q3 analytics report')"><i class="fas fa-reply"></i></button>
+                <button class="hover-act-btn" title="Forward"><i class="fas fa-share"></i></button>
+                <button class="hover-act-btn" title="Copy"><i class="fas fa-copy"></i></button>
+              </div>
+            </div>
+            <div class="msg-meta-row"><span>10:32 AM</span></div>
+          </div>
+        </div>
+
+        <!-- Mine -->
+        <div class="msg-row mine">
+          <div class="msg-avatar-sm hide" style="background:#26c6da;">Me</div>
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble">Sure! Give me a few minutes to go through it. The revenue section looks solid, but I want to double-check the user acquisition numbers.</div>
+              <div class="msg-hover-actions" style="right:auto;left:0;">
+                <button class="hover-act-btn" title="React" onclick="addReaction(this, '😊')"><i class="fas fa-smile"></i></button>
+                <button class="hover-act-btn" title="Reply" onclick="setReply('Me', 'checking user acquisition')"><i class="fas fa-reply"></i></button>
+                <button class="hover-act-btn" title="Delete" onclick="deleteMsg(this)"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="msg-meta-row">
+              <span>10:35 AM</span>
+              <span class="msg-status read"><i class="fas fa-check-double"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image message -->
+        <div class="msg-row theirs">
+          <div class="msg-avatar-sm" style="background:#1a73e8;">AK</div>
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble" style="padding:6px;">
+                <div style="width:220px;height:140px;background:linear-gradient(135deg,#1a3a6e,#2196f3);border-radius:10px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:1.8rem;cursor:pointer;margin-bottom:4px;">
+                  <i class="fas fa-chart-bar"></i>
+                </div>
+                <span style="font-size:.78rem;">Q3_Analytics_Report.png</span>
+              </div>
+              <div class="msg-hover-actions">
+                <button class="hover-act-btn" title="React" onclick="addReaction(this,'👍')"><i class="fas fa-smile"></i></button>
+                <button class="hover-act-btn" title="Download"><i class="fas fa-download"></i></button>
+              </div>
+            </div>
+            <div class="msg-meta-row"><span>10:37 AM</span></div>
+          </div>
+        </div>
+
+        <!-- File attachment -->
+        <div class="msg-row theirs">
+          <div class="msg-avatar-sm hide" style="background:#1a73e8;">AK</div>
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble" style="padding:8px 12px;">
+                <div class="msg-file">
+                  <i class="fas fa-file-excel" style="color:#1d6f42;font-size:1.2rem;"></i>
+                  <div class="msg-file-info">
+                    <div class="msg-file-name">Q3_Report_Data.xlsx</div>
+                    <div class="msg-file-size">2.4 MB · Excel</div>
+                  </div>
+                  <i class="fas fa-download" style="color:var(--muted);font-size:.8rem;"></i>
+                </div>
+              </div>
+              <div class="msg-hover-actions">
+                <button class="hover-act-btn" onclick="addReaction(this,'👍')"><i class="fas fa-smile"></i></button>
+                <button class="hover-act-btn"><i class="fas fa-download"></i></button>
+              </div>
+            </div>
+            <div class="msg-meta-row"><span>10:38 AM</span></div>
+          </div>
+        </div>
+
+        <div class="msg-date-sep"><span>Today</span></div>
+
+        <!-- Reactions example -->
+        <div class="msg-row theirs">
+          <div class="msg-avatar-sm" style="background:#1a73e8;">AK</div>
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble">Good morning! Just checking if you had a chance to look at the report. The presentation is at 3pm today 🙏</div>
+              <div class="msg-hover-actions">
+                <button class="hover-act-btn" onclick="addReaction(this,'😊')"><i class="fas fa-smile"></i></button>
+                <button class="hover-act-btn" onclick="setReply('Alex Kumar','presentation at 3pm')"><i class="fas fa-reply"></i></button>
+                <button class="hover-act-btn"><i class="fas fa-share"></i></button>
+                <button class="hover-act-btn"><i class="fas fa-copy"></i></button>
+              </div>
+            </div>
+            <div class="msg-reactions">
+              <span class="msg-reaction mine-react" onclick="toggleReaction(this)">👍 <span class="msg-reaction-count">2</span></span>
+              <span class="msg-reaction" onclick="toggleReaction(this)">❤️ <span class="msg-reaction-count">1</span></span>
+            </div>
+            <div class="msg-meta-row"><span>9:15 AM</span></div>
+          </div>
+        </div>
+
+        <div class="msg-row mine">
+          <div class="msg-avatar-sm hide">Me</div>
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble">Yes! I reviewed everything. The numbers look great. Revenue is up 18% QoQ which is above our target 🚀</div>
+              <div class="msg-hover-actions" style="right:auto;left:0;">
+                <button class="hover-act-btn" onclick="addReaction(this,'😊')"><i class="fas fa-smile"></i></button>
+                <button class="hover-act-btn" onclick="setReply('Me','revenue up 18%')"><i class="fas fa-reply"></i></button>
+                <button class="hover-act-btn" onclick="deleteMsg(this)"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="msg-meta-row">
+              <span>9:22 AM</span>
+              <span class="msg-status read"><i class="fas fa-check-double"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg-row mine">
+          <div class="msg-avatar-sm hide">Me</div>
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble">I'll be ready for 3pm. Also added some additional visualizations for the user growth section.</div>
+              <div class="msg-hover-actions" style="right:auto;left:0;">
+                <button class="hover-act-btn" onclick="addReaction(this,'😊')"><i class="fas fa-smile"></i></button>
+                <button class="hover-act-btn" onclick="setReply('Me','3pm ready')"><i class="fas fa-reply"></i></button>
+                <button class="hover-act-btn" onclick="deleteMsg(this)"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="msg-meta-row">
+              <span>9:24 AM</span>
+              <span class="msg-status delivered"><i class="fas fa-check-double"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg-row theirs">
+          <div class="msg-avatar-sm" style="background:#1a73e8;">AK</div>
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble">Can you review the Q3 analytics report?</div>
+              <div class="msg-hover-actions">
+                <button class="hover-act-btn" onclick="addReaction(this,'👍')"><i class="fas fa-smile"></i></button>
+                <button class="hover-act-btn" onclick="setReply('Alex Kumar','review Q3')"><i class="fas fa-reply"></i></button>
+                <button class="hover-act-btn"><i class="fas fa-copy"></i></button>
+              </div>
+            </div>
+            <div class="msg-meta-row"><span>Just now</span></div>
+          </div>
+        </div>
+
+      </div><!-- /chat-messages -->
+
+      <!-- Typing indicator -->
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="msg-avatar-sm" style="background:#1a73e8;width:24px;height:24px;font-size:.55rem;">AK</div>
+        <div class="typing-dots">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+        <span>Alex is typing…</span>
+      </div>
+
+      <!-- Input Area -->
+      <div class="chat-input-area">
+        <!-- Reply bar -->
+        <div class="reply-bar" id="replyBar">
+          <div class="reply-bar-line"></div>
+          <div class="reply-bar-body">
+            <div class="reply-bar-name" id="replyName">Alex Kumar</div>
+            <div class="reply-bar-text" id="replyText">Q3 analytics report</div>
+          </div>
+          <button class="reply-bar-close" onclick="clearReply()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="chat-input-row">
+          <!-- Attach -->
+          <button class="input-action-btn" id="btnAttach" title="Attach file">
+            <i class="fas fa-paperclip"></i>
+          </button>
+          <!-- Emoji -->
+          <div style="position:relative;">
+            <button class="input-action-btn" id="btnEmoji" title="Emoji">
+              <i class="fas fa-smile"></i>
+            </button>
+            <div class="emoji-picker" id="emojiPicker">
+              <div class="emoji-grid" id="emojiGrid"></div>
+            </div>
+          </div>
+          <!-- Text input -->
+          <div class="chat-textarea-wrap">
+            <textarea class="chat-textarea" id="msgInput" placeholder="Type a message…" rows="1"></textarea>
+          </div>
+          <!-- Send -->
+          <button class="send-btn" id="sendBtn" disabled><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div><!-- /chat-area -->
+
+    <!-- ── INFO PANEL ── -->
+    <div class="info-panel" id="infoPanel">
+      <div class="info-panel-header">
+        <div class="info-panel-title"><i class="fas fa-info-circle" style="color:var(--primary);margin-right:6px;"></i> Contact Info</div>
+        <button class="info-close-btn" id="infoPanelClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="info-profile-section">
+        <div class="info-avatar" style="background:#1a73e8;">
+          AK
+          <span class="status-dot-lg status-online" style="background:var(--success);"></span>
+        </div>
+        <div class="info-name">Alex Kumar</div>
+        <div class="info-role">Lead Developer · InnovateTech</div>
+        <span class="info-status-badge" style="background:#d4f5ec;color:#00a87c;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#00c896;"></span>
+          Online
+        </span>
+      </div>
+
+      <div class="info-stats-row">
+        <div class="info-stat"><span class="info-stat-val">48</span><span class="info-stat-lbl">Messages</span></div>
+        <div class="info-stat"><span class="info-stat-val">12</span><span class="info-stat-lbl">Files</span></div>
+        <div class="info-stat"><span class="info-stat-val">6</span><span class="info-stat-lbl">Media</span></div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Contact Details</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);">
+            <i class="fas fa-envelope" style="color:var(--primary);width:14px;"></i>
+            alex.kumar@innovatetech.io
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);">
+            <i class="fas fa-phone" style="color:var(--primary);width:14px;"></i>
+            +1 234 567 8901
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);">
+            <i class="fas fa-map-marker-alt" style="color:var(--primary);width:14px;"></i>
+            New York, NY
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Shared Media <span style="float:right;font-size:.68rem;font-weight:600;color:var(--primary);cursor:pointer;">See all</span></div>
+        <div class="media-grid">
+          <div class="media-thumb" style="background:linear-gradient(135deg,#1a3a6e,#2196f3);">
+            <i class="fas fa-chart-bar"></i>
+            <div class="thumb-overlay">View</div>
+          </div>
+          <div class="media-thumb" style="background:linear-gradient(135deg,#162447,#1a73e8);">
+            <i class="fas fa-image"></i>
+            <div class="thumb-overlay">View</div>
+          </div>
+          <div class="media-thumb" style="background:linear-gradient(135deg,#0d2137,#1976d2);">
+            <i class="fas fa-photo-video"></i>
+            <div class="thumb-overlay">View</div>
+          </div>
+          <div class="media-thumb" style="background:linear-gradient(135deg,#1e4a8f,#42a5f5);">
+            <i class="fas fa-file-image"></i>
+            <div class="thumb-overlay">View</div>
+          </div>
+          <div class="media-thumb" style="background:linear-gradient(135deg,#1a2d5a,#29b6f6);">
+            <i class="fas fa-image"></i>
+            <div class="thumb-overlay">View</div>
+          </div>
+          <div class="media-thumb" style="background:rgba(26,115,232,.15);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--primary);">
+            +7
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Shared Files <span style="float:right;font-size:.68rem;font-weight:600;color:var(--primary);cursor:pointer;">See all</span></div>
+        <div class="file-item">
+          <div class="file-icon" style="background:#e8f5e9;"><i class="fas fa-file-excel" style="color:#1d6f42;"></i></div>
+          <div class="file-item-info">
+            <div class="file-item-name">Q3_Report_Data.xlsx</div>
+            <div class="file-item-meta">2.4 MB · Yesterday</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon" style="background:#e8f1fd;"><i class="fas fa-file-pdf" style="color:#e53935;"></i></div>
+          <div class="file-item-info">
+            <div class="file-item-name">Presentation_Final.pdf</div>
+            <div class="file-item-meta">5.1 MB · Mar 15</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon" style="background:#fff4d6;"><i class="fas fa-file-powerpoint" style="color:#d84315;"></i></div>
+          <div class="file-item-info">
+            <div class="file-item-name">Q3_Slides.pptx</div>
+            <div class="file-item-meta">8.7 MB · Mar 10</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Actions</div>
+        <div class="info-actions-row">
+          <button class="info-action-btn"><i class="fas fa-bell-slash"></i> Mute Notifications</button>
+          <button class="info-action-btn"><i class="fas fa-thumbtack"></i> Pin Conversation</button>
+          <button class="info-action-btn"><i class="fas fa-archive"></i> Archive Chat</button>
+          <button class="info-action-btn"><i class="fas fa-search"></i> Search in Chat</button>
+          <button class="info-action-btn"><i class="fas fa-user-plus"></i> Add to Group</button>
+          <button class="info-action-btn danger"><i class="fas fa-ban"></i> Block User</button>
+          <button class="info-action-btn danger"><i class="fas fa-trash"></i> Delete Conversation</button>
+        </div>
+      </div>
+
+    </div><!-- /info-panel -->
+  </div><!-- /msg-layout -->
+
+</main>
+
+<!-- NEW CONVERSATION MODAL -->
+<div class="nc-overlay" id="ncOverlay">
+  <div class="nc-modal">
+    <div class="nc-header">
+      <h3><i class="fas fa-edit"></i> New Message</h3>
+      <button class="nc-close" id="ncClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="nc-body">
+      <div class="nc-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="ncSearchInput" placeholder="Search people…" autocomplete="off"/>
+      </div>
+      <div class="nc-user-list" id="ncUserList">
+        <div class="nc-user-item" data-user="Alex Kumar"><div class="nc-user-avatar" style="background:#1a73e8;">AK</div><div><div class="nc-user-name">Alex Kumar</div><div class="nc-user-role">Lead Developer</div></div><div class="nc-check"><i class="fas fa-check" style="display:none;"></i></div></div>
+        <div class="nc-user-item" data-user="Sarah Johnson"><div class="nc-user-avatar" style="background:#e91e63;">SJ</div><div><div class="nc-user-name">Sarah Johnson</div><div class="nc-user-role">UI Designer</div></div><div class="nc-check"><i class="fas fa-check" style="display:none;"></i></div></div>
+        <div class="nc-user-item" data-user="John Brown"><div class="nc-user-avatar" style="background:#388e3c;">JB</div><div><div class="nc-user-name">John Brown</div><div class="nc-user-role">Backend Engineer</div></div><div class="nc-check"><i class="fas fa-check" style="display:none;"></i></div></div>
+        <div class="nc-user-item" data-user="Maya Kim"><div class="nc-user-avatar" style="background:#7c4dff;">MK</div><div><div class="nc-user-name">Maya Kim</div><div class="nc-user-role">Project Manager</div></div><div class="nc-check"><i class="fas fa-check" style="display:none;"></i></div></div>
+        <div class="nc-user-item" data-user="Ryan Patel"><div class="nc-user-avatar" style="background:#ff7043;">RP</div><div><div class="nc-user-name">Ryan Patel</div><div class="nc-user-role">DevOps Engineer</div></div><div class="nc-check"><i class="fas fa-check" style="display:none;"></i></div></div>
+        <div class="nc-user-item" data-user="Lena Novak"><div class="nc-user-avatar" style="background:#0097a7;">LN</div><div><div class="nc-user-name">Lena Novak</div><div class="nc-user-role">Content Strategist</div></div><div class="nc-check"><i class="fas fa-check" style="display:none;"></i></div></div>
+      </div>
+    </div>
+    <div class="nc-footer">
+      <button class="nc-btn-cancel" id="ncCancel">Cancel</button>
+      <button class="nc-btn-start" id="ncStart" disabled><i class="fas fa-paper-plane"></i> Start Chat</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST STACK -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ══════════ JQUERY SCRIPTS ══════════ -->
+<script>
+$(function () {
+
+  /* ─── HELPERS ─── */
+  function toast(msg, color, icon) {
+    color = color || 'var(--primary)'; icon = icon || 'fas fa-info-circle';
+    var $t = $('<div class="toast-msg"><i class="' + icon + '" style="color:' + color + ';"></i><span>' + msg + '</span></div>');
+    $('#toastStack').append($t);
+    setTimeout(function () { $t.fadeOut(300, function () { $t.remove(); }); }, 3000);
+  }
+
+  /* ─── DARK MODE ─── */
+  var isDark = false;
+  function applyTheme(dark) {
+    $('html').attr('data-theme', dark ? 'dark' : 'light');
+    $('#themeIcon, #themeIcon2').each(function () {
+      $(this).toggleClass('fa-moon', !dark).toggleClass('fa-sun', dark);
+    });
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }
+  var saved = localStorage.getItem('theme');
+  if (saved === 'dark') { isDark = true; applyTheme(true); }
+
+  $('#themeToggle, #btnTheme2').on('click', function () {
+    isDark = !isDark; applyTheme(isDark);
+    toast(isDark ? 'Dark mode enabled' : 'Light mode enabled',
+          isDark ? '#334155' : '#ffb830',
+          isDark ? 'fas fa-moon' : 'fas fa-sun');
+  });
+
+  /* ─── SIDEBAR ─── */
+  $('#toggleSidebar').on('click', function (e) {
+    e.stopPropagation();
+    $('#sidebar').toggleClass('open');
+    $('#sidebarOverlay').toggleClass('show');
+  });
+  $('#sidebarOverlay').on('click', function () {
+    $('#sidebar').removeClass('open'); $(this).removeClass('show');
+  });
+
+  /* ─── CONVERSATION SWITCH ─── */
+  var conversations = {
+    1: { name:'Alex Kumar', status:'Online · Lead Developer', statusClass:'status-online', avatarBg:'#1a73e8', initials:'AK' },
+    2: { name:'Dev Team 🚀', status:'Group · 5 members', statusClass:'status-online', avatarBg:'linear-gradient(135deg,#1a73e8,#26c6da)', initials:'DT', isGroup:true },
+    3: { name:'Sarah Johnson', status:'Online · UI Designer', statusClass:'status-online', avatarBg:'#e91e63', initials:'SJ' },
+    4: { name:'John Brown', status:'Away · Backend Engineer', statusClass:'status-away', avatarBg:'#388e3c', initials:'JB' },
+    5: { name:'Design & Content ✨', status:'Group · 4 members', statusClass:'status-online', avatarBg:'linear-gradient(135deg,#7c4dff,#e91e63)', initials:'DC', isGroup:true },
+    6: { name:'Ryan Patel', status:'Offline · DevOps Engineer', statusClass:'status-offline', avatarBg:'#ff7043', initials:'RP' },
+    7: { name:'Maya Kim', status:'Online · Project Manager', statusClass:'status-online', avatarBg:'#7c4dff', initials:'MK' },
+    8: { name:'Lena Novak', status:'Away · Content Strategist', statusClass:'status-away', avatarBg:'#0097a7', initials:'LN' }
+  };
+
+  $(document).on('click', '.conv-item', function () {
+    $('.conv-item').removeClass('active');
+    $(this).addClass('active').removeClass('unread');
+    $(this).find('.conv-unread-badge').remove();
+
+    var convId = $(this).data('conv');
+    var conv   = conversations[convId];
+    if (!conv) return;
+
+    // Update header
+    var $hdrAvatar = $('.chat-header-avatar');
+    $hdrAvatar.css('background', conv.avatarBg).html(
+      conv.initials + '<span class="status-dot-lg ' + conv.statusClass + '" style="position:absolute;bottom:2px;right:2px;width:11px;height:11px;border-radius:50%;border:2px solid var(--card);background:' +
+      (conv.statusClass === 'status-online' ? 'var(--success)' : conv.statusClass === 'status-away' ? 'var(--warning)' : 'var(--muted)') + ';"></span>'
+    );
+    $('#chatName').text(conv.name);
+    $('#chatStatus').html('<span class="status-dot ' + conv.statusClass + '"></span> ' + conv.status);
+
+    // Update info panel
+    $('.info-avatar').css('background', conv.avatarBg).html(
+      conv.initials + '<span class="status-dot-lg" style="background:' +
+      (conv.statusClass === 'status-online' ? 'var(--success)' : conv.statusClass === 'status-away' ? 'var(--warning)' : 'var(--muted)') +
+      ';position:absolute;bottom:2px;right:2px;width:13px;height:13px;border-radius:50%;border:2px solid var(--card);"></span>'
+    );
+    $('.info-name').text(conv.name);
+
+    // Simulate typing for online users
+    if (conv.statusClass === 'status-online' && !conv.isGroup) {
+      setTimeout(function () {
+        var $ti = $('#typingIndicator');
+        $ti.addClass('show');
+        setTimeout(function () { $ti.removeClass('show'); }, 2800);
+      }, 1500);
+    }
+
+    toast('Opened chat with ' + conv.name, 'var(--primary)', 'fas fa-comment-dots');
+
+    // scroll to bottom
+    scrollToBottom();
+  });
+
+  /* ─── FILTER TABS ─── */
+  $('.conv-tab').on('click', function () {
+    $('.conv-tab').removeClass('active');
+    $(this).addClass('active');
+    var tab = $(this).data('tab');
+    toast('Showing: ' + $(tab === 'all' ? 'tab' : 'tab') + $(this).text(), 'var(--primary)', 'fas fa-filter');
+  });
+
+  /* ─── CONVERSATION SEARCH ─── */
+  var searchTimer;
+  $('#convSearch').on('input', function () {
+    clearTimeout(searchTimer);
+    var val = $(this).val().toLowerCase().trim();
+    searchTimer = setTimeout(function () {
+      $('.conv-item').each(function () {
+        var name = $(this).find('.conv-name').text().toLowerCase();
+        var prev = $(this).find('.conv-preview').text().toLowerCase();
+        $(this).toggle(!val || name.includes(val) || prev.includes(val));
+      });
+    }, 200);
+  });
+
+  /* ─── SEND MESSAGE ─── */
+  var $msgInput = $('#msgInput');
+  var $sendBtn  = $('#sendBtn');
+
+  $msgInput.on('input', function () {
+    $sendBtn.prop('disabled', $(this).val().trim() === '');
+    // Auto-resize
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  $msgInput.on('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!$(this).val().trim()) return;
+      sendMessage($(this).val().trim());
+    }
+  });
+
+  $sendBtn.on('click', function () {
+    if ($msgInput.val().trim()) sendMessage($msgInput.val().trim());
+  });
+
+  function sendMessage(text) {
+    var replyHtml = '';
+    if ($('#replyBar').hasClass('show')) {
+      replyHtml = '<div style="background:rgba(255,255,255,.18);border-radius:6px;padding:5px 10px;margin-bottom:6px;font-size:.72rem;border-left:3px solid rgba(255,255,255,.5);">' +
+        '<strong>' + $('#replyName').text() + '</strong><br>' + $('#replyText').text() + '</div>';
+      clearReply();
+    }
+
+    var $msg = $(
+      '<div class="msg-row mine">' +
+        '<div class="msg-avatar-sm hide">Me</div>' +
+        '<div>' +
+          '<div class="msg-bubble-wrap">' +
+            '<div class="msg-bubble">' + replyHtml + $('<div>').text(text).html() + '</div>' +
+            '<div class="msg-hover-actions" style="right:auto;left:0;">' +
+              '<button class="hover-act-btn" onclick="addReaction(this,\'😊\')"><i class="fas fa-smile"></i></button>' +
+              '<button class="hover-act-btn" onclick="deleteMsg(this)"><i class="fas fa-trash"></i></button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="msg-meta-row"><span>Just now</span><span class="msg-status sent"><i class="fas fa-check"></i></span></div>' +
+        '</div>' +
+      '</div>'
+    );
+
+    $('#chatMessages').append($msg);
+    $msgInput.val('').css('height', 'auto');
+    $sendBtn.prop('disabled', true);
+    scrollToBottom();
+
+    // Simulate delivered → read
+    setTimeout(function () {
+      $msg.find('.msg-status').removeClass('sent').addClass('delivered').find('i').removeClass('fa-check').addClass('fa-check-double');
+    }, 800);
+    setTimeout(function () {
+      $msg.find('.msg-status').removeClass('delivered').addClass('read').find('i').css('color', 'var(--accent)');
+    }, 2000);
+
+    // Simulate typing + reply
+    setTimeout(function () {
+      $('#typingIndicator').addClass('show');
+    }, 1200);
+    setTimeout(function () {
+      $('#typingIndicator').removeClass('show');
+      var replies = [
+        'Great, thanks for letting me know! 👍',
+        'Perfect, I\'ll follow up shortly.',
+        'Sounds good! Let\'s sync at 3pm.',
+        'Acknowledged, working on it now.',
+        'Thanks! The report looks solid.',
+      ];
+      var reply = replies[Math.floor(Math.random() * replies.length)];
+      var $reply = $(
+        '<div class="msg-row theirs">' +
+          '<div class="msg-avatar-sm" style="background:#1a73e8;">AK</div>' +
+          '<div>' +
+            '<div class="msg-bubble-wrap"><div class="msg-bubble">' + reply + '</div></div>' +
+            '<div class="msg-meta-row"><span>Just now</span></div>' +
+          '</div>' +
+        '</div>'
+      );
+      $('#chatMessages').append($reply);
+      scrollToBottom();
+    }, 3000);
+  }
+
+  function scrollToBottom() {
+    var $cm = $('#chatMessages');
+    $cm.scrollTop($cm[0].scrollHeight);
+  }
+  scrollToBottom();
+
+  /* ─── REPLY ─── */
+  window.setReply = function (name, text) {
+    $('#replyName').text(name);
+    $('#replyText').text(text);
+    $('#replyBar').addClass('show');
+    $msgInput.focus();
+  };
+
+  window.clearReply = function () { $('#replyBar').removeClass('show'); };
+
+  /* ─── DELETE MESSAGE ─── */
+  window.deleteMsg = function (btn) {
+    var $bubble = $(btn).closest('.msg-bubble-wrap').find('.msg-bubble');
+    $bubble.addClass('deleted').text('This message was deleted');
+    toast('Message deleted', 'var(--danger)', 'fas fa-trash');
+  };
+
+  /* ─── REACTIONS ─── */
+  window.addReaction = function (btn, emoji) {
+    var $bubble = $(btn).closest('.msg-bubble-wrap');
+    var $row = $bubble.closest('.msg-row');
+    var $reactions = $row.find('.msg-reactions');
+    if (!$reactions.length) {
+      $reactions = $('<div class="msg-reactions"></div>');
+      $bubble.after($reactions);
+    }
+    var exists = false;
+    $reactions.find('.msg-reaction').each(function () {
+      if ($(this).text().startsWith(emoji)) {
+        exists = true;
+        var count = parseInt($(this).find('.msg-reaction-count').text()) + 1;
+        $(this).find('.msg-reaction-count').text(count);
+        $(this).addClass('mine-react');
+      }
+    });
+    if (!exists) {
+      var $r = $('<span class="msg-reaction mine-react" onclick="toggleReaction(this)">' + emoji + ' <span class="msg-reaction-count">1</span></span>');
+      $reactions.append($r);
+    }
+    toast('Reacted with ' + emoji, 'var(--primary)', 'fas fa-smile');
+  };
+
+  window.toggleReaction = function (el) {
+    var $r = $(el);
+    var count = parseInt($r.find('.msg-reaction-count').text());
+    if ($r.hasClass('mine-react')) {
+      $r.removeClass('mine-react');
+      if (count <= 1) $r.remove();
+      else $r.find('.msg-reaction-count').text(count - 1);
+    } else {
+      $r.addClass('mine-react');
+      $r.find('.msg-reaction-count').text(count + 1);
+    }
+  };
+
+  /* ─── EMOJI PICKER ─── */
+  var emojis = ['😀','😂','😍','🤔','😎','🥳','🙏','👍','👎','❤️','🔥','⭐','✅','🚀','💡','🎉','😊','😢','😮','🤝','💪','🌟','📝','🔑','📊','💼','⚡','🎯'];
+  var $grid = $('#emojiGrid');
+  emojis.forEach(function (e) {
+    $grid.append('<button class="emoji-btn" onclick="insertEmoji(\'' + e + '\')">' + e + '</button>');
+  });
+
+  window.insertEmoji = function (e) {
+    var pos = $msgInput[0].selectionStart;
+    var val = $msgInput.val();
+    $msgInput.val(val.slice(0, pos) + e + val.slice(pos));
+    $msgInput.trigger('input').focus();
+    $('#emojiPicker').removeClass('show');
+  };
+
+  $('#btnEmoji').on('click', function (ev) {
+    ev.stopPropagation(); $('#emojiPicker').toggleClass('show');
+  });
+  $(document).on('click', function (e) {
+    if (!$(e.target).closest('#emojiPicker, #btnEmoji').length) $('#emojiPicker').removeClass('show');
+  });
+
+  /* ─── ATTACH FILE ─── */
+  $('#btnAttach').on('click', function () {
+    var $inp = $('<input type="file" multiple style="display:none;"/>');
+    $('body').append($inp);
+    $inp.trigger('click');
+    $inp.on('change', function () {
+      var files = this.files;
+      if (!files.length) return;
+      $.each(files, function (i, f) {
+        var $msg = $(
+          '<div class="msg-row mine">' +
+            '<div class="msg-avatar-sm hide">Me</div>' +
+            '<div><div class="msg-bubble-wrap"><div class="msg-bubble" style="padding:8px 12px;">' +
+              '<div class="msg-file">' +
+                '<i class="fas fa-file" style="color:#fff;font-size:1.2rem;"></i>' +
+                '<div class="msg-file-info"><div class="msg-file-name">' + f.name + '</div><div class="msg-file-size">' + (f.size > 1024*1024 ? (f.size/1024/1024).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB') + '</div></div>' +
+              '</div></div></div>' +
+              '<div class="msg-meta-row"><span>Just now</span><span class="msg-status sent"><i class="fas fa-check"></i></span></div></div>' +
+          '</div>'
+        );
+        $('#chatMessages').append($msg);
+      });
+      scrollToBottom();
+      toast(files.length + ' file(s) sent', 'var(--success)', 'fas fa-paperclip');
+      $inp.remove();
+    });
+  });
+
+  /* ─── CALL BUTTONS ─── */
+  $('#btnCall').on('click', function () { toast('Starting voice call with Alex Kumar…', 'var(--success)', 'fas fa-phone'); });
+  $('#btnVideo').on('click', function () { toast('Starting video call with Alex Kumar…', 'var(--primary)', 'fas fa-video'); });
+  $('#btnSearch').on('click', function () { toast('Search in conversation coming soon', 'var(--muted)', 'fas fa-search'); });
+
+  /* ─── INFO PANEL TOGGLE ─── */
+  $('#btnInfoToggle').on('click', function () {
+    var $panel = $('#infoPanel');
+    $panel.toggleClass('d-none');
+    $panel.css('display', $panel.css('display') === 'none' ? 'flex' : 'none');
+    if ($panel.is(':visible')) {
+      $panel.css({ 'display':'flex', 'flex-direction':'column' });
+    }
+    toast('Contact info ' + ($panel.is(':visible') ? 'shown' : 'hidden'), 'var(--primary)', 'fas fa-info-circle');
+  });
+  $('#infoPanelClose').on('click', function () {
+    $('#infoPanel').hide();
+  });
+
+  /* ─── MORE OPTIONS ─── */
+  $('#btnMoreChat').on('click', function () {
+    toast('More options: mute, block, report…', 'var(--muted)', 'fas fa-ellipsis-v');
+  });
+
+  /* ─── NEW CONVERSATION MODAL ─── */
+  var selectedUsers = [];
+
+  $('#btnNewConv').on('click', function () { $('#ncOverlay').addClass('show'); selectedUsers = []; updateNcBtn(); });
+  $('#ncClose, #ncCancel').on('click', function () { $('#ncOverlay').removeClass('show'); });
+  $('#ncOverlay').on('click', function (e) { if ($(e.target).is('#ncOverlay')) $(this).removeClass('show'); });
+
+  $(document).on('click', '.nc-user-item', function () {
+    var user = $(this).data('user');
+    $(this).toggleClass('selected');
+    if ($(this).hasClass('selected')) {
+      selectedUsers.push(user);
+      $(this).find('.nc-check i').show();
+    } else {
+      selectedUsers = selectedUsers.filter(function (u) { return u !== user; });
+      $(this).find('.nc-check i').hide();
+    }
+    updateNcBtn();
+  });
+
+  function updateNcBtn() {
+    var $btn = $('#ncStart');
+    $btn.prop('disabled', selectedUsers.length === 0);
+    $btn.find('span').length ? $btn.find('span').text(selectedUsers.length ? 'Chat with ' + selectedUsers.length : 'Start Chat') : null;
+  }
+
+  $('#ncStart').on('click', function () {
+    if (!selectedUsers.length) return;
+    $('#ncOverlay').removeClass('show');
+    toast('New conversation with ' + selectedUsers.join(', ') + ' started!', 'var(--success)', 'fas fa-comment-dots');
+  });
+
+  /* NC search filter */
+  $('#ncSearchInput').on('input', function () {
+    var val = $(this).val().toLowerCase();
+    $('.nc-user-item').each(function () {
+      $(this).toggle(!val || $(this).data('user').toLowerCase().includes(val));
+    });
+  });
+
+  /* New Group */
+  $('#btnNewGroup').on('click', function () { toast('Group creation coming soon!', 'var(--primary)', 'fas fa-users'); });
+
+  /* ─── INFO PANEL init ─── */
+  $('#infoPanel').show().css({'display':'flex','flex-direction':'column'});
+
+  /* ─── INFO ACTION BUTTONS ─── */
+  $(document).on('click', '.info-action-btn', function () {
+    var action = $(this).text().trim();
+    if (action.includes('Delete') || action.includes('Block')) {
+      if (!confirm('Are you sure you want to ' + action.toLowerCase() + '?')) return;
+    }
+    toast(action, action.includes('Delete') || action.includes('Block') ? 'var(--danger)' : 'var(--primary)',
+          'fas fa-check-circle');
+  });
+
+  /* ─── ESCAPE KEY ─── */
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape') {
+      $('#ncOverlay').removeClass('show');
+      $('#emojiPicker').removeClass('show');
+    }
+  });
+
+});
+</script>
+</body>
+</html>

@@ -168,6 +168,9 @@
     sessionStorage.removeItem('current_draft_key');
   }
 </script>
+{{-- CDN libraries --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 @stack('scripts')
 
 </body>

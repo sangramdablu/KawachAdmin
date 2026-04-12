@@ -579,14 +579,13 @@ html[data-theme="dark"] #authPage .alert-success { background: rgba(0,200,150,.1
 
     {{-- Illustration --}}
     <div class="auth-illustration">
+        
       <div class="illus-ring">
         <div class="orbit-dot"></div>
         <div class="orbit-dot"></div>
         <div class="orbit-dot"></div>
         <div class="orbit-dot"></div>
-        <div class="illus-ring-inner">
-          <i class="fas fa-lock"></i>
-        </div>
+        <div class="illus-ring-inner"><i class="fas fa-lock"></i></div>
       </div>
 
       <div class="illus-headline">
@@ -620,7 +619,7 @@ html[data-theme="dark"] #authPage .alert-success { background: rgba(0,200,150,.1
 
     {{-- Footer --}}
     <div class="auth-left-footer">
-      <span>© 2024 InnovateTech Solutions</span>
+      <span>© 2024 KawachTech Solutions</span>
       <div style="display:flex;gap:14px;">
         <a href="#">Privacy</a>
         <a href="#">Terms</a>
@@ -679,7 +678,7 @@ html[data-theme="dark"] #authPage .alert-success { background: rgba(0,200,150,.1
 
       {{-- LOGIN FORM --}}
       <div class="auth-card">
-        <form method="POST" action="#" id="loginForm">
+        <form method="POST" action="{{ route('login') }}" id="loginForm">
           @csrf
 
           {{-- Email --}}
@@ -751,7 +750,8 @@ html[data-theme="dark"] #authPage .alert-success { background: rgba(0,200,150,.1
 
       {{-- Mobile-only register link --}}
       <div style="text-align:center;margin-top:20px;font-size:.8rem;color:var(--muted);">
-        New to InnovateTech? <a href="#" style="color:var(--primary);font-weight:700;text-decoration:none;">Create an account →</a>
+        New to KawachTech? 
+        <a href="{{ route('register-form') }}" style="color:var(--primary);font-weight:700;text-decoration:none;">Create an account →</a>
       </div>
 
     </div>{{-- /auth-box --}}

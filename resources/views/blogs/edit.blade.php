@@ -1,147 +1,14 @@
 @extends('layouts.master')
+@section('title', 'Edit Blogs — KawachTech Software Solutions')
 @section('content')
-<style>
-/* ═══════════════════════════════════════════════════
-   BLOG EDITOR — Edit Page Additional Styles
-   (Inherits all base styles from blog-create.blade.php)
-═══════════════════════════════════════════════════ */
 
-/* Last saved bar */
-#blogEditor .last-saved-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 18px;
-  font-size: .8rem;
-  color: var(--muted);
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-/* Status chips in last-saved bar */
-#blogEditor .status-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: .72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
-#blogEditor .status-published { background: #d4f5ec; color: #00a87c; }
-#blogEditor .status-draft     { background: #e8f1fd; color: var(--primary); }
-#blogEditor .status-pending   { background: #fff4d6; color: #b8860b; }
-#blogEditor .status-scheduled { background: #f3e8ff; color: #7c3aed; }
-
-/* Current image notice */
-#blogEditor .current-img-notice {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #e8f1fd;
-  border: 1px solid #bee0fd;
-  border-radius: 8px;
-  padding: 9px 14px;
-  font-size: .8rem;
-  color: var(--primary);
-  margin-bottom: 14px;
-  font-weight: 500;
-}
-#blogEditor .current-img-notice i { font-size: .9rem; }
-
-/* Slug warning (colour override) */
-#blogEditor .slug-warning { color: var(--warning); font-weight: 600; }
-
-/* Post meta list (sidebar info card) */
-#blogEditor .post-meta-list { display: flex; flex-direction: column; gap: 8px; }
-#blogEditor .pml-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: .8rem;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-}
-#blogEditor .pml-row:last-child { border-bottom: none; }
-#blogEditor .pml-label { color: var(--muted); display: flex; align-items: center; gap: 6px; }
-#blogEditor .pml-label i { font-size: .72rem; }
-#blogEditor .pml-value { color: var(--text); font-weight: 600; }
-
-/* Danger zone */
-#blogEditor .danger-zone {
-  margin-top: 18px;
-  padding: 14px;
-  border: 1.5px dashed #ffd0d8;
-  border-radius: 10px;
-  background: #fff8f9;
-}
-html[data-theme="dark"] #blogEditor .danger-zone {
-  background: rgba(255,77,109,.07);
-  border-color: rgba(255,77,109,.3);
-}
-#blogEditor .danger-zone-title {
-  font-size: .75rem;
-  font-weight: 700;
-  color: var(--danger);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin-bottom: 10px;
-}
-#blogEditor .btn-danger-outline {
-  border-color: var(--danger) !important;
-  color: var(--danger) !important;
-}
-#blogEditor .btn-danger-outline:hover {
-  background: var(--danger) !important;
-  color: #fff !important;
-}
-
-/* Delete modal */
-#blogEditor ~ .modal-backdrop,
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(4px);
-  z-index: 9999;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-}
-.modal-box {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 32px 28px;
-  max-width: 420px;
-  width: 90%;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
-  animation: modalIn .2s ease;
-}
-.modal-icon {
-  font-size: 2.5rem;
-  margin-bottom: 14px;
-}
-@keyframes modalIn {
-  from { transform: scale(.88); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
-}
-
-/* Fullscreen editor */
-#blogEditor .ql-wrapper.be-fullscreen {
-  position: fixed; inset: 0; z-index: 9999;
-  border-radius: 0; border: none;
-}
-#blogEditor .ql-wrapper.be-fullscreen .ql-editor { min-height: calc(100vh - 60px); }
-</style>
 {{-- ================== MARKUP ================= --}}
 <div id="blogEditor">
 <div class="be-wrap">
 
+  <form id="blogForm" method="POST" action="{{ route('blogs.update', $blog->id) }}" enctype="multipart/form-data">
+      @csrf
+      @method('PUT')
   {{-- ── TOP BAR ── --}}
   <div class="be-topbar">
     <div class="be-topbar-left">
@@ -160,10 +27,10 @@ html[data-theme="dark"] #blogEditor .danger-zone {
       <button class="btn-be btn-outline" id="btnPreview" type="button">
         <i class="fas fa-eye"></i> Preview
       </button>
-      <button class="btn-be btn-outline" id="btnSaveDraft" type="button">
+      <button type="submit" name="action" value="draft" class="btn-be btn-outline">
         <i class="fas fa-save"></i> Save Draft
       </button>
-      <button class="btn-be btn-success" id="btnPublish" type="button">
+      <button type="submit" name="action" value="publish" class="btn-be btn-success">
         <i class="fas fa-rocket"></i> Update Post
       </button>
     </div>
@@ -196,12 +63,8 @@ html[data-theme="dark"] #blogEditor .danger-zone {
     @endif
   </div>
 
-  <form id="blogForm" method="POST" action="{{ route('blogs.update', $blog->id) }}" enctype="multipart/form-data">
-    @csrf
-    @method('PUT')
-
     <div class="be-grid">
-
+      <input type="hidden" id="draft_id" value="{{ $blog->id }}">
       {{-- ════════════════ LEFT COLUMN — Main Content ════════════════ --}}
       <div class="be-left">
 
@@ -472,9 +335,9 @@ html[data-theme="dark"] #blogEditor .danger-zone {
             <div class="social-preview-card">
               <div class="sp-img" id="spImgWrap">
                 @if($blog->seo && $blog->seo->og_image)
-                  <img src="{{ Storage::url($blog->seo->og_image) }}" alt="" id="spPreviewImg" style="display:block;width:100%;height:100%;object-fit:cover;"/>
+                  <img src="{{ $blog->featured_image ? asset($blog->featured_image) : '' }}" alt="" id="spPreviewImg" style="display:block;width:100%;height:100%;object-fit:cover;"/>
                 @elseif($blog->featured_image)
-                  <img src="{{ Storage::url($blog->featured_image) }}" alt="" id="spPreviewImg" style="display:block;width:100%;height:100%;object-fit:cover;"/>
+                  <img src="{{ $blog->featured_image ? asset($blog->featured_image) : '' }}" alt="" id="spPreviewImg" style="display:block;width:100%;height:100%;object-fit:cover;"/>
                 @else
                   <i class="fas fa-image"></i>
                   <img src="" alt="" id="spPreviewImg" style="display:none;"/>
@@ -863,483 +726,61 @@ html[data-theme="dark"] #blogEditor .danger-zone {
 
 
 @push('scripts')
+{{-- ── Modular blog editor (versioned for cache busting) ── --}}
+<script src="{{ asset('assets/js/blog.js') }}?v={{ filemtime(public_path('assets/js/blog.js')) }}"></script>
+
 <script>
-$(function () {
+  document.addEventListener('DOMContentLoaded', function () {
 
-  /* ═══════════════════════════════════════
-     1. QUILL RICH TEXT EDITOR — pre-fill existing content
-  ═══════════════════════════════════════ */
-  var quill = new Quill('#quillEditor', {
-    theme: 'snow',
-    placeholder: 'Edit your blog post content here…',
-    modules: {
-      toolbar: [
-        [{ 'header': [1, 2, 3, 4, false] }],
-        [{ 'font': [] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'align': [] }],
-        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        [{ 'indent': '-1' }, { 'indent': '+1' }],
-        ['blockquote', 'code-block'],
-        ['link', 'image', 'video'],
-        ['clean']
-      ]
-    }
-  });
-
-  // Pre-fill existing content
-  var existingContent = $('#blogContent').val();
-  if (existingContent) { quill.clipboard.dangerouslyPasteHTML(existingContent); }
-
-  // Sync Quill → hidden textarea + stats
-  quill.on('text-change', function () {
-    var html = quill.root.innerHTML;
-    $('#blogContent').val(html);
-    updateContentStats(html);
-    updateSeoScore();
-  });
-
-  // Run stats immediately on load
-  updateContentStats(existingContent || '');
-
-  function updateContentStats(html) {
-    var $t = $('<div>').html(html);
-    var text = $t.text().trim();
-    var words = text ? text.split(/\s+/).filter(Boolean).length : 0;
-    $('#wordCount').text(words);
-    $('#readTime').text(Math.max(1, Math.ceil(words / 200)) + ' min');
-    $('#headingCount').text($t.find('h1,h2,h3,h4,h5,h6').length);
-    $('#linkCount').text($t.find('a').length);
-    $('#imgCount').text($t.find('img').length);
-    $('#paraCount').text($t.find('p').length);
-    $('#readingTimeField').val(Math.max(1, Math.ceil(words / 200)) + ' min read');
-  }
-
-  /* ═══════════════════════════════════════
-     2. TITLE counter + slug
-  ═══════════════════════════════════════ */
-  function slugify(str) {
-    return str.toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
-
-  // Init counter on load
-  var initTitleLen = $('#blogTitle').val().length;
-  $('#titleCounter').text(initTitleLen + '/70');
-  if (initTitleLen >= 50 && initTitleLen <= 60) $('#titleCounter').addClass('good');
-
-  $('#blogTitle').on('input', function () {
-    var val = $(this).val(), len = val.length;
-    var $c = $('#titleCounter');
-    $c.text(len + '/70').removeClass('warn over good');
-    if (len >= 50 && len <= 60) $c.addClass('good');
-    else if (len > 60) $c.addClass('warn');
-    if (len >= 68) $c.removeClass('warn').addClass('over');
-    if (!$('#blogSlug').data('manual')) {
-      $('#blogSlug').val(slugify(val));
-    }
-    updateSerpPreview();
-    updateSeoScore();
-  });
-
-  // Mark slug as manually set on load (existing slug)
-  $('#blogSlug').data('manual', true);
-
-  $('#blogSlug').on('input', function () {
-    $(this).data('manual', true).val(slugify($(this).val()));
-    updateSerpPreview();
-    updateSeoScore();
-  });
-
-  $('#btnRegenerateSlug').on('click', function () {
-    if (confirm('Regenerating the slug will change the URL and may break existing links/SEO. Continue?')) {
-      $('#blogSlug').data('manual', false).val(slugify($('#blogTitle').val()));
-      updateSerpPreview();
-      updateSeoScore();
-    }
-  });
-
-  $('#btnCopySlug').on('click', function () {
-    var slug = $('#slugPrefix').text() + $('#blogSlug').val();
-    navigator.clipboard.writeText(slug).catch(function(){});
-    var $i = $(this).find('i');
-    $i.removeClass('fa-copy').addClass('fa-check');
-    setTimeout(function(){ $i.removeClass('fa-check').addClass('fa-copy'); }, 1500);
-  });
-
-  /* ═══════════════════════════════════════
-     3. EXCERPT counter — init on load
-  ═══════════════════════════════════════ */
-  function initCounter(id, counterId, max) {
-    var $el = $('#' + id), $c = $('#' + counterId);
-    function update() {
-      var len = $el.val().length;
-      $c.text(len + '/' + max).removeClass('warn over good');
-    }
-    update();
-    $el.on('input', function(){ update(); updateSeoScore(); });
-  }
-  initCounter('blogExcerpt', 'excerptCounter', 300);
-
-  /* ═══════════════════════════════════════
-     4. META TITLE counter + meter — init
-  ═══════════════════════════════════════ */
-  function updateMetaTitleUI() {
-    var len = $('#metaTitle').val().length;
-    var $c = $('#metaTitleCounter');
-    $c.text(len + '/60').removeClass('warn over good');
-    var pct = Math.min(100, (len / 60) * 100);
-    var color = '#e2e8f0';
-    if (len >= 30 && len <= 60) { color = '#00c896'; $c.addClass('good'); }
-    else if (len > 60)          { color = '#ff4d6d'; $c.addClass('over'); }
-    else if (len > 0)           { color = '#ffb830'; $c.addClass('warn'); }
-    $('#metaTitleMeter').css({ width: pct + '%', background: color });
-    updateSerpPreview(); updateSocialPreview(); updateSeoScore();
-  }
-  updateMetaTitleUI();
-  $('#metaTitle').on('input', updateMetaTitleUI);
-
-  /* ═══════════════════════════════════════
-     5. META DESC counter + meter — init
-  ═══════════════════════════════════════ */
-  function updateMetaDescUI() {
-    var len = $('#metaDescription').val().length;
-    var $c = $('#metaDescCounter');
-    $c.text(len + '/160').removeClass('warn over good');
-    var pct = Math.min(100, (len / 160) * 100);
-    var color = '#e2e8f0';
-    if (len >= 120 && len <= 160) { color = '#00c896'; $c.addClass('good'); }
-    else if (len > 160)           { color = '#ff4d6d'; $c.addClass('over'); }
-    else if (len > 0)             { color = '#ffb830'; $c.addClass('warn'); }
-    $('#metaDescMeter').css({ width: pct + '%', background: color });
-    updateSerpPreview(); updateSocialPreview(); updateSeoScore();
-  }
-  updateMetaDescUI();
-  $('#metaDescription').on('input', updateMetaDescUI);
-
-  /* ═══════════════════════════════════════
-     6. SERP PREVIEW
-  ═══════════════════════════════════════ */
-  function updateSerpPreview() {
-    var slug   = $('#blogSlug').val() || 'your-slug';
-    var title  = $('#metaTitle').val() || $('#blogTitle').val() || 'Your post title…';
-    var desc   = $('#metaDescription').val() || $('#blogExcerpt').val() || 'Your meta description will appear here.';
-    var domain = window.location.hostname || 'yourdomain.com';
-    $('#serpUrl').text(domain + ' › blog › ' + slug);
-    $('#serpTitle').text(title.substring(0, 70));
-    $('#serpDesc').text(desc.substring(0, 160));
-  }
-
-  /* ═══════════════════════════════════════
-     7. SOCIAL PREVIEW
-  ═══════════════════════════════════════ */
-  $('.sp-tab').on('click', function () {
-    $('.sp-tab').removeClass('active');
-    $(this).addClass('active');
-    updateSocialPreview();
-  });
-  function updateSocialPreview() {
-    var title  = $('#ogTitle').val() || $('#metaTitle').val() || $('#blogTitle').val() || 'Your post title…';
-    var desc   = $('#ogDescription').val() || $('#metaDescription').val() || $('#blogExcerpt').val() || 'Description appears here.';
-    var tab    = $('.sp-tab.active').data('tab');
-    var domain = window.location.hostname || 'yourdomain.com';
-    $('#spSite').text(domain.toUpperCase() + (tab === 'twitter' ? ' ON TWITTER' : ''));
-    $('#spTitle').text(title.substring(0, 88));
-    $('#spDesc').text(desc.substring(0, 120));
-  }
-  $('#ogTitle, #ogDescription').on('input', updateSocialPreview);
-
-  /* ═══════════════════════════════════════
-     8. FEATURED IMAGE — upload, change, remove
-  ═══════════════════════════════════════ */
-  $('#featuredImgInput').on('change', function () {
-    var file = this.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      $('#featuredPreviewImg').attr('src', e.target.result);
-      $('#featuredImgZone').hide();
-      $('#featuredPreview').show();
-      $('#removeFeaturedFlag').val('0');
-      $('#spPreviewImg').attr('src', e.target.result).show();
-      $('#spImgWrap i').hide();
-      updateSeoScore();
-    };
-    reader.readAsDataURL(file);
-  });
-
-  $('#btnRemoveFeatured').on('click', function () {
-    if (!confirm('Remove the featured image?')) return;
-    $('#featuredImgInput').val('');
-    $('#featuredPreviewImg').attr('src', '');
-    $('#featuredImgZone').show();
-    $('#featuredPreview').hide();
-    $('#removeFeaturedFlag').val('1');
-    $('#spPreviewImg').hide();
-    $('#spImgWrap i').show();
-    updateSeoScore();
-  });
-
-  $('#btnChangeFeatured').on('click', function () { $('#featuredImgInput').trigger('click'); });
-
-  // Drag & drop
-  var $zone = $('#featuredImgZone');
-  $zone.on('dragover', function(e){ e.preventDefault(); $(this).addClass('drag-over'); });
-  $zone.on('dragleave', function(){ $(this).removeClass('drag-over'); });
-  $zone.on('drop', function(e){
-    e.preventDefault(); $(this).removeClass('drag-over');
-    var files = e.originalEvent.dataTransfer.files;
-    if (files.length) { $('#featuredImgInput')[0].files = files; $('#featuredImgInput').trigger('change'); }
-  });
-
-  $('#ogImageInput').on('change', function () {
-    var file = this.files[0]; if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e){ $('#spPreviewImg').attr('src', e.target.result).show(); $('#spImgWrap i').hide(); };
-    reader.readAsDataURL(file);
-  });
-
-  /* ═══════════════════════════════════════
-     9. IMAGE ALT triggers SEO score
-  ═══════════════════════════════════════ */
-  $('#imageAlt').on('input', updateSeoScore);
-
-  /* ═══════════════════════════════════════
-     10. TAGS INPUT — pre-populate existing tags
-  ═══════════════════════════════════════ */
-  function initTagsInput(wrapId, inputId, hiddenId) {
-    var tags = [];
-    var $wrap = $('#' + wrapId), $inp = $('#' + inputId), $hid = $('#' + hiddenId);
-    // Pre-fill from hidden value
-    var existing = $hid.val();
-    if (existing) { existing.split(',').forEach(function(t){ if(t.trim()) addTag(t.trim()); }); }
-
-    $wrap.on('click', function(){ $inp.focus(); });
-    $inp.on('keydown', function(e) {
-      if ((e.key === 'Enter' || e.key === ',') && $(this).val().trim()) {
-        e.preventDefault();
-        addTag($(this).val().trim().replace(/,/g,''));
-        $(this).val('');
+    const quill = new Quill('#quillEditor', {
+      theme: 'snow',
+      placeholder: 'Edit your blog post content here…',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, 4, false] }],
+          ['bold', 'italic', 'underline'],
+          ['link', 'image'],
+        ]
       }
-      if (e.key === 'Backspace' && !$(this).val() && tags.length) { removeTag(tags[tags.length-1]); }
     });
 
-    function addTag(txt) {
-      if (!txt || tags.includes(txt)) return;
-      tags.push(txt);
-      var $pill = $('<span class="tag-pill">' + $('<div>').text(txt).html() + '<button type="button"><i class="fas fa-times"></i></button></span>');
-      $pill.find('button').on('click', function(){ removeTag(txt); });
-      $inp.before($pill);
-      syncHidden();
-    }
-    function removeTag(txt) {
-      tags = tags.filter(function(t){ return t !== txt; });
-      $wrap.find('.tag-pill').filter(function(){ return $(this).text().trim() === txt; }).remove();
-      syncHidden();
-    }
-    function syncHidden() { $hid.val(tags.join(',')); }
-    return { addTag: addTag };
-  }
-
-  var metaKwHandler  = initTagsInput('metaKeywordsWrap', 'metaKeywordsInput', 'metaKeywordsHidden');
-  var postTagHandler = initTagsInput('postTagsWrap', 'postTagsInput', 'postTagsHidden');
-
-  $(document).on('click', '.suggested-tag', function () { postTagHandler.addTag($(this).data('tag')); });
-
-  /* ═══════════════════════════════════════
-     11. FOCUS KEYWORD density
-  ═══════════════════════════════════════ */
-  $('#focusKeyword').on('input', function () {
-    updateSeoScore();
-    var kw = $(this).val().trim().toLowerCase();
-    if (!kw) { $('#kwDensityBadge').hide(); return; }
-    var text = quill.getText().toLowerCase();
-    var words = text.split(/\s+/).filter(Boolean).length;
-    var count = (text.match(new RegExp(kw, 'g')) || []).length;
-    var density = words > 0 ? ((count / words) * 100).toFixed(1) : 0;
-    var $b = $('#kwDensityBadge').show();
-    var bg = '#e8f1fd', color = '#1a73e8';
-    if (density >= 1 && density <= 3) { bg = '#d4f5ec'; color = '#00a87c'; }
-    else if (density > 3)             { bg = '#ffe2e8'; color = '#ff4d6d'; }
-    $b.text(density + '%').css({ background: bg, color: color, padding: '2px 8px', borderRadius: '12px', fontSize: '.72rem', fontWeight: 700 });
-  });
-
-  /* ═══════════════════════════════════════
-     12. SEO SCORE — runs on load
-  ═══════════════════════════════════════ */
-  function updateSeoScore() {
-    var score = 0;
-    var kw    = $('#focusKeyword').val().trim().toLowerCase();
-    var title = $('#blogTitle').val().toLowerCase();
-    var slug  = $('#blogSlug').val().toLowerCase();
-    var metaDesc  = $('#metaDescription').val();
-    var metaTitle = $('#metaTitle').val();
-    var imgAlt    = $('#imageAlt').val().trim();
-    var contentText = quill.getText().toLowerCase();
-    var contentHtml = quill.root.innerHTML;
-    var words = contentText.split(/\s+/).filter(Boolean).length;
-    var $t = $('<div>').html(contentHtml);
-    var hasHeading = $t.find('h2,h3').length > 0;
-    var hasLink    = $t.find('a').length > 0;
-    var hasFeatImg = $('#featuredPreview').is(':visible');
-
-    function setCheck(id, pass, warn) {
-      var $li = $('#' + id).removeClass('pass fail warn');
-      var icon = pass ? 'fa-check-circle' : (warn ? 'fa-exclamation-triangle' : 'fa-times-circle');
-      $li.addClass(pass ? 'pass' : (warn ? 'warn' : 'fail'))
-         .find('i').removeClass('fa-check-circle fa-times-circle fa-exclamation-triangle').addClass(icon);
+    // preload content
+    const existingContent = document.getElementById('blogContent').value;
+    if (existingContent) {
+      quill.clipboard.dangerouslyPasteHTML(existingContent);
     }
 
-    var ck1 = kw && title.includes(kw); setCheck('ck-title', ck1, false); if (ck1) score += 10;
-    var ck2 = kw && slug.includes(kw.replace(/\s+/g,'-')); setCheck('ck-slug', ck2, false); if (ck2) score += 8;
-    var mdLen = metaDesc.length;
-    var ck3 = mdLen >= 120 && mdLen <= 160, ck3w = mdLen > 0 && !ck3;
-    setCheck('ck-metadesc', ck3, ck3w); if (ck3) score += 10; else if (ck3w) score += 4;
-    var ck4 = kw && metaDesc.toLowerCase().includes(kw); setCheck('ck-kw-metadesc', ck4, false); if (ck4) score += 8;
-    var ck5 = words >= 300, ck5w = words >= 100 && words < 300;
-    setCheck('ck-content-len', ck5, ck5w); if (ck5) score += 15; else if (ck5w) score += 5;
-    var ck6 = kw && contentText.includes(kw); setCheck('ck-content-kw', ck6, false); if (ck6) score += 10;
-    setCheck('ck-heading', hasHeading, false); if (hasHeading) score += 8;
-    setCheck('ck-img', hasFeatImg, false); if (hasFeatImg) score += 8;
-    var ck9 = imgAlt.length > 0; setCheck('ck-img-alt', ck9, false); if (ck9) score += 7;
-    setCheck('ck-links', hasLink, false); if (hasLink) score += 6;
-    var mtLen = metaTitle.length;
-    var ck11 = mtLen >= 30 && mtLen <= 60, ck11w = mtLen > 0 && !ck11;
-    setCheck('ck-metatitle-len', ck11, ck11w); if (ck11) score += 6; else if (ck11w) score += 2;
-    var density = 0;
-    if (kw && words > 0) {
-      var kwCount = (contentText.match(new RegExp(kw.replace(/[-\/\\^$*+?.()|[\]{}]/g,'\\$&'), 'g')) || []).length;
-      density = (kwCount / words) * 100;
-    }
-    var ck12ok = density >= 1 && density <= 3, ck12w = (density > 0 && density < 1) || density > 3;
-    setCheck('ck-kw-density', ck12ok, ck12w); if (ck12ok) score += 4; else if (ck12w) score += 1;
+    // 👉 INIT YOUR MODULAR SYSTEM HERE
+    new BlogEditor({
+      quill: quill,
+      autosaveUrl: "{{ route('blogs.fhy6adv645gv5zd5') }}",
+      csrfToken: "{{ csrf_token() }}"
+    });
 
-    var ringColor = score >= 80 ? '#00c896' : score >= 50 ? '#ffb830' : '#ff4d6d';
-    var label = score >= 80 ? 'Excellent!' : score >= 60 ? 'Good' : score >= 40 ? 'Needs Work' : 'Poor';
-    var sub   = score >= 80 ? 'Well optimised' : score >= 60 ? 'A few improvements needed' : 'Fill in key SEO fields';
-    $('#seoRing').text(score).css('background', ringColor);
-    $('#seoScoreText').text(label);
-    $('#seoScoreSubtext').text(sub);
-    $('#seoScoreLabel').text(score);
-    var badgeBg = score >= 80 ? '#d4f5ec' : score >= 60 ? '#fff4d6' : '#ffe2e8';
-    var badgeColor = score >= 80 ? '#00a87c' : score >= 60 ? '#b8860b' : '#ff4d6d';
-    $('#seoScoreBadge').css({ background: badgeBg, color: badgeColor });
-  }
-  // Run SEO score on page load
-  setTimeout(updateSeoScore, 400);
-
-  /* ═══════════════════════════════════════
-     13. FORM SUBMIT — publish / draft
-  ═══════════════════════════════════════ */
-  function submitForm(status) {
-    $('#postStatus').val(status);
-    $('#blogContent').val(quill.root.innerHTML);
-    if (!$('#blogTitle').val().trim()) {
-      alert('Please enter a post title before saving.');
-      $('#blogTitle').focus();
-      return;
-    }
-    if (!$('#blogSlug').val().trim()) { $('#blogSlug').val(slugify($('#blogTitle').val())); }
-    $('#blogForm')[0].submit();
-  }
-
-  $('#btnPublish, #sidebarPublish').on('click', function () { submitForm('published'); });
-  $('#btnSaveDraft, #sidebarDraft').on('click', function ()  { submitForm('draft'); });
-
-  $('#btnPreview').on('click', function () {
-    var slug = $('#blogSlug').val();
-    if (slug) window.open('/blog/' + slug + '?preview=1', '_blank');
-    else alert('Please set a slug first.');
   });
-
-  /* ═══════════════════════════════════════
-     14. VISIBILITY toggle
-  ═══════════════════════════════════════ */
-  $(document).on('click', '.vis-pill', function () {
-    $('.vis-pill').removeClass('active');
-    $(this).addClass('active');
-    var val = $(this).find('input').val();
-    if (val === 'password') $('#passwordField').slideDown(200);
-    else $('#passwordField').slideUp(200);
-  });
-
-  /* ═══════════════════════════════════════
-     15. STATUS → schedule field
-  ═══════════════════════════════════════ */
-  $('#postStatus').on('change', function () {
-    if ($(this).val() === 'scheduled') $('#scheduleField').slideDown(200);
-    else $('#scheduleField').slideUp(200);
-  });
-
-  /* ═══════════════════════════════════════
-     16. SCHEMA PILLS
-  ═══════════════════════════════════════ */
-  $(document).on('click', '.schema-pill', function () {
-    $('.schema-pill').removeClass('active');
-    $(this).addClass('active');
-  });
-
-  /* ═══════════════════════════════════════
-     17. ADD CATEGORY inline
-  ═══════════════════════════════════════ */
-  $('#btnAddCat').on('click', function () { $('#newCatField').slideToggle(200); $('#newCatInput').focus(); });
-  $('#btnSaveCat').on('click', function () {
-    var name = $('#newCatInput').val().trim(); if (!name) return;
-    $('#categorySelect').append($('<option>').val('new_' + Date.now()).text(name).prop('selected', true));
-    $('#newCatInput').val('');
-    $('#newCatField').slideUp(200);
-  });
-
-  /* ═══════════════════════════════════════
-     18. DELETE POST confirmation modal
-  ═══════════════════════════════════════ */
-//   $(document).on('click', '.btn-delete-blog', function (e) {
-//     e.preventDefault();
-//     var title  = $(this).data('title');
-//     var action = $(this).attr('href');
-//     $('#deleteModalTitle').text(title);
-//     $('#deleteForm').attr('action', action);
-//     $('#deleteModal').fadeIn(200);
-//   });
-
-//   $('#deleteCancelBtn').on('click', function () { $('#deleteModal').fadeOut(200); });
-//   $('#deleteModal').on('click', function (e) {
-//     if ($(e.target).is('#deleteModal')) $(this).fadeOut(200);
-//   });
-
-  /* ═══════════════════════════════════════
-     19. LIVE SERP + Social on load
-  ═══════════════════════════════════════ */
-  updateSerpPreview();
-  updateSocialPreview();
-
-});
 </script>
 
-@if(session('success'))
-    <script>
-    $(function() { showToast(`{!! session('success') !!}`, '#00c896', 'fas fa-check-circle'); });
-    </script>
-@endif
+@if(session('toast'))
+<script>
+$(function(){
+    const toast = @json(session('toast'));
 
-@if(session('error'))
-    <script>
-    $(function() { showToast(`{!! session('error') !!}`, '#ff4d6d', 'fas fa-times-circle'); });
-    </script>
-@endif
+    let color = '#00c896';
+    let icon  = 'fas fa-check-circle';
 
-@if ($errors->any())
-    <script>
-        $(function() {
-            @foreach ($errors->all() as $error)
-            showToast(`{{ $error }}`, '#ff4d6d', 'fas fa-exclamation-circle');
-            @endforeach
-        });
-    </script>
+    if (toast.type === 'error') {
+        color = '#ff4d6d';
+        icon  = 'fas fa-times-circle';
+    }
+
+    if (toast.type === 'warning') {
+        color = '#ffb830';
+        icon  = 'fas fa-exclamation-triangle';
+    }
+
+    window.showToast(toast.message, color, icon);
+});
+</script>
 @endif
 
 @endpush

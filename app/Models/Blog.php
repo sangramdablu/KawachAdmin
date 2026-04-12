@@ -44,4 +44,5 @@ class Blog extends Model
     public function seo() {
         return $this->hasOne(BlogSeo::class);
     }
+    
 }
