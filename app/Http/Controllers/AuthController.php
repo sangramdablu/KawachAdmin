@@ -59,11 +59,27 @@ class AuthController extends Controller
     // Logout
     public function logout(Request $request)
     {
+        // Revoke API token if using Sanctum
+        if ($request->user() && $request->user()->currentAccessToken()) {
+            $request->user()->currentAccessToken()->delete();
+        }
+        // Logout user
         Auth::logout();
-
+        // Flush all session data
+        $request->session()->flush();
+        // Invalidate session
         $request->session()->invalidate();
+        // Regenerate CSRF token
         $request->session()->regenerateToken();
-
         return redirect('/login');
     }
+    // public function logout(Request $request)
+    // {
+    //     Auth::logout();
+
+    //     $request->session()->invalidate();
+    //     $request->session()->regenerateToken();
+
+    //     return redirect('/login');
+    // }
 }

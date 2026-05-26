@@ -2,27 +2,33 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
-
+use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        DB::table('users')->insert([
-            'name' => 'Kawach Tech',
-            'email' => 'contact@kawachtech.com',
-            'email_verified_at' => Carbon::now(),
-            'password' => Hash::make('Kawach@123'),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+        // 1. Create role (if not exists)
+        $role = Role::firstOrCreate([
+            'name' => 'super-admin',
+            'guard_name' => 'web',
         ]);
+
+        // 2. Create or update user
+        $user = User::updateOrCreate(
+            ['email' => 'contact@kawachtech.com'],
+            [
+                'name' => 'Kawach Tech',
+                'email_verified_at' => Carbon::now(),
+                'password' => Hash::make('Kawach@123'),
+            ]
+        );
+
+        // 3. Assign role
+        $user->assignRole($role);
     }
 }

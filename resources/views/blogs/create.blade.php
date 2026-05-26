@@ -4,7 +4,7 @@
 ═══════════════════════════════════════════════════════════════ --}}
 @section('title', 'Create Blogs — KawachTech Software Solutions')
 
-@section('content')
+@section('content') 
 {{-- ─── MARKUP ──────────────────────────────────────────────── --}}
 <div id="blogEditor">
 <div class="be-wrap">

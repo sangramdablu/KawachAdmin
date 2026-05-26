@@ -19,11 +19,36 @@
     </a>
     </div>
 
+    @hasanyrole('super-admin|admin')
     <!-- Blog -->
     <div class="nav-item-wrap">
-    <a href="{{ route('blogs.index') }}"
-        class="nav-link-item {{ request()->routeIs('blogs.*') ? 'active' : '' }}">
-        <i class="fa-solid fa-blog"></i> Blog
+      <a href="{{ route('blogs.index') }}"
+          class="nav-link-item {{ request()->routeIs('blogs.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-blog"></i> Blog
+      </a>
+    </div>
+    <!-- Billing -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('billing.index') }}"
+          class="nav-link-item {{ request()->routeIs('billing.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-handshake"></i> Billing & Agreement
+      </a>
+    </div>
+    @endhasanyrole
+
+    <!-- Page -->
+    <div class="nav-item-wrap">
+    <a href="{{ route('pages.index') }}"
+        class="nav-link-item {{ request()->routeIs('pages.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-file-lines"></i> Page
+    </a>
+    </div>
+
+    <!-- Roles & Permissions -->
+    <div class="nav-item-wrap">
+    <a href="{{ route('roles-access.roles.index') }}"
+        class="nav-link-item {{ request()->routeIs('roles-access.roles.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-unlock"></i> Role & Permission
     </a>
     </div>
 
