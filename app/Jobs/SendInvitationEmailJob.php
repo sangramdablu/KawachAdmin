@@ -54,7 +54,8 @@ class SendInvitationEmailJob implements ShouldQueue
 
         // Build the URL here in handle() — NOT in the constructor or Mailable constructor.
         // The token stored in DB is the raw token (see UserInvitation::generate()).
-        $registerUrl = url('/register?token=' . $this->invitation->token);
+        $registerUrl = route('invitation.accept', $this->invitation->token);
+        // $registerUrl = url('/register?token=' . $this->invitation->token);
 
         Mail::to($this->invitation->email)
             ->send(new UserInvitationMail($this->invitation, $registerUrl));

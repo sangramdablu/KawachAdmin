@@ -454,11 +454,8 @@
         </div>
       @endif
 
-      <form method="POST"
-            action="{{ route('invitation.register') }}"
-            id="acceptForm"
-            novalidate>
-        @csrf
+        <form method="POST" action="{{ route('invitation.register', $invitation->token) }}" id="acceptForm" novalidate>
+          @csrf
 
         {{-- Token (hidden) --}}
         <input type="hidden" name="token" value="{{ $token }}">

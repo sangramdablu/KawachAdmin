@@ -163,6 +163,15 @@ Route::middleware(['auth', 'check-role:super-admin,admin'])->prefix('admin/roles
 });
 
 Route::middleware(['guest', 'throttle:10,1'])->group(function () {
-    Route::get('/register', [InvitationController::class, 'accept'])->name('invitation.accept');
-    Route::post('/register/invitation', [InvitationController::class, 'register'])->name('invitation.register');
+
+    Route::get(
+        '/invitation/{token}',
+        [InvitationController::class, 'accept']
+    )->name('invitation.accept');
+
+    Route::post(
+        '/invitation/{token}',
+        [InvitationController::class, 'register']
+    )->name('invitation.register');
+
 });
