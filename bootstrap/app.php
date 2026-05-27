@@ -24,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('blogs:publish-scheduled')->everyMinute();
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        //
+    ->withExceptions(function ($exceptions) {
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            return redirect()->route('login')->with('session_expired_error', 'Your session expired. Please login again.');
+        });
     })->create();

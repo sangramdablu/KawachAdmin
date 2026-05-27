@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\BillingAndAgreementController;
+use App\Http\Controllers\InvitationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,15 +117,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 |--------------------------------------------------------------------------
 */
  
-Route::middleware(['auth', 'check-role:super-admin,admin'])
-    ->prefix('billing')
-    ->name('billing.')
-    ->group(function () {
- 
+Route::middleware(['auth', 'check-role:super-admin,admin'])->prefix('billing')->name('billing.')->group(function () {
         // ── AJAX: live calculation (called on every form change) ──────────
-        Route::post('calculate', [BillingAndAgreementController::class, 'calculate'])
-             ->name('calculate');
- 
+        Route::post('calculate', [BillingAndAgreementController::class, 'calculate'])->name('calculate');
         // ── CRUD ──────────────────────────────────────────────────────────
         Route::get('/',                [BillingAndAgreementController::class, 'index'])->name('index');
         Route::get('/create',          [BillingAndAgreementController::class, 'create'])->name('create');
@@ -133,10 +128,8 @@ Route::middleware(['auth', 'check-role:super-admin,admin'])
         Route::get('/{uuid}/edit',     [BillingAndAgreementController::class, 'edit'])->name('edit');
         Route::put('/{uuid}',          [BillingAndAgreementController::class, 'update'])->name('update');
         Route::delete('/{uuid}',       [BillingAndAgreementController::class, 'destroy'])->name('destroy');
- 
         // ── PDF download ──────────────────────────────────────────────────
         Route::get('/{uuid}/pdf',      [BillingAndAgreementController::class, 'generatePdf'])->name('pdf');
- 
         // ── Send to client via email ──────────────────────────────────────
         Route::post('/{uuid}/send-email', [BillingAndAgreementController::class, 'sendEmail'])->name('send-email');
     });
@@ -167,4 +160,9 @@ Route::middleware(['auth', 'check-role:super-admin,admin'])->prefix('admin/roles
     Route::post('invitations', [RoleAccessController::class, 'sendInvitation'])->name('invitations.send');
     // ── Activity log ───────────────────────────────────────────────
     Route::get('activity', [RoleAccessController::class, 'activityLog'])->name('activity');
+});
+
+Route::middleware(['guest', 'throttle:10,1'])->group(function () {
+    Route::get('/register', [InvitationController::class, 'accept'])->name('invitation.accept');
+    Route::post('/register/invitation', [InvitationController::class, 'register'])->name('invitation.register');
 });

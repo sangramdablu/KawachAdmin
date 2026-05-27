@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\UserInvitation;
 
 class AuthController extends Controller
 {
@@ -15,20 +16,54 @@ class AuthController extends Controller
     }
 
     // Login
+
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+            'email'    => 'required|email',
+            'password' => 'required',
         ]);
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
 
-        if (Auth::attempt($request->only('email', 'password'))) {
+            $invitation = UserInvitation::where('email', $request->email)
+                ->whereNotNull('accepted_at')
+                ->first();
+            if ($invitation) {
+                $user = User::create([
+                    'name' => trim(
+                        $invitation->first_name . ' ' . $invitation->last_name
+                    ),
+                    'email'    => $invitation->email,
+                    'password' => Hash::make($request->password),
+                ]);
+                $user->assignRole($invitation->role_name);
+            }
+        }
+
+        if (Auth::attempt(['email'    => $request->email, 'password' => $request->password,])) {
             $request->session()->regenerate();
             return redirect()->route('dashboard');
         }
-
-        return back()->withErrors(['email' => 'Invalid credentials']);
+        return back()->withErrors([
+            'email' => 'Invalid credentials',
+        ]);
     }
+
+    // public function login(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //         'password' => 'required'
+    //     ]);
+
+    //     if (Auth::attempt($request->only('email', 'password'))) {
+    //         $request->session()->regenerate();
+    //         return redirect()->route('dashboard');
+    //     }
+
+    //     return back()->withErrors(['email' => 'Invalid credentials']);
+    // }
 
     // Show register
     public function registerForm()

@@ -25,9 +25,7 @@ class RoleAccessController extends Controller
     // Only super-admin and admin can access this controller.
     // Add ->middleware('role:super-admin|admin') on the route group.
 
-    /* ════════════════════════════════════════════════════════
-       INDEX  —  Render the full roles & access management page
-    ════════════════════════════════════════════════════════ */
+    /* INDEX  —  Render the full roles & access management page */
     public function index(): \Illuminate\View\View
     {
         // Stats
@@ -70,9 +68,7 @@ class RoleAccessController extends Controller
         ));
     }
 
-    /* ════════════════════════════════════════════════════════
-       USERS  —  List (AJAX, with search/filter/pagination)
-    ════════════════════════════════════════════════════════ */
+    /* USERS  —  List (AJAX, with search/filter/pagination) */
     public function usersData(Request $request): JsonResponse
     {
         $query = User::with('roles')
@@ -97,9 +93,7 @@ class RoleAccessController extends Controller
         ]);
     }
 
-    /* ════════════════════════════════════════════════════════
-       USERS  —  Update a single user's role + status
-    ════════════════════════════════════════════════════════ */
+    /* USERS  —  Update a single user's role + status */
     public function updateUser(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
@@ -135,9 +129,7 @@ class RoleAccessController extends Controller
         }
     }
 
-    /* ════════════════════════════════════════════════════════
-       USERS  —  Toggle ban / unban
-    ════════════════════════════════════════════════════════ */
+    /* USERS  —  Toggle ban / unban */
     public function toggleBan(User $user): JsonResponse
     {
         if ($user->id === auth()->id()) {
@@ -155,9 +147,7 @@ class RoleAccessController extends Controller
         return response()->json(['success' => true, 'status' => $newStatus]);
     }
 
-    /* ════════════════════════════════════════════════════════
-       USERS  —  Remove user from system
-    ════════════════════════════════════════════════════════ */
+    /* USERS  —  Remove user from system */
     public function removeUser(User $user): JsonResponse
     {
         if ($user->id === auth()->id()) {
@@ -172,9 +162,7 @@ class RoleAccessController extends Controller
         return response()->json(['success' => true, 'message' => "{$name} removed successfully."]);
     }
 
-    /* ════════════════════════════════════════════════════════
-       USERS  —  Send password reset email
-    ════════════════════════════════════════════════════════ */
+    /*  USERS  —  Send password reset email */
     public function resetPassword(User $user): JsonResponse
     {
         try {
@@ -187,9 +175,7 @@ class RoleAccessController extends Controller
         }
     }
 
-    /* ════════════════════════════════════════════════════════
-       USERS  —  Bulk actions (role change / deactivate)
-    ════════════════════════════════════════════════════════ */
+    /* USERS  —  Bulk actions (role change / deactivate) */
     public function bulkAction(Request $request): JsonResponse
     {
         $request->validate([
@@ -230,9 +216,7 @@ class RoleAccessController extends Controller
         }
     }
 
-    /* ════════════════════════════════════════════════════════
-       USERS  —  Export CSV
-    ════════════════════════════════════════════════════════ */
+    /* USERS  —  Export CSV */
     public function exportUsers(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         $users = User::with('roles')->get();
@@ -256,9 +240,7 @@ class RoleAccessController extends Controller
         ]);
     }
 
-    /* ════════════════════════════════════════════════════════
-       ROLES  —  Create
-    ════════════════════════════════════════════════════════ */
+    /* ROLES  —  Create */
     public function storeRole(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -304,9 +286,7 @@ class RoleAccessController extends Controller
         }
     }
 
-    /* ════════════════════════════════════════════════════════
-       ROLES  —  Update (name, description, color, icon, permissions)
-    ════════════════════════════════════════════════════════ */
+    /* ROLES  —  Update (name, description, color, icon, permissions) */
     public function updateRole(Request $request, Role $role): JsonResponse
     {
         // System roles cannot be renamed or have their core perms altered
@@ -388,9 +368,7 @@ class RoleAccessController extends Controller
         return response()->json(['success' => true, 'message' => "Role '{$roleName}' deleted."]);
     }
 
-    /* ════════════════════════════════════════════════════════
-       PERMISSIONS  —  Save matrix (bulk update role permissions)
-    ════════════════════════════════════════════════════════ */
+    /* PERMISSIONS  —  Save matrix (bulk update role permissions) */
     public function savePermissionMatrix(Request $request): JsonResponse
     {
         $request->validate([
@@ -423,9 +401,7 @@ class RoleAccessController extends Controller
         }
     }
 
-    /* ════════════════════════════════════════════════════════
-       INVITATIONS  —  Send
-    ════════════════════════════════════════════════════════ */
+    /* INVITATIONS  —  Send */
     public function sendInvitation(Request $request, InvitationService $invitationService): JsonResponse {
         $validated = $request->validate([
             'email'      => 'required|email|max:200',
@@ -453,9 +429,7 @@ class RoleAccessController extends Controller
         }
     }
 
-    /* ════════════════════════════════════════════════════════
-       ACTIVITY LOG  —  Paginated list (AJAX)
-    ════════════════════════════════════════════════════════ */
+    /*  ACTIVITY LOG  —  Paginated list (AJAX) */
     public function activityLog(Request $request): JsonResponse
     {
         $query = AccessActivityLog::latest()
@@ -475,9 +449,7 @@ class RoleAccessController extends Controller
         ]);
     }
 
-    /* ════════════════════════════════════════════════════════
-       PRIVATE HELPERS
-    ════════════════════════════════════════════════════════ */
+    /* PRIVATE HELPERS */
 
     /**
      * Format a User model for JSON/blade consumption.
@@ -556,6 +528,17 @@ class RoleAccessController extends Controller
                 $role->name => $role->permissions->pluck('name')->toArray(),
             ])
             ->toArray();
+    }
+
+    private function formatRole($role): array
+    {
+        return [
+            'id'          => $role->id,
+            'name'        => $role->name,
+            'guard_name'  => $role->guard_name,
+            'permissions' => $role->permissions->pluck('name'),
+            'created_at'  => $role->created_at,
+        ];
     }
 }
 

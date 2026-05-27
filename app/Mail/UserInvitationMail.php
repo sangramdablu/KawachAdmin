@@ -13,18 +13,20 @@ class UserInvitationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $registerUrl;
-
     /**
-     * Create a new message instance.
+     * @param UserInvitation $invitation  The DB record
+     * @param string         $registerUrl Already-built URL passed in from the Job's handle()
+     *
+     * WHY: Building URLs in a Mailable constructor is unsafe when the Mailable
+     * is constructed inside a queued Job — the constructor may not have the full
+     * app context available during unserialisation. We pass the URL in from
+     * handle() where the app is fully booted.
      */
-    public function __construct(public UserInvitation $invitation) {
-        $this->registerUrl = url('/register?token=' . $this->invitation->token);
-    }
+    public function __construct(
+        public readonly UserInvitation $invitation,
+        public readonly string $registerUrl,
+    ) {}
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -32,25 +34,17 @@ class UserInvitationMail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
             view: 'roles.mail.invitation',
             with: [
-                'invitation' => $this->invitation,
+                'invitation'  => $this->invitation,
                 'registerUrl' => $this->registerUrl,
             ],
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
     public function attachments(): array
     {
         return [];

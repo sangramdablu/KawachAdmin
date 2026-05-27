@@ -566,7 +566,11 @@ html[data-theme="dark"] #authPage .alert-success { background: rgba(0,200,150,.1
   #authPage .social-auth-grid { grid-template-columns: 1fr; }
 }
 </style>
-
+@if(session('session_expired_error'))
+    <div class="alert alert-danger">
+        {{ session('session_expired_error') }}
+    </div>
+@endif
 <div id="authPage">
 
   {{-- ══════════ LEFT PANEL ══════════ --}}
