@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\UserInvitation;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -50,21 +52,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // public function login(Request $request)
-    // {
-    //     $request->validate([
-    //         'email' => 'required|email',
-    //         'password' => 'required'
-    //     ]);
-
-    //     if (Auth::attempt($request->only('email', 'password'))) {
-    //         $request->session()->regenerate();
-    //         return redirect()->route('dashboard');
-    //     }
-
-    //     return back()->withErrors(['email' => 'Invalid credentials']);
-    // }
-
     // Show register
     public function registerForm()
     {
@@ -92,29 +79,65 @@ class AuthController extends Controller
     }
 
     // Logout
-    public function logout(Request $request)
-    {
-        // Revoke API token if using Sanctum
-        if ($request->user() && $request->user()->currentAccessToken()) {
-            $request->user()->currentAccessToken()->delete();
-        }
-        // Logout user
-        Auth::logout();
-        // Flush all session data
-        $request->session()->flush();
-        // Invalidate session
-        $request->session()->invalidate();
-        // Regenerate CSRF token
-        $request->session()->regenerateToken();
-        return redirect('/login');
-    }
     // public function logout(Request $request)
     // {
+    //     // Revoke API token if using Sanctum
+    //     if ($request->user() && $request->user()->currentAccessToken()) {
+    //         $request->user()->currentAccessToken()->delete();
+    //     }
+    //     // Logout user
     //     Auth::logout();
-
+    //     // Flush all session data
+    //     $request->session()->flush();
+    //     // Invalidate session
     //     $request->session()->invalidate();
+    //     // Regenerate CSRF token
     //     $request->session()->regenerateToken();
-
     //     return redirect('/login');
     // }
+   
+    /**
+     * Logout authenticated user safely.
+     */
+    public function logout(Request $request)
+    {
+        try {
+            // Store user info before logout (optional for logs)
+            $user = Auth::user();
+            // Revoke Sanctum token if exists
+            if ($user && method_exists($user, 'currentAccessToken')) {
+                $token = $user->currentAccessToken();
+                if ($token) {
+                    $token->delete();
+                }
+            }
+            // Optional activity log
+            if ($user) {
+                Log::info('User logged out', [
+                    'user_id' => $user->id,
+                    'email'   => $user->email,
+                    'ip'      => $request->ip(),
+                ]);
+            }
+            // Logout from web guard
+            Auth::guard('web')->logout();
+            // Invalidate current session
+            $request->session()->invalidate();
+            // Regenerate CSRF token
+            $request->session()->regenerateToken();
+            // Clear session data completely
+            $request->session()->flush();
+            // Clear remember me cookie
+            cookie()->queue(cookie()->forget(Auth::getRecallerName()));
+            return redirect()->route('login')->with('success', 'You have been logged out successfully.');
+
+        } catch (Throwable $e) {
+            Log::error('Logout failed', ['error' => $e->getMessage(), 'ip'    => $request->ip(),]);
+            return redirect()->back()
+                ->withErrors([
+                    'logout' => 'Failed to logout. Please try again.'
+                ]);
+        }
+    }
+
 }

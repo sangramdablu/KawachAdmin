@@ -458,7 +458,7 @@
           @csrf
 
         {{-- Token (hidden) --}}
-        <input type="hidden" name="token" value="{{ $token }}">
+        <input type="hidden" name="token" value="{{ $invitation->token }}">
 
         {{-- Full Name --}}
         <div>

@@ -46,7 +46,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     |----------------------------------------------------------------------
     */
     Route::get('/dashboard', fn() => view('dashboard.dashboard'))->name('dashboard');
-    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
     /*
     |----------------------------------------------------------------------
@@ -162,8 +162,7 @@ Route::middleware(['auth', 'check-role:super-admin,admin'])->prefix('admin/roles
     Route::get('activity', [RoleAccessController::class, 'activityLog'])->name('activity');
 });
 
-Route::middleware(['guest', 'throttle:10,1'])->group(function () {
-
+Route::middleware(['throttle:10,1'])->group(function () {
     Route::get(
         '/invitation/{token}',
         [InvitationController::class, 'accept']
@@ -173,5 +172,4 @@ Route::middleware(['guest', 'throttle:10,1'])->group(function () {
         '/invitation/{token}',
         [InvitationController::class, 'register']
     )->name('invitation.register');
-
 });

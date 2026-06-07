@@ -148,7 +148,10 @@
     <div class="modal-body-text">Are you sure you want to log out? Any unsaved changes will be lost.</div>
     <div class="modal-actions">
       <button class="btn-modal-cancel" id="cancelLogout">Cancel</button>
-      <button class="btn-modal-confirm" style="background:#ff4d6d;" id="confirmLogout">Yes, Logout</button>
+      <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button class="btn-modal-confirm" style="background:#ff4d6d;" id="confirmLogout">Yes, Logout</button>
+      </form>
     </div>
   </div>
 </div>

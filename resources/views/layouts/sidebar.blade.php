@@ -109,8 +109,8 @@
   </nav>
 
   <div class="sidebar-logout">
-    <button class="btn-logout" id="btnLogout">
-      <i class="fas fa-sign-out-alt"></i> Logout
-    </button>
+      <button class="btn-logout" id="btnLogout">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
   </div>
 </aside>
