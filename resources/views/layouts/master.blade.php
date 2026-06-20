@@ -4,7 +4,6 @@
 <body>
 
     @include('layouts.navbar');
-
     @include('layouts.sidebar');
 
 <!-- ══════════ NOTIFICATION DROPDOWN ══════════ -->

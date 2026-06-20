@@ -230,12 +230,14 @@
       <div class="pi-title">🏗️ All Pages</div>
     </div>
     <div class="pi-topbar-actions">
-      <button class="btn-pi btn-pi-outline" id="btnBulkToggle">
+      {{-- <button class="btn-pi btn-pi-outline" id="btnBulkToggle">
         <i class="fas fa-tasks"></i> Bulk Actions
-      </button>
-      <a href="{{ route('pages.create') }}" class="btn-pi btn-pi-primary" id="btnNewPage">
-        <i class="fas fa-plus"></i> New Page
-      </a>
+      </button> --}}
+      @can('pages.create')
+        <a href="{{ route('pages.create') }}" class="btn-pi btn-pi-primary" id="btnNewPage">
+          <i class="fas fa-plus"></i> New Page
+        </a>
+      @endcan
     </div>
   </div>
 

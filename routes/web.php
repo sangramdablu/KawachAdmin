@@ -4,8 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PageController;
-use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\BillingAndAgreementController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ClientPortalController;
+use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\InvitationController;
 
 /*
@@ -61,17 +63,36 @@ Route::middleware(['auth', 'admin'])->group(function () {
     | blogs.destroy DELETE /blogs/{blog}
     |----------------------------------------------------------------------
     */
+    // 1. Only register 'index' since your BlogController doesn't have a 'show' method
     Route::middleware('check-permission:blog.view')->group(function () {
-        Route::resource('blogs', BlogController::class);
+        Route::resource('blogs', BlogController::class)->only(['index']);
     });
 
-    // Autosave (obfuscated URL — no extra permission check needed, edit implies this)
-    Route::post('/blogs/fhy6adv645gv5zd5', [BlogController::class, 'autosave'])->name('blogs.fhy6adv645gv5zd5')->middleware('check-permission:blog.edit');
+    // 2. Registers create, store, edit, update, and destroy (skipping index and show)
+    Route::middleware('check-permission:blog.edit')->group(function () {
+        Route::resource('blogs', BlogController::class)->except(['index', 'show']);
 
-    // Quill inline image upload
+        // Autosave route
+        Route::post('/blogs/fhy6adv645gv5zd5', [BlogController::class, 'autosave'])
+             ->name('blogs.fhy6adv645gv5zd5');
+    });
+
+    // 3. Independent Media Upload Permissions
     Route::post('/upload-image', [BlogController::class, 'uploadImage'])
          ->name('blogs.upload.image')
          ->middleware('check-permission:media.upload');
+
+    // Route::middleware('check-permission:blog.view')->group(function () {
+    //     Route::resource('blogs', BlogController::class);
+    // });
+
+    // // Autosave (obfuscated URL — no extra permission check needed, edit implies this)
+    // Route::post('/blogs/fhy6adv645gv5zd5', [BlogController::class, 'autosave'])->name('blogs.fhy6adv645gv5zd5')->middleware('check-permission:blog.edit');
+
+    // // Quill inline image upload
+    // Route::post('/upload-image', [BlogController::class, 'uploadImage'])
+    //      ->name('blogs.upload.image')
+    //      ->middleware('check-permission:media.upload');
 
     /*
     |----------------------------------------------------------------------
@@ -83,19 +104,47 @@ Route::middleware(['auth', 'admin'])->group(function () {
     |----------------------------------------------------------------------
     */
 
+    /*
+    |----------------------------------------------------------------------
+    | Page Builder Routes
+    |----------------------------------------------------------------------
+    */
+
+    // 1. Allow Viewers to access the main list page
+    Route::middleware('check-permission:pages.view')->group(function () {
+        // This ONLY registers the GET /pages route (pages.index)
+        Route::resource('pages', PageController::class)->only(['index']);
+        // Static helpers that viewers might need to read data
+        Route::post('/pages/check-slug', [PageController::class, 'checkSlug'])->name('pages.check-slug');
+    });
+
+    // 2. Block Viewers here. Only allow users who can create/edit/delete
+    Route::middleware('check-permission:pages.create')->group(function () {
+        // Static segments (Declared BEFORE resource wildcards)
+        Route::get('/pages/trashed', [PageController::class, 'trashed'])->name('pages.trashed');
+        Route::post('/pages/bulk', [PageController::class, 'bulk'])->name('pages.bulk');
+        Route::post('/pages/category/store', [PageController::class, 'storeCategory'])->name('pages.category.store');
+        // Registers create, store, edit, update, and destroy (skipping index and show)
+        Route::resource('pages', PageController::class)->except(['index', 'show']);
+        // Wildcard-param routes (Declared AFTER resource)
+        Route::get('/pages/{id}/restore', [PageController::class, 'restore'])->name('pages.restore');
+        Route::delete('/pages/{id}/force', [PageController::class, 'forceDelete'])->name('pages.force-delete');
+        Route::patch('/pages/{page}/toggle', [PageController::class, 'toggleStatus'])->name('pages.toggle-status');
+    });
+    
     // ── Static helpers (before resource) ──────────────────────────────
-    Route::get('/pages/trashed', [PageController::class, 'trashed'])->name('pages.trashed');
-    Route::post('/pages/bulk', [PageController::class, 'bulk'])->name('pages.bulk');
-    Route::post('/pages/check-slug', [PageController::class, 'checkSlug'])->name('pages.check-slug');
-    Route::post('/pages/category/store', [PageController::class, 'storeCategory'])->name('pages.category.store');
+    // Route::get('/pages/trashed', [PageController::class, 'trashed'])->name('pages.trashed');
+    // Route::post('/pages/bulk', [PageController::class, 'bulk'])->name('pages.bulk');
+    // Route::post('/pages/check-slug', [PageController::class, 'checkSlug'])->name('pages.check-slug');
+    // Route::post('/pages/category/store', [PageController::class, 'storeCategory'])->name('pages.category.store');
 
-    // ── Resource ──────────────────────────────────────────────────────
-    Route::resource('pages', PageController::class)->except(['show']);
+    // // ── Resource ──────────────────────────────────────────────────────
+    // Route::resource('pages', PageController::class)->except(['show']);
 
-    // ── Wildcard-param routes (after resource) ─────────────────────
-    Route::get('/pages/{id}/restore', [PageController::class, 'restore'])->name('pages.restore');
-    Route::delete('/pages/{id}/force', [PageController::class, 'forceDelete'])->name('pages.force-delete');
-    Route::patch('/pages/{page}/toggle', [PageController::class, 'toggleStatus'])->name('pages.toggle-status');
+    // // ── Wildcard-param routes (after resource) ─────────────────────
+    // Route::get('/pages/{id}/restore', [PageController::class, 'restore'])->name('pages.restore');
+    // Route::delete('/pages/{id}/force', [PageController::class, 'forceDelete'])->name('pages.force-delete');
+    // Route::patch('/pages/{page}/toggle', [PageController::class, 'toggleStatus'])->name('pages.toggle-status');
 
     /*
     |----------------------------------------------------------------------
@@ -104,9 +153,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     | The index route lives here inside the auth+admin group.
     |----------------------------------------------------------------------
     */
-    Route::get('/admin/roles-access', [RoleAccessController::class, 'index'])
-         ->name('roles-access.index')
-         ->middleware('check-role:super-admin,admin');
+    Route::get('/admin/roles-access', [RoleAccessController::class, 'index'])->name('roles-access.index')->middleware('check-role:super-admin,admin');
 
 });
 
@@ -162,6 +209,44 @@ Route::middleware(['auth', 'check-role:super-admin,admin'])->prefix('admin/roles
     Route::get('activity', [RoleAccessController::class, 'activityLog'])->name('activity');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Clients — API-style AJAX routes
+| Separate group so JSON error responses work correctly.
+| Still requires auth + super-admin or admin role.
+|--------------------------------------------------------------------------
+*/
+ 
+// ── CLIENT PORTAL (for logged-in client users) ────────────────────────────
+// Middleware: 'auth' + 'role:client'  (Spatie check-role alias)
+Route::middleware(['auth', 'check-role:client'])->group(function () {
+    Route::get('/client/portal', [ClientPortalController::class, 'index'])
+         ->name('client.portal');
+});
+ 
+// ── ADMIN: Client management ──────────────────────────────────────────────
+Route::middleware(['auth', 'check-role:super-admin,admin'])->group(function () {
+    // Client users (CRUD)
+    Route::get('/clients',                [ClientController::class, 'index'])  ->name('clients.index');
+    Route::get('/clients/create',         [ClientController::class, 'create']) ->middleware('check-permission:clients.create')->name('clients.create');
+    Route::post('/clients',               [ClientController::class, 'store'])  ->middleware('check-permission:clients.create')->name('clients.store');
+    Route::get('/clients/{client}/edit',  [ClientController::class, 'edit'])   ->middleware('check-permission:clients.edit')->name('clients.edit');
+    Route::put('/clients/{client}',       [ClientController::class, 'update']) ->middleware('check-permission:clients.edit')->name('clients.update');
+    Route::delete('/clients/{client}',    [ClientController::class, 'destroy'])->middleware('check-permission:clients.delete')->name('clients.destroy');
+    // Project progress management
+    Route::put('/client-projects/{project}/progress', [ClientController::class, 'updateProject'])->name('client-projects.update');
+    Route::post('/client-projects/{project}/tasks',   [ClientController::class, 'storeTask'])->name('client-projects.tasks.store');
+    Route::post('/client-projects/{project}/team',    [ClientController::class, 'storeTeamMember'])->name('client-projects.team.store');
+    // Invoice management
+    Route::post('/clients/{client}/invoices', [ClientController::class, 'storeInvoice'])->name('clients.invoices.store');
+});
+
+// Route::post( '/agreement/sign/{token}', [BillingAndAgreementController::class, 'submitSignature'] )->name('billing.sign.submit');
+// Route::get( '/agreement/sign/{token}', [BillingAndAgreementController::class, 'signAgreement'] )->name('billing.sign');
+
+// Route::post('/billing/{uuid}/publish', [BillingAndAgreementController::class, 'publish'])->name('billing.publish');
+
+
 Route::middleware(['throttle:10,1'])->group(function () {
     Route::get(
         '/invitation/{token}',
@@ -172,4 +257,40 @@ Route::middleware(['throttle:10,1'])->group(function () {
         '/invitation/{token}',
         [InvitationController::class, 'register']
     )->name('invitation.register');
+});
+
+
+
+// ══════════════════════════════════════════════════════════════
+// ROUTES — add to routes/web.php
+// ══════════════════════════════════════════════════════════════
+
+// ── Public signing routes (NO auth — token-gated) ────────────────────────
+// These must be OUTSIDE any auth middleware group
+Route::get('/agreements/sign/{token}',        [BillingAndAgreementController::class, 'signAgreement'])
+     ->name('billing.sign')
+     ->where('token', '[a-f0-9]{64}');   // only 64-char hex tokens accepted
+
+Route::post('/agreements/sign/{token}',       [BillingAndAgreementController::class, 'submitSignature'])
+     ->name('billing.sign.submit')
+     ->where('token', '[a-f0-9]{64}')
+     ->middleware('throttle:5,10');       // 5 requests per 10 minutes per IP
+
+Route::get('/agreements/signed/thank-you',    [BillingAndAgreementController::class, 'signSuccess'])
+     ->name('billing.sign.success');
+
+
+// ── Admin billing routes (auth protected) ────────────────────────────────
+Route::middleware(['auth', 'check-role:super-admin,admin'])->group(function () {
+    Route::get('/billing',                          [BillingAndAgreementController::class, 'index'])->name('billing.index');
+    Route::get('/billing/create',                   [BillingAndAgreementController::class, 'create'])->name('billing.create');
+    Route::post('/billing',                         [BillingAndAgreementController::class, 'store'])->name('billing.store');
+    Route::get('/billing/{uuid}',                   [BillingAndAgreementController::class, 'show'])->name('billing.show');
+    Route::get('/billing/{uuid}/edit',              [BillingAndAgreementController::class, 'edit'])->name('billing.edit');
+    Route::put('/billing/{uuid}',                   [BillingAndAgreementController::class, 'update'])->name('billing.update');
+    Route::delete('/billing/{uuid}',                [BillingAndAgreementController::class, 'destroy'])->name('billing.destroy');
+    Route::get('/billing/{uuid}/pdf',               [BillingAndAgreementController::class, 'generatePdf'])->name('billing.pdf');
+    Route::post('/billing/{uuid}/send-email',       [BillingAndAgreementController::class, 'sendEmail'])->name('billing.send-email');
+    Route::post('/billing/{uuid}/resend-invitation',[BillingAndAgreementController::class, 'resendSigningInvitation'])->name('billing.resend-invitation');
+    Route::post('/billing/calculate',               [BillingAndAgreementController::class, 'calculate'])->name('billing.calculate');
 });

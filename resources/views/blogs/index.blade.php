@@ -740,12 +740,14 @@ html[data-theme="dark"] #blogList .share-url-row input {
       <div class="bl-title">📝 Blog Posts</div>
     </div>
     <div class="bl-topbar-actions">
-      <button class="btn-bl btn-outline" id="btnExport">
-        <i class="fas fa-download"></i> Export
-      </button>
-      <a href="{{ route('blogs.create') }}" onclick="clearDraftSession()" class="btn-bl btn-primary">
-        <i class="fas fa-plus"></i> New Post
-      </a>
+      @can('blog.create')
+        <button class="btn-bl btn-outline" id="btnExport">
+          <i class="fas fa-download"></i> Export
+        </button>
+        <a href="{{ route('blogs.create') }}" onclick="clearDraftSession()" class="btn-bl btn-primary">
+          <i class="fas fa-plus"></i> New Post
+        </a>
+      @endcan
     </div>
   </div>
 
@@ -860,14 +862,16 @@ html[data-theme="dark"] #blogList .share-url-row input {
   </div>
 
   {{-- ── BULK ACTION BAR ── --}}
-  <div class="bulk-bar" id="bulkBar">
-    <span class="bulk-count" id="bulkCount">0 posts selected</span>
-    <button class="btn-bl btn-outline btn-sm" id="bulkPublish"><i class="fas fa-check-circle"></i> Publish</button>
-    <button class="btn-bl btn-outline btn-sm" id="bulkDraft"><i class="fas fa-file-alt"></i> Set Draft</button>
-    <button class="btn-bl btn-outline btn-sm" id="bulkExport"><i class="fas fa-download"></i> Export</button>
-    <button class="btn-bl btn-danger btn-sm" id="bulkDelete"><i class="fas fa-trash"></i> Delete</button>
-    <button class="btn-bl btn-outline btn-sm ms-auto" id="bulkClear"><i class="fas fa-times"></i> Clear</button>
-  </div>
+  @hasanyrole('super-admin|admin')
+    <div class="bulk-bar" id="bulkBar">
+      <span class="bulk-count" id="bulkCount">0 posts selected</span>
+      <button class="btn-bl btn-outline btn-sm" id="bulkPublish"><i class="fas fa-check-circle"></i> Publish</button>
+      <button class="btn-bl btn-outline btn-sm" id="bulkDraft"><i class="fas fa-file-alt"></i> Set Draft</button>
+      <button class="btn-bl btn-outline btn-sm" id="bulkExport"><i class="fas fa-download"></i> Export</button>
+      <button class="btn-bl btn-danger btn-sm" id="bulkDelete"><i class="fas fa-trash"></i> Delete</button>
+      <button class="btn-bl btn-outline btn-sm ms-auto" id="bulkClear"><i class="fas fa-times"></i> Clear</button>
+    </div>
+  @endhasanyrole
 
   {{-- ════════════════════   TABLE VIEW   ════════════════════ --}}
   <div id="tableView">
@@ -960,18 +964,22 @@ html[data-theme="dark"] #blogList .share-url-row input {
                 <a href="/blog/{{ $post['slug'] }}" target="_blank" class="btn-icon success-h" title="View post">
                   <i class="fas fa-eye"></i>
                 </a>
-                <a href="{{ route('blogs.edit', $post->id) }}" class="btn-icon" title="Edit post">
-                    <i class="fas fa-pen"></i>
-                </a>
+                @can('blog.edit')
+                  <a href="{{ route('blogs.edit', $post->id) }}" class="btn-icon" title="Edit post">
+                      <i class="fas fa-pen"></i>
+                  </a>
+                @endcan
                 <button class="btn-icon" title="Share post" onclick="openShareModal('{{ $post->title }}', '/blog/{{ $post['slug'] }}')">
                   <i class="fas fa-share-alt"></i>
                 </button>
                 <button class="btn-icon" title="View stats" onclick="openStatsModal( '{{ addslashes($post->title) }}', {{ $post->views ?? 0 }}, {{ $post->likes ?? 0 }}, {{ $post->comments ?? 0 }} )">
                   <i class="fas fa-chart-line"></i>
                 </button>
-                <button class="btn-icon danger" title="Delete post" onclick="openDeleteModal('{{ encrypt($post->id) }}', '{{ addslashes($post->title) }}')">
-                  <i class="fas fa-trash"></i>
-                </button>
+                @can('blog.delete')
+                  <button class="btn-icon danger" title="Delete post" onclick="openDeleteModal('{{ encrypt($post->id) }}', '{{ addslashes($post->title) }}')">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                @endcan
               </div>
             </td>
           </tr>

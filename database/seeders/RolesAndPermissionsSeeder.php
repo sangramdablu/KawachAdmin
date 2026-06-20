@@ -42,6 +42,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'settings.edit'    => 'Edit Settings',
             'settings.billing' => 'Billing Access',
         ],
+        'Clients' => [
+            'clients.view'   => 'View Clients',
+            'clients.create' => 'Create Clients',
+            'clients.edit'   => 'Edit Clients',
+            'clients.delete' => 'Delete Clients',
+        ],
     ];
 
     // Default permission sets per role
@@ -54,7 +60,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.view','users.invite','users.edit',
             'settings.view',
         ],
-        'editor'          => [
+        'editor' => [
             'pages.view','pages.create','pages.edit',
             'blog.view','blog.create','blog.edit',
             'media.view','media.upload',
@@ -66,6 +72,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'media.view','media.upload',
             'users.view',
         ],
+        'client' => [
+            'clients.view',
+        ],
     ];
 
     // Visual metadata per role
@@ -75,6 +84,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'editor' => ['color' => 'editor', 'icon' => 'fas fa-pen-nib', 'description' => 'Create and edit content pages, blogs, and media.', 'is_system' => false ],
         'viewer' => ['color' => 'viewer', 'icon' => 'fas fa-eye', 'description' => 'Read-only access to published content.', 'is_system' => false ],
         'content-manager' => ['color' => 'custom', 'icon' => 'fas fa-folder', 'description' => 'Full content control with limited settings access.', 'is_system' => false ],
+        'client' => ['color' => 'client', 'icon' => 'fas fa-user-tie', 'description' => 'Client access to assigned projects and reports.', 'is_system'   => false,],
     ];
 
     public function run(): void

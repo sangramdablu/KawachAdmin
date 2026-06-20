@@ -158,8 +158,8 @@
 
       <div class="help-text">
         Need help? Contact us at
-        <a href="mailto:{{ config('mail.admin_email', 'hr@kawachtech.com') }}">
-          {{ config('mail.admin_email', 'hr@kawachtech.com') }}
+        <a href="mailto:{{ config('mail.admin_email', 'contact@kawachtech.com') }}">
+          {{ config('mail.admin_email', 'contact@kawachtech.com') }}
         </a>
       </div>
 

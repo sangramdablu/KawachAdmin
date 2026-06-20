@@ -19,7 +19,7 @@
     </a>
     </div>
 
-    @hasanyrole('super-admin|admin')
+    {{-- @hasanyrole('super-admin|admin') --}}
     <!-- Blog -->
     <div class="nav-item-wrap">
       <a href="{{ route('blogs.index') }}"
@@ -34,7 +34,7 @@
           <i class="fa-solid fa-handshake"></i> Billing & Agreement
       </a>
     </div>
-    @endhasanyrole
+    {{-- @endhasanyrole --}}
 
     <!-- Page -->
     <div class="nav-item-wrap">
@@ -50,6 +50,14 @@
         class="nav-link-item {{ request()->routeIs('roles-access.roles.*') ? 'active' : '' }}">
         <i class="fa-solid fa-unlock"></i> Role & Permission
     </a>
+    </div>
+
+    <!-- Clients -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('clients.index') }}"
+        class="nav-link-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+          <i class="fas fa-user-tie nav-icon"></i> Client
+      </a>
     </div>
 
     <!-- Reports -->
