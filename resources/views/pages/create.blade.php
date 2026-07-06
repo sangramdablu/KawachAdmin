@@ -3,6 +3,7 @@
 
 {{-- ============================================================
      STYLES — pushed to <head> via the stack
+     (Custom CSS omitted per request — re-add your existing <style> block here)
      ============================================================ --}}
 @push('styles')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet"/>
@@ -10,284 +11,286 @@
 
 @section('content')
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap');
 
-/* ── ROOT TOKENS ── */
-:root {
-  --sidebar-bg:       #0d1b3e;
-  --sidebar-width:    220px;
-  --navbar-h:         70px;
-  --primary:          #1a73e8;
-  --accent:           #2196f3;
-  --bg-body:          #eef2f9;
-  --white:            #ffffff;
-  --card-bg:          #ffffff;
-  --card-radius:      14px;
-  --text-dark:        #1a1a2e;
-  --text-muted:       #8a9bb5;
-  --border:           #e2e8f0;
-  --green:            #00c896;
-  --red:              #ff4d6d;
-  --yellow:           #ffb830;
-  --panel-title:      #1a1a2e;
-  --input-bg:         #ffffff;
-  --input-border:     #e2e8f0;
-  --input-color:      #1a1a2e;
-  --modal-bg:         #ffffff;
-  --modal-header:     #f4f6fb;
-  --topbar-bg:        #0d1b3e;
-}
-[data-theme="dark"] {
-  --bg-body:      #0f172a;
-  --white:        #1e293b;
-  --card-bg:      #1e293b;
-  --text-dark:    #e2e8f0;
-  --text-muted:   #64748b;
-  --border:       #334155;
-  --panel-title:  #e2e8f0;
-  --input-bg:     #0f172a;
-  --input-border: #334155;
-  --input-color:  #e2e8f0;
-  --modal-bg:     #1e293b;
-  --modal-header: #0f172a;
-}
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap');
 
-#pageBuilder { font-family: 'Open Sans', sans-serif; color: var(--text-dark); background: var(--bg-body); min-height: 100vh; transition: background .3s, color .3s; }
-#pageBuilder * { box-sizing: border-box; }
+    /* ── ROOT TOKENS ── */
+    :root {
+      --sidebar-bg:       #0d1b3e;
+      --sidebar-width:    220px;
+      --navbar-h:         70px;
+      --primary:          #1a73e8;
+      --accent:           #2196f3;
+      --bg-body:          #eef2f9;
+      --white:            #ffffff;
+      --card-bg:          #ffffff;
+      --card-radius:      14px;
+      --text-dark:        #1a1a2e;
+      --text-muted:       #8a9bb5;
+      --border:           #e2e8f0;
+      --green:            #00c896;
+      --red:              #ff4d6d;
+      --yellow:           #ffb830;
+      --panel-title:      #1a1a2e;
+      --input-bg:         #ffffff;
+      --input-border:     #e2e8f0;
+      --input-color:      #1a1a2e;
+      --modal-bg:         #ffffff;
+      --modal-header:     #f4f6fb;
+      --topbar-bg:        #0d1b3e;
+    }
+    [data-theme="dark"] {
+      --bg-body:      #0f172a;
+      --white:        #1e293b;
+      --card-bg:      #1e293b;
+      --text-dark:    #e2e8f0;
+      --text-muted:   #64748b;
+      --border:       #334155;
+      --panel-title:  #e2e8f0;
+      --input-bg:     #0f172a;
+      --input-border: #334155;
+      --input-color:  #e2e8f0;
+      --modal-bg:     #1e293b;
+      --modal-header: #0f172a;
+    }
 
-.pb-wrap { max-width: 1400px; margin: 0 auto; padding: 26px 20px 70px; }
+    #pageBuilder { font-family: 'Open Sans', sans-serif; color: var(--text-dark); background: var(--bg-body); min-height: 100vh; transition: background .3s, color .3s; }
+    #pageBuilder * { box-sizing: border-box; }
 
-.pb-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-.pb-breadcrumb { font-size: .74rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-.pb-breadcrumb a { color: var(--primary); text-decoration: none; font-weight: 600; }
-.pb-breadcrumb a:hover { text-decoration: underline; }
-.pb-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.5rem; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
-.pb-topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .pb-wrap { max-width: 1400px; margin: 0 auto; padding: 26px 20px 70px; }
 
-.page-type-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 2px 12px rgba(26,115,232,.06); transition: background .3s; }
-.page-type-label { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .82rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
-.page-type-pills { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
-.type-pill { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: .8rem; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: var(--input-bg); color: var(--text-muted); transition: all .18s; user-select: none; font-family: 'Open Sans', sans-serif; }
-.type-pill i { font-size: .85rem; }
-.type-pill:hover { border-color: var(--primary); color: var(--primary); }
-.type-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 2px 10px rgba(26,115,232,.3); }
+    .pb-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .pb-breadcrumb { font-size: .74rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .pb-breadcrumb a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .pb-breadcrumb a:hover { text-decoration: underline; }
+    .pb-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.5rem; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
+    .pb-topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-.btn-pb { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-size: .84rem; font-weight: 700; cursor: pointer; border: none; transition: all .2s; font-family: 'Open Sans', sans-serif; white-space: nowrap; text-decoration: none; }
-.btn-pb:hover { transform: translateY(-1px); }
-.btn-pb-primary { background: var(--primary); color: #fff; }
-.btn-pb-primary:hover { background: #1558b0; box-shadow: 0 4px 14px rgba(26,115,232,.35); color: #fff; }
-.btn-pb-success { background: var(--green); color: #fff; }
-.btn-pb-success:hover { background: #00a87c; box-shadow: 0 4px 14px rgba(0,200,150,.3); color: #fff; }
-.btn-pb-outline { background: var(--card-bg); color: var(--text-dark); border: 1.5px solid var(--border); }
-.btn-pb-outline:hover { border-color: var(--primary); color: var(--primary); }
-.btn-pb-danger { background: #fff5f7; color: var(--red); border: 1.5px solid #ffc0cc; }
-.btn-pb-danger:hover { background: var(--red); color: #fff; border-color: var(--red); }
-.btn-pb-warning { background: var(--yellow); color: #fff; }
-.btn-pb-warning:hover { background: #e0a020; color: #fff; }
-.btn-sm { padding: 6px 13px; font-size: .77rem; }
-.btn-xs { padding: 4px 10px; font-size: .72rem; border-radius: 6px; }
-.btn-icon-sq { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; border: 1.5px solid var(--border); background: var(--card-bg); color: var(--text-muted); cursor: pointer; font-size: .8rem; transition: all .18s; }
-.btn-icon-sq:hover { border-color: var(--primary); color: var(--primary); }
-.btn-icon-sq.del:hover { border-color: var(--red); color: var(--red); }
+    .page-type-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 2px 12px rgba(26,115,232,.06); transition: background .3s; }
+    .page-type-label { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .82rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+    .page-type-pills { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .type-pill { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: .8rem; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: var(--input-bg); color: var(--text-muted); transition: all .18s; user-select: none; font-family: 'Open Sans', sans-serif; }
+    .type-pill i { font-size: .85rem; }
+    .type-pill:hover { border-color: var(--primary); color: var(--primary); }
+    .type-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 2px 10px rgba(26,115,232,.3); }
 
-.pb-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
-@media (max-width: 1100px) { .pb-grid { grid-template-columns: 1fr; } }
+    .btn-pb { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-size: .84rem; font-weight: 700; cursor: pointer; border: none; transition: all .2s; font-family: 'Open Sans', sans-serif; white-space: nowrap; text-decoration: none; }
+    .btn-pb:hover { transform: translateY(-1px); }
+    .btn-pb-primary { background: var(--primary); color: #fff; }
+    .btn-pb-primary:hover { background: #1558b0; box-shadow: 0 4px 14px rgba(26,115,232,.35); color: #fff; }
+    .btn-pb-success { background: var(--green); color: #fff; }
+    .btn-pb-success:hover { background: #00a87c; box-shadow: 0 4px 14px rgba(0,200,150,.3); color: #fff; }
+    .btn-pb-outline { background: var(--card-bg); color: var(--text-dark); border: 1.5px solid var(--border); }
+    .btn-pb-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-pb-danger { background: #fff5f7; color: var(--red); border: 1.5px solid #ffc0cc; }
+    .btn-pb-danger:hover { background: var(--red); color: #fff; border-color: var(--red); }
+    .btn-pb-warning { background: var(--yellow); color: #fff; }
+    .btn-pb-warning:hover { background: #e0a020; color: #fff; }
+    .btn-sm { padding: 6px 13px; font-size: .77rem; }
+    .btn-xs { padding: 4px 10px; font-size: .72rem; border-radius: 6px; }
+    .btn-icon-sq { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; border: 1.5px solid var(--border); background: var(--card-bg); color: var(--text-muted); cursor: pointer; font-size: .8rem; transition: all .18s; }
+    .btn-icon-sq:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-icon-sq.del:hover { border-color: var(--red); color: var(--red); }
 
-.pb-card { background: var(--card-bg); border-radius: var(--card-radius); border: 1px solid var(--border); box-shadow: 0 2px 14px rgba(26,115,232,.07); overflow: hidden; transition: background .3s; }
-.pb-card + .pb-card { margin-top: 16px; }
-.pb-card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--modal-header); transition: background .3s; }
-.pb-card-header h2 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .92rem; color: var(--panel-title); display: flex; align-items: center; gap: 8px; margin: 0; }
-.pb-card-header h2 i { color: var(--primary); font-size: .88rem; }
-.pb-card-body { padding: 20px; }
+    .pb-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+    @media (max-width: 1100px) { .pb-grid { grid-template-columns: 1fr; } }
 
-.pb-form-group { margin-bottom: 16px; }
-.pb-form-group:last-child { margin-bottom: 0; }
-.pb-label { display: flex; align-items: center; gap: 6px; font-size: .79rem; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
-.pb-label i { font-size: .76rem; color: var(--primary); }
-.lbl-badge { font-size: .6rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: .4px; }
-.lbl-req  { background: #ffe2e8; color: var(--red); }
-.lbl-opt  { background: #eef2f9; color: var(--text-muted); }
-.lbl-seo  { background: #e8f1fd; color: var(--primary); }
-[data-theme="dark"] .lbl-req  { background: rgba(255,77,109,.18); }
-[data-theme="dark"] .lbl-opt  { background: rgba(107,122,153,.15); }
-[data-theme="dark"] .lbl-seo  { background: rgba(26,115,232,.18); }
+    .pb-card { background: var(--card-bg); border-radius: var(--card-radius); border: 1px solid var(--border); box-shadow: 0 2px 14px rgba(26,115,232,.07); overflow: hidden; transition: background .3s; }
+    .pb-card + .pb-card { margin-top: 16px; }
+    .pb-card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--modal-header); transition: background .3s; }
+    .pb-card-header h2 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .92rem; color: var(--panel-title); display: flex; align-items: center; gap: 8px; margin: 0; }
+    .pb-card-header h2 i { color: var(--primary); font-size: .88rem; }
+    .pb-card-body { padding: 20px; }
 
-.pb-input, .pb-textarea, .pb-select { width: 100%; border: 1.5px solid var(--input-border); border-radius: 8px; padding: 9px 13px; font-size: .875rem; color: var(--input-color); background: var(--input-bg); outline: none; transition: border-color .2s, box-shadow .2s, background .3s; font-family: 'Open Sans', sans-serif; }
-.pb-input:focus, .pb-textarea:focus, .pb-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,.11); }
-.pb-input.is-title { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.3rem; padding: 12px 14px; border-radius: 10px; }
-.pb-textarea { resize: vertical; min-height: 80px; line-height: 1.65; }
-.pb-select { cursor: pointer; }
+    .pb-form-group { margin-bottom: 16px; }
+    .pb-form-group:last-child { margin-bottom: 0; }
+    .pb-label { display: flex; align-items: center; gap: 6px; font-size: .79rem; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+    .pb-label i { font-size: .76rem; color: var(--primary); }
+    .lbl-badge { font-size: .6rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: .4px; }
+    .lbl-req  { background: #ffe2e8; color: var(--red); }
+    .lbl-opt  { background: #eef2f9; color: var(--text-muted); }
+    .lbl-seo  { background: #e8f1fd; color: var(--primary); }
+    [data-theme="dark"] .lbl-req  { background: rgba(255,77,109,.18); }
+    [data-theme="dark"] .lbl-opt  { background: rgba(107,122,153,.15); }
+    [data-theme="dark"] .lbl-seo  { background: rgba(26,115,232,.18); }
 
-.pb-hint { font-size: .71rem; color: var(--text-muted); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
-.pb-hint i { font-size: .66rem; color: var(--primary); }
+    .pb-input, .pb-textarea, .pb-select { width: 100%; border: 1.5px solid var(--input-border); border-radius: 8px; padding: 9px 13px; font-size: .875rem; color: var(--input-color); background: var(--input-bg); outline: none; transition: border-color .2s, box-shadow .2s, background .3s; font-family: 'Open Sans', sans-serif; }
+    .pb-input:focus, .pb-textarea:focus, .pb-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,.11); }
+    .pb-input.is-title { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.3rem; padding: 12px 14px; border-radius: 10px; }
+    .pb-textarea { resize: vertical; min-height: 80px; line-height: 1.65; }
+    .pb-select { cursor: pointer; }
 
-.pb-input-wrap { position: relative; }
-.pb-char-count { position: absolute; right: 9px; bottom: 9px; font-size: .66rem; font-weight: 700; color: var(--text-muted); background: var(--bg-body); padding: 1px 6px; border-radius: 4px; pointer-events: none; }
-.pb-char-count.warn { color: var(--yellow); }
-.pb-char-count.over { color: var(--red); }
-.pb-char-count.good { color: var(--green); }
+    .pb-hint { font-size: .71rem; color: var(--text-muted); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+    .pb-hint i { font-size: .66rem; color: var(--primary); }
 
-.slug-row { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--input-border); border-radius: 8px; padding: 8px 12px; background: var(--input-bg); transition: border-color .2s, background .3s; }
-.slug-row:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,.1); }
-.slug-prefix { font-size: .78rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-.slug-input { flex: 1; border: none; outline: none; font-size: .875rem; color: var(--primary); font-weight: 600; background: transparent; font-family: 'Open Sans', sans-serif; }
+    .pb-input-wrap { position: relative; }
+    .pb-char-count { position: absolute; right: 9px; bottom: 9px; font-size: .66rem; font-weight: 700; color: var(--text-muted); background: var(--bg-body); padding: 1px 6px; border-radius: 4px; pointer-events: none; }
+    .pb-char-count.warn { color: var(--yellow); }
+    .pb-char-count.over { color: var(--red); }
+    .pb-char-count.good { color: var(--green); }
 
-.pb-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.pb-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-@media (max-width: 640px) { .pb-grid-2, .pb-grid-3 { grid-template-columns: 1fr; } }
+    .slug-row { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--input-border); border-radius: 8px; padding: 8px 12px; background: var(--input-bg); transition: border-color .2s, background .3s; }
+    .slug-row:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,.1); }
+    .slug-prefix { font-size: .78rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+    .slug-input { flex: 1; border: none; outline: none; font-size: .875rem; color: var(--primary); font-weight: 600; background: transparent; font-family: 'Open Sans', sans-serif; }
 
-.ql-wrapper { border-radius: 8px; overflow: hidden; border: 1.5px solid var(--input-border); transition: border-color .2s, box-shadow .2s; }
-.ql-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,.11); }
-.ql-toolbar.ql-snow { border: none !important; border-bottom: 1px solid var(--border) !important; background: var(--modal-header) !important; padding: 10px 12px; }
-.ql-container.ql-snow { border: none !important; font-family: 'Open Sans', sans-serif; font-size: .9rem; }
-.ql-editor { min-height: 280px; padding: 16px 18px; line-height: 1.8; color: var(--input-color); background: var(--input-bg); }
-.ql-editor.ql-blank::before { color: var(--text-muted); font-style: italic; }
-[data-theme="dark"] .ql-snow .ql-stroke { stroke: var(--text-muted); }
-[data-theme="dark"] .ql-snow .ql-fill   { fill: var(--text-muted); }
-[data-theme="dark"] .ql-snow .ql-picker  { color: var(--text-dark); }
+    .pb-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .pb-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .pb-grid-2, .pb-grid-3 { grid-template-columns: 1fr; } }
 
-.img-upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 28px 18px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; background: var(--modal-header); position: relative; }
-.img-upload-zone:hover, .img-upload-zone.drag-over { border-color: var(--primary); background: #eef4ff; }
-[data-theme="dark"] .img-upload-zone:hover { background: rgba(26,115,232,.08); }
-.img-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.upload-icon { font-size: 1.8rem; color: var(--primary); opacity: .5; margin-bottom: 7px; }
-.upload-text { font-size: .8rem; color: var(--text-muted); }
-.upload-text strong { color: var(--primary); }
-.img-preview-wrap { display: none; position: relative; border-radius: 8px; overflow: hidden; margin-top: 10px; border: 1.5px solid var(--border); }
-.img-preview-wrap img { width: 100%; height: 190px; object-fit: cover; display: block; }
-.img-preview-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; }
-.img-size-info { font-size: .68rem; color: var(--text-muted); margin-top: 5px; text-align: center; }
+    .ql-wrapper { border-radius: 8px; overflow: hidden; border: 1.5px solid var(--input-border); transition: border-color .2s, box-shadow .2s; }
+    .ql-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,.11); }
+    .ql-toolbar.ql-snow { border: none !important; border-bottom: 1px solid var(--border) !important; background: var(--modal-header) !important; padding: 10px 12px; }
+    .ql-container.ql-snow { border: none !important; font-family: 'Open Sans', sans-serif; font-size: .9rem; }
+    .ql-editor { min-height: 280px; padding: 16px 18px; line-height: 1.8; color: var(--input-color); background: var(--input-bg); }
+    .ql-editor.ql-blank::before { color: var(--text-muted); font-style: italic; }
+    [data-theme="dark"] .ql-snow .ql-stroke { stroke: var(--text-muted); }
+    [data-theme="dark"] .ql-snow .ql-fill   { fill: var(--text-muted); }
+    [data-theme="dark"] .ql-snow .ql-picker  { color: var(--text-dark); }
 
-.serp-preview { border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--modal-header); margin-top: 6px; transition: background .3s; }
-.serp-label { font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-.serp-label i { color: var(--green); }
-.serp-url   { font-size: .74rem; color: #1a7e45; margin-bottom: 3px; word-break: break-all; }
-.serp-title { font-size: 1.05rem; color: #1a0dab; font-weight: 600; margin-bottom: 3px; line-height: 1.3; display: block; text-decoration: none; }
-.serp-title:hover { text-decoration: underline; }
-.serp-desc  { font-size: .8rem; color: #4d5156; line-height: 1.55; }
-[data-theme="dark"] .serp-url   { color: #4ade80; }
-[data-theme="dark"] .serp-title { color: #93c5fd; }
-[data-theme="dark"] .serp-desc  { color: var(--text-muted); }
+    .img-upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 28px 18px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; background: var(--modal-header); position: relative; }
+    .img-upload-zone:hover, .img-upload-zone.drag-over { border-color: var(--primary); background: #eef4ff; }
+    [data-theme="dark"] .img-upload-zone:hover { background: rgba(26,115,232,.08); }
+    .img-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 1.8rem; color: var(--primary); opacity: .5; margin-bottom: 7px; }
+    .upload-text { font-size: .8rem; color: var(--text-muted); }
+    .upload-text strong { color: var(--primary); }
+    .img-preview-wrap { display: none; position: relative; border-radius: 8px; overflow: hidden; margin-top: 10px; border: 1.5px solid var(--border); }
+    .img-preview-wrap img { width: 100%; height: 190px; object-fit: cover; display: block; }
+    .img-preview-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; }
+    .img-size-info { font-size: .68rem; color: var(--text-muted); margin-top: 5px; text-align: center; }
 
-.meter-bar  { height: 4px; border-radius: 2px; background: var(--border); margin-top: 5px; overflow: hidden; }
-.meter-fill { height: 100%; border-radius: 2px; transition: width .3s, background .3s; }
+    .serp-preview { border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--modal-header); margin-top: 6px; transition: background .3s; }
+    .serp-label { font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+    .serp-label i { color: var(--green); }
+    .serp-url   { font-size: .74rem; color: #1a7e45; margin-bottom: 3px; word-break: break-all; }
+    .serp-title { font-size: 1.05rem; color: #1a0dab; font-weight: 600; margin-bottom: 3px; line-height: 1.3; display: block; text-decoration: none; }
+    .serp-title:hover { text-decoration: underline; }
+    .serp-desc  { font-size: .8rem; color: #4d5156; line-height: 1.55; }
+    [data-theme="dark"] .serp-url   { color: #4ade80; }
+    [data-theme="dark"] .serp-title { color: #93c5fd; }
+    [data-theme="dark"] .serp-desc  { color: var(--text-muted); }
 
-.tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; border: 1.5px solid var(--input-border); border-radius: 8px; padding: 7px 10px; cursor: text; min-height: 42px; align-items: flex-start; background: var(--input-bg); transition: border-color .2s, box-shadow .2s, background .3s; }
-.tags-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,.1); }
-.tag-pill { display: inline-flex; align-items: center; gap: 5px; background: #e8f1fd; color: var(--primary); border-radius: 20px; padding: 3px 10px; font-size: .74rem; font-weight: 700; }
-[data-theme="dark"] .tag-pill { background: rgba(26,115,232,.2); }
-.tag-pill button { background: none; border: none; cursor: pointer; color: var(--primary); font-size: .68rem; padding: 0; line-height: 1; opacity: .7; transition: opacity .15s; }
-.tag-pill button:hover { opacity: 1; }
-.tags-input { border: none; outline: none; font-size: .82rem; min-width: 110px; flex: 1; font-family: 'Open Sans', sans-serif; color: var(--input-color); background: transparent; }
+    .meter-bar  { height: 4px; border-radius: 2px; background: var(--border); margin-top: 5px; overflow: hidden; }
+    .meter-fill { height: 100%; border-radius: 2px; transition: width .3s, background .3s; }
 
-.vis-pills { display: flex; gap: 7px; flex-wrap: wrap; }
-.vis-pill { flex: 1; min-width: 75px; text-align: center; padding: 7px 8px; border-radius: 8px; border: 1.5px solid var(--border); font-size: .74rem; font-weight: 700; cursor: pointer; color: var(--text-muted); background: var(--input-bg); transition: all .18s; }
-.vis-pill.active { border-color: var(--primary); color: var(--primary); background: #e8f1fd; }
-[data-theme="dark"] .vis-pill.active { background: rgba(26,115,232,.18); }
-.vis-pill i { display: block; font-size: .95rem; margin-bottom: 3px; }
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; border: 1.5px solid var(--input-border); border-radius: 8px; padding: 7px 10px; cursor: text; min-height: 42px; align-items: flex-start; background: var(--input-bg); transition: border-color .2s, box-shadow .2s, background .3s; }
+    .tags-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,.1); }
+    .tag-pill { display: inline-flex; align-items: center; gap: 5px; background: #e8f1fd; color: var(--primary); border-radius: 20px; padding: 3px 10px; font-size: .74rem; font-weight: 700; }
+    [data-theme="dark"] .tag-pill { background: rgba(26,115,232,.2); }
+    .tag-pill button { background: none; border: none; cursor: pointer; color: var(--primary); font-size: .68rem; padding: 0; line-height: 1; opacity: .7; transition: opacity .15s; }
+    .tag-pill button:hover { opacity: 1; }
+    .tags-input { border: none; outline: none; font-size: .82rem; min-width: 110px; flex: 1; font-family: 'Open Sans', sans-serif; color: var(--input-color); background: transparent; }
 
-.seo-score-wrap { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: linear-gradient(135deg, #e8f1fd, #dbeeff); border-radius: 10px; margin-bottom: 14px; border: 1px solid rgba(26,115,232,.15); }
-[data-theme="dark"] .seo-score-wrap { background: rgba(26,115,232,.12); border-color: rgba(26,115,232,.25); }
-.seo-ring { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; color: #fff; flex-shrink: 0; transition: background .4s; }
-.seo-score-info strong { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .88rem; color: var(--text-dark); display: block; }
-.seo-score-info span   { font-size: .73rem; color: var(--text-muted); }
-.seo-checklist { list-style: none; padding: 0; margin: 0; }
-.seo-checklist li { display: flex; align-items: flex-start; gap: 7px; padding: 6px 0; font-size: .76rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
-.seo-checklist li:last-child { border-bottom: none; }
-.seo-checklist li i { font-size: .78rem; margin-top: 1px; flex-shrink: 0; }
-.seo-checklist li.pass { color: var(--green); }
-.seo-checklist li.fail { color: var(--red); }
-.seo-checklist li.warn { color: var(--yellow); }
-.seo-checklist li.pass i { color: var(--green); }
-.seo-checklist li.fail i { color: var(--red); }
-.seo-checklist li.warn i { color: var(--yellow); }
+    .vis-pills { display: flex; gap: 7px; flex-wrap: wrap; }
+    .vis-pill { flex: 1; min-width: 75px; text-align: center; padding: 7px 8px; border-radius: 8px; border: 1.5px solid var(--border); font-size: .74rem; font-weight: 700; cursor: pointer; color: var(--text-muted); background: var(--input-bg); transition: all .18s; }
+    .vis-pill.active { border-color: var(--primary); color: var(--primary); background: #e8f1fd; }
+    [data-theme="dark"] .vis-pill.active { background: rgba(26,115,232,.18); }
+    .vis-pill i { display: block; font-size: .95rem; margin-bottom: 3px; }
 
-.repeatable-container { display: flex; flex-direction: column; gap: 12px; }
-.repeat-item { background: var(--modal-header); border: 1.5px solid var(--border); border-radius: 10px; padding: 16px; position: relative; transition: background .3s, border-color .2s; }
-.repeat-item:hover { border-color: var(--primary); }
-.repeat-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.repeat-item-title { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .84rem; color: var(--panel-title); display: flex; align-items: center; gap: 7px; }
-.repeat-item-actions { display: flex; gap: 5px; align-items: center; }
-.drag-handle { cursor: grab; color: var(--text-muted); font-size: .85rem; padding: 4px; }
-.drag-handle:active { cursor: grabbing; }
-.add-item-btn { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px; border-radius: 8px; border: 2px dashed var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: .82rem; font-weight: 700; width: 100%; transition: all .18s; font-family: 'Open Sans', sans-serif; }
-.add-item-btn:hover { border-color: var(--primary); color: var(--primary); background: #f0f6ff; }
-[data-theme="dark"] .add-item-btn:hover { background: rgba(26,115,232,.08); }
+    .seo-score-wrap { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: linear-gradient(135deg, #e8f1fd, #dbeeff); border-radius: 10px; margin-bottom: 14px; border: 1px solid rgba(26,115,232,.15); }
+    [data-theme="dark"] .seo-score-wrap { background: rgba(26,115,232,.12); border-color: rgba(26,115,232,.25); }
+    .seo-ring { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; color: #fff; flex-shrink: 0; transition: background .4s; }
+    .seo-score-info strong { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .88rem; color: var(--text-dark); display: block; }
+    .seo-score-info span   { font-size: .73rem; color: var(--text-muted); }
+    .seo-checklist { list-style: none; padding: 0; margin: 0; }
+    .seo-checklist li { display: flex; align-items: flex-start; gap: 7px; padding: 6px 0; font-size: .76rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    .seo-checklist li:last-child { border-bottom: none; }
+    .seo-checklist li i { font-size: .78rem; margin-top: 1px; flex-shrink: 0; }
+    .seo-checklist li.pass { color: var(--green); }
+    .seo-checklist li.fail { color: var(--red); }
+    .seo-checklist li.warn { color: var(--yellow); }
+    .seo-checklist li.pass i { color: var(--green); }
+    .seo-checklist li.fail i { color: var(--red); }
+    .seo-checklist li.warn i { color: var(--yellow); }
 
-.pb-section { display: none; }
-.pb-section.active { display: block; }
+    .repeatable-container { display: flex; flex-direction: column; gap: 12px; }
+    .repeat-item { background: var(--modal-header); border: 1.5px solid var(--border); border-radius: 10px; padding: 16px; position: relative; transition: background .3s, border-color .2s; }
+    .repeat-item:hover { border-color: var(--primary); }
+    .repeat-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .repeat-item-title { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .84rem; color: var(--panel-title); display: flex; align-items: center; gap: 7px; }
+    .repeat-item-actions { display: flex; gap: 5px; align-items: center; }
+    .drag-handle { cursor: grab; color: var(--text-muted); font-size: .85rem; padding: 4px; }
+    .drag-handle:active { cursor: grabbing; }
+    .add-item-btn { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px; border-radius: 8px; border: 2px dashed var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: .82rem; font-weight: 700; width: 100%; transition: all .18s; font-family: 'Open Sans', sans-serif; }
+    .add-item-btn:hover { border-color: var(--primary); color: var(--primary); background: #f0f6ff; }
+    [data-theme="dark"] .add-item-btn:hover { background: rgba(26,115,232,.08); }
 
-.icon-picker-wrap { position: relative; }
-.icon-preview-row { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--input-border); border-radius: 8px; padding: 8px 12px; background: var(--input-bg); transition: border-color .2s; }
-.icon-preview-row:focus-within { border-color: var(--primary); }
-.icon-preview { width: 32px; height: 32px; border-radius: 7px; background: #e8f1fd; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--primary); flex-shrink: 0; }
-.icon-input { flex: 1; border: none; outline: none; font-size: .84rem; color: var(--input-color); background: transparent; font-family: 'Open Sans', sans-serif; }
-.icon-btn-pick { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: .8rem; padding: 4px 8px; border-radius: 6px; transition: all .15s; font-family: 'Open Sans', sans-serif; font-weight: 600; white-space: nowrap; }
-.icon-btn-pick:hover { background: var(--border); color: var(--primary); }
-.icon-grid-dropdown { position: absolute; top: 44px; left: 0; right: 0; z-index: 200; background: var(--modal-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.13); display: none; }
-.icon-grid-dropdown.show { display: block; }
-.icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; }
-.icon-opt { width: 34px; height: 34px; border-radius: 7px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; font-size: .9rem; color: var(--text-muted); cursor: pointer; transition: all .15s; }
-.icon-opt:hover { background: var(--border); color: var(--primary); }
+    .pb-section { display: none; }
+    .pb-section.active { display: block; }
 
-.color-swatches { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-.color-swatch { width: 26px; height: 26px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: transform .15s, border-color .15s; }
-.color-swatch:hover, .color-swatch.active { transform: scale(1.18); border-color: var(--text-dark); }
+    .icon-picker-wrap { position: relative; }
+    .icon-preview-row { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--input-border); border-radius: 8px; padding: 8px 12px; background: var(--input-bg); transition: border-color .2s; }
+    .icon-preview-row:focus-within { border-color: var(--primary); }
+    .icon-preview { width: 32px; height: 32px; border-radius: 7px; background: #e8f1fd; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--primary); flex-shrink: 0; }
+    .icon-input { flex: 1; border: none; outline: none; font-size: .84rem; color: var(--input-color); background: transparent; font-family: 'Open Sans', sans-serif; }
+    .icon-btn-pick { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: .8rem; padding: 4px 8px; border-radius: 6px; transition: all .15s; font-family: 'Open Sans', sans-serif; font-weight: 600; white-space: nowrap; }
+    .icon-btn-pick:hover { background: var(--border); color: var(--primary); }
+    .icon-grid-dropdown { position: absolute; top: 44px; left: 0; right: 0; z-index: 200; background: var(--modal-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.13); display: none; }
+    .icon-grid-dropdown.show { display: block; }
+    .icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; }
+    .icon-opt { width: 34px; height: 34px; border-radius: 7px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; font-size: .9rem; color: var(--text-muted); cursor: pointer; transition: all .15s; }
+    .icon-opt:hover { background: var(--border); color: var(--primary); }
 
-.stats-strip { display: flex; gap: 14px; flex-wrap: wrap; padding: 11px 14px; background: var(--card-bg); border-radius: 8px; margin-bottom: 18px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(26,115,232,.05); transition: background .3s; }
-.stat-item { display: flex; align-items: center; gap: 5px; font-size: .74rem; color: var(--text-muted); }
-.stat-item i { color: var(--primary); font-size: .7rem; }
-.stat-item strong { color: var(--text-dark); font-weight: 700; }
+    .color-swatches { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .color-swatch { width: 26px; height: 26px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: transform .15s, border-color .15s; }
+    .color-swatch:hover, .color-swatch.active { transform: scale(1.18); border-color: var(--text-dark); }
 
-.pb-toast-stack { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-.pb-toast { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 11px 15px; display: flex; align-items: center; gap: 9px; box-shadow: 0 6px 24px rgba(0,0,0,.12); font-size: .81rem; color: var(--text-dark); pointer-events: all; animation: pbToastIn .2s ease; max-width: 300px; }
-@keyframes pbToastIn { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:none; } }
-.pb-toast i { font-size: .9rem; flex-shrink: 0; }
+    .stats-strip { display: flex; gap: 14px; flex-wrap: wrap; padding: 11px 14px; background: var(--card-bg); border-radius: 8px; margin-bottom: 18px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(26,115,232,.05); transition: background .3s; }
+    .stat-item { display: flex; align-items: center; gap: 5px; font-size: .74rem; color: var(--text-muted); }
+    .stat-item i { color: var(--primary); font-size: .7rem; }
+    .stat-item strong { color: var(--text-dark); font-weight: 700; }
 
-.pb-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 900; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
-.pb-modal-overlay.show { display: flex; }
-.pb-modal { background: var(--modal-bg); border-radius: 14px; max-width: 520px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.22); animation: pbModalPop .2s ease; }
-@keyframes pbModalPop { from { opacity:0; transform:scale(.94); } to { opacity:1; transform:scale(1); } }
-.pb-modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.pb-modal-header h3 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.05rem; color: var(--text-dark); margin: 0; }
-.pb-modal-close { width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--modal-header); color: var(--text-muted); cursor: pointer; font-size: .78rem; display: flex; align-items: center; justify-content: center; transition: background .15s; }
-.pb-modal-close:hover { background: var(--border); }
-.pb-modal-body { padding: 20px; }
-.pb-modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+    .pb-toast-stack { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .pb-toast { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 11px 15px; display: flex; align-items: center; gap: 9px; box-shadow: 0 6px 24px rgba(0,0,0,.12); font-size: .81rem; color: var(--text-dark); pointer-events: all; animation: pbToastIn .2s ease; max-width: 300px; }
+    @keyframes pbToastIn { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:none; } }
+    .pb-toast i { font-size: .9rem; flex-shrink: 0; }
 
-.schema-pills { display: flex; flex-wrap: wrap; gap: 7px; }
-.schema-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 20px; font-size: .74rem; font-weight: 700; border: 1.5px solid var(--border); cursor: pointer; background: var(--input-bg); color: var(--text-muted); transition: all .18s; }
-.schema-pill.active, .schema-pill:hover { border-color: var(--primary); color: var(--primary); background: #e8f1fd; }
-[data-theme="dark"] .schema-pill.active { background: rgba(26,115,232,.18); }
+    .pb-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 900; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+    .pb-modal-overlay.show { display: flex; }
+    .pb-modal { background: var(--modal-bg); border-radius: 14px; max-width: 520px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.22); animation: pbModalPop .2s ease; }
+    @keyframes pbModalPop { from { opacity:0; transform:scale(.94); } to { opacity:1; transform:scale(1); } }
+    .pb-modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .pb-modal-header h3 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.05rem; color: var(--text-dark); margin: 0; }
+    .pb-modal-close { width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--modal-header); color: var(--text-muted); cursor: pointer; font-size: .78rem; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+    .pb-modal-close:hover { background: var(--border); }
+    .pb-modal-body { padding: 20px; }
+    .pb-modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
 
-.star-rating { display: flex; gap: 5px; }
-.star-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--border); transition: color .15s; }
-.star-btn.lit, .star-btn:hover { color: var(--yellow); }
+    .schema-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .schema-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 20px; font-size: .74rem; font-weight: 700; border: 1.5px solid var(--border); cursor: pointer; background: var(--input-bg); color: var(--text-muted); transition: all .18s; }
+    .schema-pill.active, .schema-pill:hover { border-color: var(--primary); color: var(--primary); background: #e8f1fd; }
+    [data-theme="dark"] .schema-pill.active { background: rgba(26,115,232,.18); }
 
-.step-nav { display: flex; align-items: center; gap: 0; margin-bottom: 18px; overflow-x: auto; scrollbar-width: none; }
-.step-nav::-webkit-scrollbar { display: none; }
-.step-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .75rem; border: 2px solid var(--border); background: var(--input-bg); color: var(--text-muted); flex-shrink: 0; transition: all .25s; position: relative; z-index: 1; cursor: pointer; }
-.step-dot.active { background: var(--primary); border-color: var(--primary); color: #fff; }
-.step-dot.done   { background: var(--green); border-color: var(--green); color: #fff; }
-.step-line { flex: 1; height: 2px; background: var(--border); transition: background .25s; min-width: 20px; }
-.step-line.done  { background: var(--green); }
-.step-label { font-size: .65rem; font-weight: 700; color: var(--text-muted); text-align: center; margin-top: 4px; white-space: nowrap; }
-.step-item { display: flex; flex-direction: column; align-items: center; }
+    .star-rating { display: flex; gap: 5px; }
+    .star-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--border); transition: color .15s; }
+    .star-btn.lit, .star-btn:hover { color: var(--yellow); }
 
-@media (max-width: 640px) {
-  .pb-topbar { flex-direction: column; align-items: flex-start; }
-  .pb-topbar-actions { width: 100%; }
-  .btn-pb { flex: 1; justify-content: center; }
-  .page-type-pills { gap: 5px; }
-  .type-pill { font-size: .72rem; padding: 6px 10px; }
-}
+    .step-nav { display: flex; align-items: center; gap: 0; margin-bottom: 18px; overflow-x: auto; scrollbar-width: none; }
+    .step-nav::-webkit-scrollbar { display: none; }
+    .step-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .75rem; border: 2px solid var(--border); background: var(--input-bg); color: var(--text-muted); flex-shrink: 0; transition: all .25s; position: relative; z-index: 1; cursor: pointer; }
+    .step-dot.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .step-dot.done   { background: var(--green); border-color: var(--green); color: #fff; }
+    .step-line { flex: 1; height: 2px; background: var(--border); transition: background .25s; min-width: 20px; }
+    .step-line.done  { background: var(--green); }
+    .step-label { font-size: .65rem; font-weight: 700; color: var(--text-muted); text-align: center; margin-top: 4px; white-space: nowrap; }
+    .step-item { display: flex; flex-direction: column; align-items: center; }
 
-.pb-field-error { display: flex; align-items: center; gap: 5px; margin-top: 5px; font-size: .74rem; font-weight: 600; color: var(--red, #ff4d6d); animation: pbv-slide-in .15s ease; }
-.pb-field-error i { font-size: .7rem; flex-shrink: 0; }
-@keyframes pbv-slide-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-.pb-input-invalid { border-color: var(--red, #ff4d6d) !important; box-shadow: 0 0 0 3px rgba(255,77,109,.12) !important; }
-</style>
+    @media (max-width: 640px) {
+      .pb-topbar { flex-direction: column; align-items: flex-start; }
+      .pb-topbar-actions { width: 100%; }
+      .btn-pb { flex: 1; justify-content: center; }
+      .page-type-pills { gap: 5px; }
+      .type-pill { font-size: .72rem; padding: 6px 10px; }
+    }
+
+    .pb-field-error { display: flex; align-items: center; gap: 5px; margin-top: 5px; font-size: .74rem; font-weight: 600; color: var(--red, #ff4d6d); animation: pbv-slide-in .15s ease; }
+    .pb-field-error i { font-size: .7rem; flex-shrink: 0; }
+    @keyframes pbv-slide-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+    .pb-input-invalid { border-color: var(--red, #ff4d6d) !important; box-shadow: 0 0 0 3px rgba(255,77,109,.12) !important; }
+  </style>
+
 
 {{-- ============================================================
      MARKUP
@@ -350,10 +353,6 @@
   </div>
 
   {{-- ── MAIN FORM ── --}}
-  {{--
-    FIX: In edit mode the form must POST to pages.update with @method('PUT').
-    We store page_id on the form as a data attribute for JS to read.
-  --}}
   <form id="pbForm"
         method="POST"
         action="{{ isset($page) ? route('pages.update', $page) : route('pages.store') }}"
@@ -365,7 +364,7 @@
       @method('PUT')
     @endisset
     <input type="hidden" name="page_type" id="pageTypeInput" value="{{ $currentPageType }}"/>
-    <input type="hidden" name="status"    id="pbStatus"      value="{{ $page->status ?? 'draft' }}"/>
+    <input type="hidden" id="pbStatus" value="{{ $page->status ?? 'draft' }}"/>
 
     <div class="pb-grid">
 
@@ -393,7 +392,6 @@
               <label class="pb-label"><i class="fas fa-link"></i> URL Slug <span class="lbl-badge lbl-req">Required</span></label>
               <div class="slug-row">
                 <span class="slug-prefix" id="slugPrefix">{{ request()->getHost() }}/</span>
-                {{-- FIX: data-page-id passed so SlugValidator knows which record to ignore on edit --}}
                 <input type="text" name="slug" id="pbSlug" class="slug-input"
                   placeholder="your-page-slug" autocomplete="off"
                   value="{{ old('slug', $page->slug ?? '') }}"
@@ -414,7 +412,6 @@
             <div class="pb-card-body">
               <div class="pb-form-group">
                 <div class="pb-input-wrap">
-                  {{-- FIX: added id for counter and old() for repopulation --}}
                   <textarea name="short_description" id="svcShortDesc" class="pb-textarea"
                     placeholder="One or two sentences summarising this service…" rows="3" maxlength="200">{{ old('short_description', $typeData->short_description ?? '') }}</textarea>
                   <span class="pb-char-count" id="svcShortDescCount">0/200</span>
@@ -492,9 +489,12 @@
           </div>
         </div>{{-- /section-service --}}
 
-        {{-- ─── CASE STUDY SECTION ─── --}}
+        {{-- ═══════════════════════════════════════════════════════
+             CASE STUDY SECTION  (extended with full builder parity)
+             ═══════════════════════════════════════════════════════ --}}
         <div class="pb-section {{ $currentPageType === 'casestudy' ? 'active' : '' }}" id="section-casestudy">
 
+          {{-- Project Overview --}}
           <div class="pb-card" style="margin-top:16px;">
             <div class="pb-card-header"><h2><i class="fas fa-info-circle"></i> Project Overview</h2></div>
             <div class="pb-card-body">
@@ -515,6 +515,19 @@
                   <label class="pb-label"><i class="fas fa-calendar-check"></i> Completion Date</label>
                   <input type="month" name="completion_date" class="pb-input" value="{{ old('completion_date', $typeData->completion_date ?? '') }}"/>
                 </div>
+                {{-- FIX: added — business size / location / business model, shown on the detail page's info card --}}
+                <div class="pb-form-group">
+                  <label class="pb-label"><i class="fas fa-users"></i> Business Size</label>
+                  <input type="text" name="business_size" class="pb-input" placeholder="e.g. Enterprise (3,000+ Doctors)" value="{{ old('business_size', $typeData->business_size ?? '') }}"/>
+                </div>
+                <div class="pb-form-group">
+                  <label class="pb-label"><i class="fas fa-map-marker-alt"></i> Location</label>
+                  <input type="text" name="location" class="pb-input" placeholder="e.g. United States (12 States)" value="{{ old('location', $typeData->location ?? '') }}"/>
+                </div>
+                <div class="pb-form-group">
+                  <label class="pb-label"><i class="fas fa-layer-group"></i> Business Model</label>
+                  <input type="text" name="business_model" class="pb-input" placeholder="e.g. B2C + B2B Healthcare SaaS" value="{{ old('business_model', $typeData->business_model ?? '') }}"/>
+                </div>
               </div>
               <div class="pb-form-group">
                 <label class="pb-label"><i class="fas fa-external-link-alt"></i> Live Project URL <span class="lbl-badge lbl-opt">Optional</span></label>
@@ -523,6 +536,7 @@
             </div>
           </div>
 
+          {{-- The Challenge --}}
           <div class="pb-card" style="margin-top:16px;">
             <div class="pb-card-header"><h2><i class="fas fa-exclamation-circle"></i> The Challenge</h2></div>
             <div class="pb-card-body" style="padding:0;">
@@ -531,6 +545,18 @@
             </div>
           </div>
 
+          {{-- FIX: NEW — Existing Challenges list (feeds the "Existing Challenges" red-list card on the detail page) --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-times-circle"></i> Existing Challenges List</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addChallengeBtn"><i class="fas fa-plus"></i> Add Item</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="challengesContainer"></div>
+            </div>
+          </div>
+
+          {{-- Our Solution --}}
           <div class="pb-card" style="margin-top:16px;">
             <div class="pb-card-header"><h2><i class="fas fa-lightbulb"></i> Our Solution</h2></div>
             <div class="pb-card-body" style="padding:0;">
@@ -539,6 +565,85 @@
             </div>
           </div>
 
+          {{-- FIX: NEW — Goals & Objectives --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-bullseye"></i> Goals &amp; Objectives</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addGoalBtn"><i class="fas fa-plus"></i> Add Goal</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="goalsContainer"></div>
+            </div>
+          </div>
+
+          {{-- FIX: NEW — Key Modules Delivered --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-puzzle-piece"></i> Key Modules Delivered</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addModuleBtn"><i class="fas fa-plus"></i> Add Module</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="modulesContainer"></div>
+            </div>
+          </div>
+
+          {{-- FIX: NEW — Tech Stack (grouped by category) --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-layer-group"></i> Tech Stack (Grouped)</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addTechGroupBtn"><i class="fas fa-plus"></i> Add Category</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="techStackContainer"></div>
+              <div class="pb-hint"><i class="fas fa-info-circle"></i> Enter items comma-separated, e.g. "React, Next.js, TypeScript"</div>
+            </div>
+          </div>
+
+          {{-- FIX: NEW — Development Process / Timeline --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-list-ol"></i> Development Process / Timeline</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addCsStepBtn"><i class="fas fa-plus"></i> Add Step</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="csStepsContainer"></div>
+            </div>
+          </div>
+
+          {{-- FIX: NEW — Key Achievements --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-award"></i> Key Achievements</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addAchievementBtn"><i class="fas fa-plus"></i> Add Achievement</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="achievementsContainer"></div>
+            </div>
+          </div>
+
+          {{-- FIX: NEW — Before vs After table rows --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-exchange-alt"></i> Before vs After</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addBaBtn"><i class="fas fa-plus"></i> Add Row</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="baContainer"></div>
+            </div>
+          </div>
+
+          {{-- FIX: NEW — Security / Compliance badges --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-shield-alt"></i> Security / Compliance Badges <span class="lbl-badge lbl-opt">Optional</span></h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addComplianceBtn"><i class="fas fa-plus"></i> Add Badge</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="complianceContainer"></div>
+            </div>
+          </div>
+
+          {{-- Results / KPIs --}}
           <div class="pb-card" style="margin-top:16px;">
             <div class="pb-card-header">
               <h2><i class="fas fa-chart-bar"></i> Results / KPIs</h2>
@@ -546,9 +651,11 @@
             </div>
             <div class="pb-card-body">
               <div class="repeatable-container" id="kpiContainer"></div>
+              <div class="pb-hint"><i class="fas fa-info-circle"></i> The first 4 KPIs also populate the hero stat card on the detail page.</div>
             </div>
           </div>
 
+          {{-- Technologies Used --}}
           <div class="pb-card" style="margin-top:16px;">
             <div class="pb-card-header"><h2><i class="fas fa-code"></i> Technologies Used</h2></div>
             <div class="pb-card-body">
@@ -559,6 +666,18 @@
             </div>
           </div>
 
+          {{-- FIX: NEW — Screenshots / Gallery --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-images"></i> Screenshots / Gallery</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addCsGalleryBtn"><i class="fas fa-plus"></i> Add Image</button>
+            </div>
+            <div class="pb-card-body">
+              <div id="csGalleryContainer" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"></div>
+            </div>
+          </div>
+
+          {{-- Client Testimonial --}}
           <div class="pb-card" style="margin-top:16px;">
             <div class="pb-card-header"><h2><i class="fas fa-quote-left"></i> Client Testimonial <span class="lbl-badge lbl-opt" style="font-size:.58rem;">Optional</span></h2></div>
             <div class="pb-card-body">
@@ -745,7 +864,6 @@
               <div class="pb-form-group">
                 <label class="pb-label"><i class="fas fa-align-left"></i> Short Description</label>
                 <div class="pb-input-wrap">
-                  {{-- FIX: added id for counter wiring --}}
                   <textarea name="portfolio_desc" id="portfolioDesc" class="pb-textarea" rows="3"
                     placeholder="Brief project description…" maxlength="180">{{ old('portfolio_desc', $typeData->portfolio_desc ?? '') }}</textarea>
                   <span class="pb-char-count" id="portfolioDescCount">0/180</span>
@@ -812,7 +930,6 @@
             <div class="pb-card-header"><h2><i class="fas fa-align-left"></i> Excerpt</h2></div>
             <div class="pb-card-body">
               <div class="pb-input-wrap">
-                {{-- FIX: added id for counter wiring --}}
                 <textarea name="excerpt" id="blogExcerpt" class="pb-textarea" rows="4"
                   placeholder="Write a brief summary…" maxlength="300">{{ old('excerpt', $typeData->excerpt ?? '') }}</textarea>
                 <span class="pb-char-count" id="blogExcerptCount">0/300</span>
@@ -1315,7 +1432,6 @@ $(function () {
   $('#btnRegenSlug').on('click', () => {
     slugManual = false;
     $('#pbSlug').val(slugify($('#pbTitle').val()));
-    // FIX: notify validator so it resets the slug uniqueness check
     $(document).trigger('pb:slugRegenerated');
     updateSerpPreview();
     updateSeoScore();
@@ -1355,7 +1471,6 @@ $(function () {
     refresh();
   }
 
-  // FIX: Wire up ALL char counters (was missing svcShortDesc, portfolioDesc, blogExcerpt)
   initCounter($('#metaTitle'),      $('#metaTitleCounter'),   60,  30,  60,  $('#metaTitleMeter'));
   initCounter($('#metaDescription'),  $('#metaDescCounter'),  160, 120, 160, $('#metaDescMeter'));
   initCounter($('#svcShortDesc'),   $('#svcShortDescCount'),  200, 50,  200, null);
@@ -1392,10 +1507,8 @@ $(function () {
      PAGE TYPE SWITCHER
   ═══════════════════════════ */
   function switchType(type) {
-    // In edit mode the page type is fixed — don't allow changing it
     if ($('#pbForm').data('page-id') && type !== currentType) {
       toast('Page type cannot be changed after creation.', 'var(--yellow)', 'fas fa-exclamation-triangle');
-      // Re-highlight the active pill correctly
       $('.type-pill').removeClass('active');
       $(`.type-pill[data-type="${currentType}"]`).addClass('active');
       return;
@@ -1404,7 +1517,6 @@ $(function () {
     currentType = type;
     const cfg = PAGE_TYPES[type];
 
-    // UI updates
     $('.type-pill').removeClass('active');
     $(`.type-pill[data-type="${type}"]`).addClass('active');
     $('#pb-title-icon').text(cfg.icon);
@@ -1414,23 +1526,19 @@ $(function () {
     $('#pageTypeInput').val(type);
     $('#currentTypeLabel').text($(`.type-pill[data-type="${type}"]`).text().trim());
 
-    // Auto-set schema pill
     $('.schema-pill').removeClass('active');
     $(`.schema-pill input[value="${cfg.schema}"]`).closest('.schema-pill').addClass('active');
     $(`.schema-pill input[value="${cfg.schema}"]`).prop('checked', true);
 
-    // Show/hide sections
     $('.pb-section').removeClass('active');
     $(`#section-${type}`).addClass('active');
 
-    // Init Quill for this section if not done yet
     initSectionQuills(type);
 
     slugManual = false;
     updateSerpPreview();
     updateSeoScore();
 
-    // FIX: Notify validator so it re-attaches live feedback for the new type
     $(document).trigger('pb:typeChanged', [type]);
 
     toast(`Switched to: ${cfg.label}`, 'var(--primary)', 'fas fa-layer-group');
@@ -1464,7 +1572,6 @@ $(function () {
         modules: { toolbar: QUILL_TOOLBAR },
       });
 
-      // FIX: Pre-populate Quill from the hidden textarea value (handles edit mode + old() re-population)
       const $hidden = $(`#${hiddenId}`);
       const existingContent = $hidden.val();
       if (existingContent && existingContent.trim()) {
@@ -1615,7 +1722,6 @@ $(function () {
     let tags = [];
     const $wrap = $(`#${wrapId}`), $inp = $(`#${inputId}`), $hid = $(`#${hiddenId}`);
 
-    // FIX: Pre-populate tags from the hidden input value (edit mode / old() re-population)
     const existing = $hid.val();
     if (existing) {
       existing.split(',').forEach(t => { if (t.trim()) addTag(t.trim()); });
@@ -1705,7 +1811,6 @@ $(function () {
     $('#featuresContainer').append(makeRepeatItem('Feature', h, featureCount));
   }
   $('#addFeatureBtn').on('click', () => addFeature());
-  // Seed with existing data or one blank
   @isset($typeData)
     @if(isset($typeData->features) && is_array($typeData->features))
       @foreach($typeData->features as $f)
@@ -1716,7 +1821,7 @@ $(function () {
   if (featureCount === 0) addFeature();
   bindRemove($('#featuresContainer'));
 
-  // Process Steps
+  // Process Steps (Service)
   let stepCount = 0;
   function addStep(data) {
     stepCount++;
@@ -1892,6 +1997,265 @@ $(function () {
   });
 
   /* ═══════════════════════════
+     CASE STUDY — NEW REPEATERS
+  ═══════════════════════════ */
+
+  // Existing Challenges
+  let challengeCount = 0;
+  function addChallengeItem(data) {
+    challengeCount++;
+    const h = `<div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-times-circle"></i> Challenge Text</label>
+        <input type="text" name="existing_challenges[${challengeCount}][text]" class="pb-input" placeholder="e.g. Fragmented systems across states" value="${data?.text || ''}"/>
+      </div>`;
+    $('#challengesContainer').append(makeRepeatItem('Challenge', h, challengeCount));
+  }
+  $('#addChallengeBtn').on('click', () => addChallengeItem());
+  @isset($typeData)
+    @if(isset($typeData->existing_challenges) && is_array($typeData->existing_challenges))
+      @foreach($typeData->existing_challenges as $c)
+        addChallengeItem({ text: @json($c['text'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  if (challengeCount === 0) addChallengeItem();
+  bindRemove($('#challengesContainer'));
+
+  // Goals
+  let goalCount = 0;
+  function addGoal(data) {
+    goalCount++;
+    const h = `
+      <div class="pb-grid-3">
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-heading"></i> Title</label>
+          <input type="text" name="goals[${goalCount}][title]" class="pb-input" placeholder="e.g. Reduce Wait Time" value="${data?.title || ''}"/>
+        </div>
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-icons"></i> Icon</label>
+          <input type="text" name="goals[${goalCount}][icon]" class="pb-input" placeholder="fas fa-user-clock" value="${data?.icon || 'fas fa-bullseye'}"/>
+        </div>
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-palette"></i> Color</label>
+          <select name="goals[${goalCount}][color]" class="pb-select">
+            ${['cc-blue','cc-green','cc-purple','cc-yellow'].map(c => `<option value="${c}" ${data?.color===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-align-left"></i> Description</label>
+        <textarea name="goals[${goalCount}][desc]" class="pb-textarea" rows="2">${data?.desc || ''}</textarea>
+      </div>`;
+    $('#goalsContainer').append(makeRepeatItem('Goal', h, goalCount));
+  }
+  $('#addGoalBtn').on('click', () => addGoal());
+  @isset($typeData)
+    @if(isset($typeData->goals) && is_array($typeData->goals))
+      @foreach($typeData->goals as $g)
+        addGoal({ title: @json($g['title'] ?? ''), icon: @json($g['icon'] ?? ''), color: @json($g['color'] ?? ''), desc: @json($g['desc'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  if (goalCount === 0) addGoal();
+  bindRemove($('#goalsContainer'));
+
+  // Solution Modules
+  let moduleCount = 0;
+  function addModule(data) {
+    moduleCount++;
+    const h = `
+      <div class="pb-grid-2">
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-heading"></i> Module Name</label>
+          <input type="text" name="solution_modules[${moduleCount}][name]" class="pb-input" value="${data?.name || ''}"/>
+        </div>
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-icons"></i> Icon</label>
+          <input type="text" name="solution_modules[${moduleCount}][icon]" class="pb-input" value="${data?.icon || 'fas fa-cube'}"/>
+        </div>
+      </div>
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-align-left"></i> Description</label>
+        <textarea name="solution_modules[${moduleCount}][desc]" class="pb-textarea" rows="2">${data?.desc || ''}</textarea>
+      </div>`;
+    $('#modulesContainer').append(makeRepeatItem('Module', h, moduleCount));
+  }
+  $('#addModuleBtn').on('click', () => addModule());
+  @isset($typeData)
+    @if(isset($typeData->solution_modules) && is_array($typeData->solution_modules))
+      @foreach($typeData->solution_modules as $m)
+        addModule({ name: @json($m['name'] ?? ''), icon: @json($m['icon'] ?? ''), desc: @json($m['desc'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  bindRemove($('#modulesContainer'));
+
+  // Tech Stack (grouped)
+  let techGroupCount = 0;
+  function addTechGroup(data) {
+    techGroupCount++;
+    const h = `
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-folder"></i> Category Name</label>
+        <input type="text" name="tech_stack[${techGroupCount}][category]" class="pb-input" placeholder="e.g. Frontend" value="${data?.category || ''}"/>
+      </div>
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-code"></i> Items (comma-separated)</label>
+        <input type="text" name="tech_stack[${techGroupCount}][items]" class="pb-input" placeholder="React.js, Next.js, TypeScript" value="${data?.items || ''}"/>
+      </div>`;
+    $('#techStackContainer').append(makeRepeatItem('Category', h, techGroupCount));
+  }
+  $('#addTechGroupBtn').on('click', () => addTechGroup());
+  @isset($typeData)
+    @if(isset($typeData->tech_stack) && is_array($typeData->tech_stack))
+      @foreach($typeData->tech_stack as $t)
+        addTechGroup({ category: @json($t['category'] ?? ''), items: @json($t['items'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  bindRemove($('#techStackContainer'));
+
+  // Process Steps (Case Study)
+  let csStepCount = 0;
+  function addCsStep(data) {
+    csStepCount++;
+    const h = `
+      <div class="pb-grid-2">
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-tag"></i> Badge</label>
+          <input type="text" name="cs_process_steps[${csStepCount}][badge]" class="pb-input" placeholder="e.g. Weeks 1-3" value="${data?.badge || ''}"/>
+        </div>
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-heading"></i> Title</label>
+          <input type="text" name="cs_process_steps[${csStepCount}][title]" class="pb-input" value="${data?.title || ''}"/>
+        </div>
+      </div>
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-align-left"></i> Description</label>
+        <textarea name="cs_process_steps[${csStepCount}][desc]" class="pb-textarea" rows="2">${data?.desc || ''}</textarea>
+      </div>`;
+    $('#csStepsContainer').append(makeRepeatItem('Step', h, csStepCount));
+  }
+  $('#addCsStepBtn').on('click', () => addCsStep());
+  @isset($typeData)
+    @if(isset($typeData->cs_process_steps) && is_array($typeData->cs_process_steps))
+      @foreach($typeData->cs_process_steps as $s)
+        addCsStep({ badge: @json($s['badge'] ?? ''), title: @json($s['title'] ?? ''), desc: @json($s['desc'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  bindRemove($('#csStepsContainer'));
+
+  // Achievements
+  let achievementCount = 0;
+  function addAchievement(data) {
+    achievementCount++;
+    const h = `
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-heading"></i> Title</label>
+        <input type="text" name="achievements[${achievementCount}][title]" class="pb-input" value="${data?.title || ''}"/>
+      </div>
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-align-left"></i> Description</label>
+        <textarea name="achievements[${achievementCount}][desc]" class="pb-textarea" rows="2">${data?.desc || ''}</textarea>
+      </div>`;
+    $('#achievementsContainer').append(makeRepeatItem('Achievement', h, achievementCount));
+  }
+  $('#addAchievementBtn').on('click', () => addAchievement());
+  @isset($typeData)
+    @if(isset($typeData->achievements) && is_array($typeData->achievements))
+      @foreach($typeData->achievements as $a)
+        addAchievement({ title: @json($a['title'] ?? ''), desc: @json($a['desc'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  bindRemove($('#achievementsContainer'));
+
+  // Before / After
+  let baCount = 0;
+  function addBa(data) {
+    baCount++;
+    const h = `
+      <div class="pb-grid-2">
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-times-circle"></i> Before</label>
+          <input type="text" name="before_after[${baCount}][before]" class="pb-input" value="${data?.before || ''}"/>
+        </div>
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-check-circle"></i> After</label>
+          <input type="text" name="before_after[${baCount}][after]" class="pb-input" value="${data?.after || ''}"/>
+        </div>
+      </div>`;
+    $('#baContainer').append(makeRepeatItem('Row', h, baCount));
+  }
+  $('#addBaBtn').on('click', () => addBa());
+  @isset($typeData)
+    @if(isset($typeData->before_after) && is_array($typeData->before_after))
+      @foreach($typeData->before_after as $b)
+        addBa({ before: @json($b['before'] ?? ''), after: @json($b['after'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  bindRemove($('#baContainer'));
+
+  // Compliance / Trust Badges
+  let complianceCount = 0;
+  function addCompliance(data) {
+    complianceCount++;
+    const h = `
+      <div class="pb-grid-2">
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-heading"></i> Title</label>
+          <input type="text" name="compliance_items[${complianceCount}][title]" class="pb-input" value="${data?.title || ''}"/>
+        </div>
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-icons"></i> Icon</label>
+          <input type="text" name="compliance_items[${complianceCount}][icon]" class="pb-input" value="${data?.icon || 'fas fa-shield-alt'}"/>
+        </div>
+      </div>
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-align-left"></i> Description</label>
+        <textarea name="compliance_items[${complianceCount}][desc]" class="pb-textarea" rows="2">${data?.desc || ''}</textarea>
+      </div>`;
+    $('#complianceContainer').append(makeRepeatItem('Badge', h, complianceCount));
+  }
+  $('#addComplianceBtn').on('click', () => addCompliance());
+  @isset($typeData)
+    @if(isset($typeData->compliance_items) && is_array($typeData->compliance_items))
+      @foreach($typeData->compliance_items as $c)
+        addCompliance({ title: @json($c['title'] ?? ''), icon: @json($c['icon'] ?? ''), desc: @json($c['desc'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  bindRemove($('#complianceContainer'));
+
+  // Case Study Gallery (mirrors portfolio gallery pattern)
+  let csGalleryCount = 0;
+  $('#addCsGalleryBtn').on('click', () => {
+    csGalleryCount++;
+    const $input = $(`<input type="file" name="cs_gallery[${csGalleryCount}]" accept="image/*" style="display:none;"/>`);
+    $('body').append($input);
+    $input.trigger('click');
+    $input.on('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const $thumb = $(`
+          <div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1.5px solid var(--border);">
+            <img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"/>
+            <button type="button" style="position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,77,109,.85);color:#fff;cursor:pointer;font-size:.65rem;" onclick="$(this).closest('div').remove()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>`);
+        $('#csGalleryContainer').append($thumb);
+      };
+      reader.readAsDataURL(file);
+      $input.remove();
+    });
+  });
+
+  /* ═══════════════════════════
      STAR RATING
   ═══════════════════════════ */
   $('#starRating .star-btn').on('click', function () {
@@ -1993,43 +2357,34 @@ $(function () {
 
   /* ═══════════════════════════
      FORM SUBMIT
-     FIX: submitForm() is the single entry point. The validator wraps it.
-     It should:
-       1. Set the status hidden input
-       2. Sync all Quill editors to their hidden textareas
-       3. Basic client-side check (title)
-       4. Call native form.submit() directly
-     The validator wraps window.submitForm BEFORE it runs, so validation
-     fires first. The original here becomes window._pbOriginalSubmit.
   ═══════════════════════════ */
   window.submitForm = function (status) {
-    // Set status
-    $('#pbStatus').val(status);
+      $('#pageStatus').val(status).trigger('change'); // single source of truth now
 
-    // Sync all Quill editors
-    Object.entries(QUILL_MAP).forEach(([, pairs]) => {
-      pairs.forEach(({ editorId, hiddenId }) => {
-        if (quillInstances[editorId]) {
-          $(`#${hiddenId}`).val(quillInstances[editorId].root.innerHTML);
-        }
+      Object.entries(QUILL_MAP).forEach(([, pairs]) => {
+        pairs.forEach(({ editorId, hiddenId }) => {
+          if (quillInstances[editorId]) {
+            $(`#${hiddenId}`).val(quillInstances[editorId].root.innerHTML);
+          }
+        });
       });
-    });
 
-    // Minimal client-side guard (validator will also catch this, but be safe)
-    if (!$('#pbTitle').val().trim()) {
-      toast('Please enter a title before saving', 'var(--red)', 'fas fa-exclamation-circle');
-      return;
-    }
-    if (!$('#pbSlug').val().trim()) {
-      $('#pbSlug').val(slugify($('#pbTitle').val()));
-    }
+      if (!$('#pbTitle').val().trim()) {
+        toast('Please enter a title before saving', 'var(--red)', 'fas fa-exclamation-circle');
+        return;
+      }
+      if (!$('#pbSlug').val().trim()) {
+        $('#pbSlug').val(slugify($('#pbTitle').val()));
+      }
 
-    // Native submit — bypasses jQuery submit event, so no loop
-    document.getElementById('pbForm').submit();
+      // Drafts skip any client-side "required field" checks — only title is enforced above.
+      if (status === 'draft' && window.pageBuilderValidator?.disableFor) {
+        window.pageBuilderValidator.disableFor(); // see note on validator.js below
+      }
+
+      document.getElementById('pbForm').submit();
   };
 
-  // Wire top-bar + sidebar buttons
-  // FIX: use one consistent pattern; validator will intercept window.submitForm
   $('#btnPbPublish, #sidebarPublish').on('click', () => window.submitForm('published'));
   $('#btnPbDraft,   #sidebarDraft').on('click',   () => window.submitForm('draft'));
 
@@ -2042,7 +2397,12 @@ $(function () {
   /* ═══════════════════════════
      DRAG-TO-REORDER
   ═══════════════════════════ */
-  ['featuresContainer','stepsContainer','kpiContainer','skillsContainer','faqContainer','landingStatsContainer'].forEach(id => {
+  [
+    'featuresContainer','stepsContainer','kpiContainer','skillsContainer','faqContainer',
+    'landingStatsContainer','challengesContainer','goalsContainer','modulesContainer',
+    'techStackContainer','csStepsContainer','achievementsContainer','baContainer',
+    'complianceContainer',
+  ].forEach(id => {
     const el = document.getElementById(id);
     if (el && window.Sortable) {
       Sortable.create(el, {

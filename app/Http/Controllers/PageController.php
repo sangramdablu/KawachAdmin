@@ -19,6 +19,7 @@ use App\Models\PagePortfolio;
 use App\Models\PageBlog;
 use App\Models\PageLandingPage;
 use App\Services\ImageUploadService;
+use Illuminate\Validation\ValidationException;
 
 /**
  * ============================================================
@@ -191,87 +192,112 @@ class PageController extends Controller
     ════════════════════════════════════════════════ */
     public function store(Request $request, ImageUploadService $imageService)
     {
+        $status  = $request->input('status', 'draft');
+        $isDraft = $status === 'draft';
+
         Log::info('PageController@store attempt', [
             'user_id'   => auth()->id(),
             'page_type' => $request->input('page_type'),
             'title'     => $request->input('title'),
-            'status'    => $request->input('status'),
+            'status'    => $status,
             'has_image' => $request->hasFile('featured_image'),
         ]);
 
-        $validated = $this->validatePage($request);
+        $fellBackToDraft = false;
 
-        Log::debug('PageController@store: validation passed', [
-            'slug' => $validated['slug'],
-            'type' => $validated['page_type'],
-        ]);
+        if ($isDraft) {
+            // ── DRAFT: zero validation, save whatever was filled ──
+            $validated = $this->prepareDraftFields($request);
+        } else {
+            try {
+                $validated = $this->validatePage($request);
+            } catch (ValidationException $e) {
+                Log::warning('PageController@store: publish validation failed, saving as draft instead', [
+                    'errors' => $e->errors(),
+                ]);
+                $validated       = $this->prepareDraftFields($request);
+                $fellBackToDraft = true;
+            }
+        }
 
         DB::beginTransaction();
         try {
+            // Featured image upload runs regardless of draft/publish/validation outcome.
             $imagePath = $this->handleFeaturedImageUpload($request, null, $imageService);
             Log::debug('PageController@store: image handled', ['path' => $imagePath]);
 
-            [$status, $publishedAt] = $this->resolveStatus(
-                $validated['status'] ?? 'draft',
-                $validated['published_at'] ?? null
-            );
-            Log::debug('PageController@store: status resolved', ['status' => $status]);
+            [$pageStatus, $publishedAt] = $fellBackToDraft
+                ? ['draft', null]
+                : $this->resolveStatus($validated['status'] ?? 'draft', $validated['published_at'] ?? null);
 
             $page = Page::create(array_merge(
                 $this->coreFields($validated),
                 [
                     'featured_image' => $imagePath,
-                    'status'         => $status,
+                    'status'         => $pageStatus,
                     'published_at'   => $publishedAt,
                     'author_id'      => auth()->id(),
                 ]
             ));
 
             Log::info('PageController@store: base page created', [
-                'page_id'   => $page->id,
-                'page_type' => $page->page_type,
-                'slug'      => $page->slug,
+                'page_id' => $page->id, 'page_type' => $page->page_type, 'slug' => $page->slug,
             ]);
 
             $this->upsertTypeRecord($page, $request, $validated, $imageService);
 
-            Log::info('PageController@store: type record saved', [
-                'page_id'   => $page->id,
-                'page_type' => $page->page_type,
-            ]);
-
             DB::commit();
 
-            Log::info('PageController@store: SUCCESS', [
-                'page_id' => $page->id,
-                'title'   => $page->title,
-                'status'  => $page->status,
-            ]);
+            Log::info('PageController@store: SUCCESS', ['page_id' => $page->id, 'status' => $page->status]);
 
-            // ── Redirect to INDEX with success toast ──────────
-            return redirect()
-                ->route('pages.index')
-                ->with('toast', [
-                    'type'    => 'success',
-                    'message' => "🎉 {$this->typeLabel($page->page_type)} \"{$page->title}\" created successfully!",
+            if ($fellBackToDraft) {
+                return redirect()->route('pages.index')->with('toast', [
+                    'type'    => 'warning',
+                    'message' => "⚠️ Couldn't publish \"{$page->title}\" — some required fields were missing, so it was saved as a Draft instead.",
                 ]);
+            }
+
+            return redirect()->route('pages.index')->with('toast', [
+                'type'    => 'success',
+                'message' => $isDraft
+                    ? "💾 \"{$page->title}\" saved as a Draft."
+                    : "🎉 {$this->typeLabel($page->page_type)} \"{$page->title}\" created successfully!",
+            ]);
 
         } catch (\Throwable $e) {
             DB::rollBack();
 
             Log::error('PageController@store: FAILED', [
-                'user_id'   => auth()->id(),
-                'page_type' => $request->input('page_type'),
-                'title'     => $request->input('title'),
-                'error'     => $e->getMessage(),
-                'file'      => $e->getFile(),
-                'line'      => $e->getLine(),
-                'trace'     => $e->getTraceAsString(),
+                'error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
+            // Last-resort fallback: if a publish attempt blew up on the DB layer, retry once as a bare draft.
+            if (!$isDraft && !$fellBackToDraft) {
+                try {
+                    DB::beginTransaction();
+                    $draft = $this->prepareDraftFields($request);
+                    $imagePath = $this->handleFeaturedImageUpload($request, null, $imageService);
+
+                    $page = Page::create(array_merge(
+                        $this->coreFields($draft),
+                        ['featured_image' => $imagePath, 'status' => 'draft', 'published_at' => null, 'author_id' => auth()->id()]
+                    ));
+                    $this->upsertTypeRecord($page, $request, $draft, $imageService);
+                    DB::commit();
+
+                    return redirect()->route('pages.index')->with('toast', [
+                        'type'    => 'warning',
+                        'message' => "⚠️ Something went wrong publishing — saved as a Draft instead so your work isn't lost.",
+                    ]);
+                } catch (\Throwable $e2) {
+                    DB::rollBack();
+                    Log::error('PageController@store: draft fallback also failed', ['error' => $e2->getMessage()]);
+                }
+            }
+
             return back()->withInput()->with('toast', [
-                'type'    => 'error',
-                'message' => 'Failed to save page: ' . $e->getMessage(),
+                'type' => 'error', 'message' => 'Failed to save page: ' . $e->getMessage(),
             ]);
         }
     }
@@ -304,76 +330,54 @@ class PageController extends Controller
     ════════════════════════════════════════════════ */
     public function update(Request $request, Page $page, ImageUploadService $imageService)
     {
+        $status  = $request->input('status', $page->status);
+        $isDraft = $status === 'draft';
+
         Log::info('PageController@update attempt', [
-            'user_id'   => auth()->id(),
-            'page_id'   => $page->id,
-            'page_type' => $page->page_type,
-            'title'     => $request->input('title'),
-            'status'    => $request->input('status'),
+            'user_id' => auth()->id(), 'page_id' => $page->id,
+            'page_type' => $page->page_type, 'title' => $request->input('title'), 'status' => $status,
         ]);
 
-        $validated = $this->validatePage($request, $page->id);
+        $validated = $isDraft
+            ? $this->prepareDraftFields($request, $page->id)
+            : $this->validatePage($request, $page->id);
 
-        Log::debug('PageController@update: validation passed', ['page_id' => $page->id]);
+        Log::debug('PageController@update: proceeding', ['page_id' => $page->id, 'draft_mode' => $isDraft]);
 
         DB::beginTransaction();
         try {
             $imagePath = $this->handleFeaturedImageUpload($request, $page, $imageService);
-            Log::debug('PageController@update: image handled', ['path' => $imagePath]);
 
-            [$status, $publishedAt] = $this->resolveStatus(
+            [$pageStatus, $publishedAt] = $this->resolveStatus(
                 $validated['status'] ?? $page->status,
                 $validated['published_at'] ?? $page->published_at
             );
 
             $page->update(array_merge(
                 $this->coreFields($validated),
-                [
-                    'featured_image' => $imagePath,
-                    'status'         => $status,
-                    'published_at'   => $publishedAt,
-                ]
+                ['featured_image' => $imagePath, 'status' => $pageStatus, 'published_at' => $publishedAt]
             ));
-
-            Log::info('PageController@update: base record updated', [
-                'page_id' => $page->id,
-                'status'  => $status,
-            ]);
 
             $this->upsertTypeRecord($page, $request, $validated, $imageService);
 
-            Log::info('PageController@update: type record upserted', ['page_id' => $page->id]);
-
             DB::commit();
 
-            Log::info('PageController@update: SUCCESS', [
-                'page_id' => $page->id,
-                'title'   => $page->title,
+            return redirect()->route('pages.index')->with('toast', [
+                'type'    => 'success',
+                'message' => $isDraft
+                    ? "💾 \"{$page->title}\" saved as a Draft."
+                    : "✅ {$this->typeLabel($page->page_type)} \"{$page->title}\" updated!",
             ]);
-
-            // ── Redirect to INDEX with success toast ──────────
-            return redirect()
-                ->route('pages.index')
-                ->with('toast', [
-                    'type'    => 'success',
-                    'message' => "✅ {$this->typeLabel($page->page_type)} \"{$page->title}\" updated!",
-                ]);
 
         } catch (\Throwable $e) {
             DB::rollBack();
-
             Log::error('PageController@update: FAILED', [
-                'user_id' => auth()->id(),
-                'page_id' => $page->id,
-                'error'   => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-                'trace'   => $e->getTraceAsString(),
+                'page_id' => $page->id, 'error' => $e->getMessage(),
+                'file' => $e->getFile(), 'line' => $e->getLine(), 'trace' => $e->getTraceAsString(),
             ]);
 
             return back()->withInput()->with('toast', [
-                'type'    => 'error',
-                'message' => 'Failed to update page: ' . $e->getMessage(),
+                'type' => 'error', 'message' => 'Failed to update page: ' . $e->getMessage(),
             ]);
         }
     }
@@ -597,13 +601,14 @@ class PageController extends Controller
     /** Central validation — shared + type-specific rules. */
     private function validatePage(Request $request, ?int $ignoreId = null): array
     {
-        $type = $request->input('page_type', 'service');
+        $type   = $request->input('page_type', 'service');
+        $status = $request->input('status', 'draft');
 
-        Log::debug('PageController@validatePage', ['type' => $type, 'ignore_id' => $ignoreId]);
+        Log::debug('PageController@validatePage', ['type' => $type, 'status' => $status, 'ignore_id' => $ignoreId]);
 
         $rules = [
             'page_type'          => ['required', Rule::in(self::PAGE_TYPES)],
-            'title'              => 'required|string|max:200',
+            'title'              => 'required|string|max:200',   // title always required, even for drafts
             'slug'               => [
                 'required','string','max:220','regex:/^[a-z0-9\-]+$/',
                 Rule::unique('pages','slug')->ignore($ignoreId),
@@ -646,22 +651,31 @@ class PageController extends Controller
         ];
 
         return $request->validate(
-            array_merge($rules, $this->typeRules($type)),
+            array_merge($rules, $this->typeRules($type, $status)),
             $this->validationMessages()
         );
     }
 
-    private function typeRules(string $type): array
+    /**
+     * $status drives strictness:
+     *  - draft / pending  → everything content-related is optional; save whatever was filled
+     *  - published / scheduled → full required checks apply
+     */
+    private function typeRules(string $type, string $status = 'draft'): array
     {
+        $isDraft = in_array($status, ['draft', 'pending'], true);
+        $req     = $isDraft ? 'nullable' : 'required';
+        $reqWith = fn(string $withField) => $isDraft ? 'nullable' : "required_with:{$withField}";
+
         return match ($type) {
             'service' => [
                 'short_description'      => 'nullable|string|max:500',
-                'content'                => 'required|string|min:20',
+                'content'                => "{$req}|string",
                 'features'               => 'nullable|array',
-                'features.*.title'       => 'required_with:features|string|max:150',
+                'features.*.title'       => $reqWith('features') . '|string|max:150',
                 'features.*.description' => 'nullable|string|max:500',
                 'process_steps'          => 'nullable|array',
-                'process_steps.*.title'  => 'required_with:process_steps|string|max:150',
+                'process_steps.*.title'  => $reqWith('process_steps') . '|string|max:150',
                 'price_from'             => 'nullable|string|max:50',
                 'billing_cycle'          => ['nullable', Rule::in(['','one-time','monthly','yearly','per-project','hourly'])],
                 'cta_url'                => 'nullable|url|max:500',
@@ -669,39 +683,70 @@ class PageController extends Controller
                 'technologies'           => 'nullable|string|max:500',
             ],
             'casestudy' => [
-                'client_name'          => 'required|string|max:150',
-                'client_industry'      => 'nullable|string|max:100',
-                'project_duration'     => 'nullable|string|max:80',
-                'completion_date'      => 'nullable|string|max:20',
-                'project_url'          => 'nullable|url|max:500',
-                'challenge'            => 'required|string|min:20',
-                'solution'             => 'required|string|min:20',
-                'kpis'                 => 'nullable|array',
-                'kpis.*.label'         => 'required_with:kpis|string|max:100',
-                'kpis.*.value'         => 'required_with:kpis|string|max:50',
-                'cs_technologies'      => 'nullable|string|max:500',
-                'cs_testimonial_quote' => 'nullable|string|max:2000',
-                'cs_testimonial_name'  => 'nullable|string|max:150',
-                'cs_testimonial_role'  => 'nullable|string|max:150',
+                'client_name'                 => "{$req}|string|max:150",
+                'client_industry'             => 'nullable|string|max:100',
+                'business_size'               => 'nullable|string|max:150',
+                'location'                    => 'nullable|string|max:150',
+                'business_model'              => 'nullable|string|max:150',
+                'project_duration'            => 'nullable|string|max:80',
+                'completion_date'             => 'nullable|string|max:20',
+                'project_url'                 => 'nullable|url|max:500',
+                'challenge'                   => "{$req}|string",
+                'existing_challenges'         => 'nullable|array',
+                'existing_challenges.*.text'  => $reqWith('existing_challenges') . '|string|max:300',
+                'solution'                    => "{$req}|string",
+                'goals'                       => 'nullable|array',
+                'goals.*.title'               => $reqWith('goals') . '|string|max:150',
+                'goals.*.desc'                => 'nullable|string|max:400',
+                'goals.*.icon'                => 'nullable|string|max:60',
+                'goals.*.color'               => 'nullable|string|max:30',
+                'solution_modules'            => 'nullable|array',
+                'solution_modules.*.name'     => $reqWith('solution_modules') . '|string|max:150',
+                'solution_modules.*.desc'     => 'nullable|string|max:400',
+                'solution_modules.*.icon'     => 'nullable|string|max:60',
+                'kpis'                        => 'nullable|array',
+                'kpis.*.label'                => $reqWith('kpis') . '|string|max:100',
+                'kpis.*.value'                => $reqWith('kpis') . '|string|max:50',
+                'cs_technologies'             => 'nullable|string|max:500',
+                'tech_stack'                  => 'nullable|array',
+                'tech_stack.*.category'       => $reqWith('tech_stack') . '|string|max:100',
+                'tech_stack.*.items'          => 'nullable|string|max:500',
+                'cs_process_steps'            => 'nullable|array',
+                'cs_process_steps.*.badge'    => 'nullable|string|max:60',
+                'cs_process_steps.*.title'    => $reqWith('cs_process_steps') . '|string|max:150',
+                'cs_process_steps.*.desc'     => 'nullable|string|max:600',
+                'achievements'                => 'nullable|array',
+                'achievements.*.title'        => $reqWith('achievements') . '|string|max:150',
+                'achievements.*.desc'         => 'nullable|string|max:400',
+                'before_after'                => 'nullable|array',
+                'before_after.*.before'       => $reqWith('before_after') . '|string|max:200',
+                'before_after.*.after'        => $reqWith('before_after') . '|string|max:200',
+                'compliance_items'            => 'nullable|array',
+                'compliance_items.*.title'    => $reqWith('compliance_items') . '|string|max:120',
+                'compliance_items.*.desc'     => 'nullable|string|max:300',
+                'compliance_items.*.icon'     => 'nullable|string|max:60',
+                'cs_testimonial_quote'        => 'nullable|string|max:2000',
+                'cs_testimonial_name'         => 'nullable|string|max:150',
+                'cs_testimonial_role'         => 'nullable|string|max:150',
             ],
             'team' => [
-                'job_title'       => 'required|string|max:150',
+                'job_title'       => "{$req}|string|max:150",
                 'department'      => 'nullable|string|max:100',
                 'member_email'    => 'nullable|email|max:200',
                 'member_phone'    => 'nullable|string|max:50',
                 'member_location' => 'nullable|string|max:150',
-                'bio'             => 'nullable|string|min:10',
+                'bio'             => 'nullable|string',
                 'skills'          => 'nullable|array',
-                'skills.*.name'   => 'required_with:skills|string|max:80',
-                'skills.*.level'  => 'required_with:skills|integer|min:0|max:100',
+                'skills.*.name'   => $reqWith('skills') . '|string|max:80',
+                'skills.*.level'  => $reqWith('skills') . '|integer|min:0|max:100',
                 'social_linkedin' => 'nullable|url|max:500',
                 'social_twitter'  => 'nullable|url|max:500',
                 'social_github'   => 'nullable|url|max:500',
                 'social_website'  => 'nullable|url|max:500',
             ],
             'testimonial' => [
-                'testimonial_quote'    => 'required|string|min:10|max:3000',
-                'testimonial_name'     => 'required|string|max:150',
+                'testimonial_quote'    => "{$req}|string|max:3000",
+                'testimonial_name'     => "{$req}|string|max:150",
                 'testimonial_role'     => 'nullable|string|max:200',
                 'testimonial_industry' => 'nullable|string|max:100',
                 'testimonial_service'  => 'nullable|string|max:150',
@@ -711,9 +756,9 @@ class PageController extends Controller
             'faq' => [
                 'faq_category'    => ['nullable', Rule::in(['general','services','pricing','technical','support','billing','legal'])],
                 'faq_order'       => 'nullable|integer|min:0',
-                'faqs'            => 'required|array|min:1',
-                'faqs.*.question' => 'required|string|max:400',
-                'faqs.*.answer'   => 'required|string|max:5000',
+                'faqs'            => $isDraft ? 'nullable|array' : 'required|array|min:1',
+                'faqs.*.question' => "{$req}|string|max:400",
+                'faqs.*.answer'   => "{$req}|string|max:5000",
             ],
             'portfolio' => [
                 'portfolio_desc'     => 'nullable|string|max:500',
@@ -721,14 +766,14 @@ class PageController extends Controller
                 'portfolio_year'     => 'nullable|integer|min:2000|max:2099',
                 'portfolio_url'      => 'nullable|url|max:500',
                 'portfolio_tech'     => 'nullable|string|max:500',
-                'portfolio_content'  => 'nullable|string|min:20',
+                'portfolio_content'  => 'nullable|string',
             ],
             'blog' => [
-                'blog_content' => 'required|string|min:50',
+                'blog_content' => "{$req}|string",
                 'excerpt'      => 'nullable|string|max:500',
             ],
             'landing' => [
-                'hero_headline'         => 'required|string|max:250',
+                'hero_headline'         => "{$req}|string|max:250",
                 'hero_subheadline'      => 'nullable|string|max:350',
                 'cta_primary_text'      => 'nullable|string|max:100',
                 'cta_primary_url'       => 'nullable|url|max:500',
@@ -736,12 +781,12 @@ class PageController extends Controller
                 'cta_secondary_url'     => 'nullable|url|max:500',
                 'landing_content'       => 'nullable|string',
                 'landing_stats'         => 'nullable|array',
-                'landing_stats.*.value' => 'required_with:landing_stats|string|max:50',
-                'landing_stats.*.label' => 'required_with:landing_stats|string|max:100',
+                'landing_stats.*.value' => $reqWith('landing_stats') . '|string|max:50',
+                'landing_stats.*.label' => $reqWith('landing_stats') . '|string|max:100',
             ],
             default => [],
         };
-    }
+    }    
 
     private function validationMessages(): array
     {
@@ -845,9 +890,9 @@ class PageController extends Controller
         match ($page->page_type) {
             'service' => PageService::updateOrCreate(['page_id' => $page->id], [
                 'short_description' => $v['short_description'] ?? null,
-                'content'           => $v['content'],
-                'features'          => isset($v['features']) ? json_encode(array_values($v['features'])) : null,
-                'process_steps'     => isset($v['process_steps']) ? json_encode(array_values($v['process_steps'])) : null,
+                'content'           => $v['content'] ?? null,
+                'features'          => isset($v['features']) ? array_values($v['features']) : null,
+                'process_steps'     => isset($v['process_steps']) ? array_values($v['process_steps']) : null,
                 'price_from'        => $v['price_from'] ?? null,
                 'billing_cycle'     => !empty($v['billing_cycle']) ? $v['billing_cycle'] : null,
                 'cta_url'           => $v['cta_url'] ?? null,
@@ -855,35 +900,47 @@ class PageController extends Controller
                 'technologies'      => $v['technologies'] ?? null,
             ]),
             'casestudy' => PageCaseStudy::updateOrCreate(['page_id' => $page->id], [
-                'client_name'       => $v['client_name'],
-                'client_industry'   => $v['client_industry'] ?? null,
-                'project_duration'  => $v['project_duration'] ?? null,
-                'completion_date'   => $v['completion_date'] ?? null,
-                'project_url'       => $v['project_url'] ?? null,
-                'challenge'         => $v['challenge'],
-                'solution'          => $v['solution'],
-                'kpis'              => isset($v['kpis']) ? json_encode(array_values($v['kpis'])) : null,
-                'technologies'      => $v['cs_technologies'] ?? null,
-                'testimonial_quote' => $v['cs_testimonial_quote'] ?? null,
-                'testimonial_name'  => $v['cs_testimonial_name'] ?? null,
-                'testimonial_role'  => $v['cs_testimonial_role'] ?? null,
+                'client_name'          => $v['client_name'] ?? null,
+                'client_industry'      => $v['client_industry'] ?? null,
+                'business_size'        => $v['business_size'] ?? null,
+                'location'             => $v['location'] ?? null,
+                'business_model'       => $v['business_model'] ?? null,
+                'project_duration'     => $v['project_duration'] ?? null,
+                'completion_date'      => $v['completion_date'] ?? null,
+                'project_url'          => $v['project_url'] ?? null,
+                'challenge'            => $v['challenge'] ?? null,
+                'existing_challenges'  => isset($v['existing_challenges']) ? array_values($v['existing_challenges']) : null,
+                'solution'             => $v['solution'] ?? null,
+                'goals'                => isset($v['goals']) ? array_values($v['goals']) : null,
+                'solution_modules'     => isset($v['solution_modules']) ? array_values($v['solution_modules']) : null,
+                'kpis'                 => isset($v['kpis']) ? array_values($v['kpis']) : null,
+                'technologies'         => $v['cs_technologies'] ?? null,
+                'tech_stack'           => isset($v['tech_stack']) ? array_values($v['tech_stack']) : null,
+                'cs_process_steps'     => isset($v['cs_process_steps']) ? array_values($v['cs_process_steps']) : null,
+                'achievements'         => isset($v['achievements']) ? array_values($v['achievements']) : null,
+                'before_after'         => isset($v['before_after']) ? array_values($v['before_after']) : null,
+                'compliance_items'     => isset($v['compliance_items']) ? array_values($v['compliance_items']) : null,
+                'gallery'              => $this->handleCsGalleryUpload($request, $page, $imageService),
+                'testimonial_quote'    => $v['cs_testimonial_quote'] ?? null,
+                'testimonial_name'     => $v['cs_testimonial_name'] ?? null,
+                'testimonial_role'     => $v['cs_testimonial_role'] ?? null,
             ]),
             'team' => PageTeamMember::updateOrCreate(['page_id' => $page->id], [
-                'job_title'       => $v['job_title'],
+                'job_title'       => $v['job_title'] ?? null,
                 'department'      => $v['department'] ?? null,
                 'member_email'    => $v['member_email'] ?? null,
                 'member_phone'    => $v['member_phone'] ?? null,
                 'member_location' => $v['member_location'] ?? null,
                 'bio'             => $v['bio'] ?? null,
-                'skills'          => isset($v['skills']) ? json_encode(array_values($v['skills'])) : null,
+                'skills'          => isset($v['skills']) ? array_values($v['skills']) : null,
                 'social_linkedin' => $v['social_linkedin'] ?? null,
                 'social_twitter'  => $v['social_twitter'] ?? null,
                 'social_github'   => $v['social_github'] ?? null,
                 'social_website'  => $v['social_website'] ?? null,
             ]),
             'testimonial' => PageTestimonial::updateOrCreate(['page_id' => $page->id], [
-                'testimonial_quote'    => $v['testimonial_quote'],
-                'testimonial_name'     => $v['testimonial_name'],
+                'testimonial_quote'    => $v['testimonial_quote'] ?? null,
+                'testimonial_name'     => $v['testimonial_name'] ?? null,
                 'testimonial_role'     => $v['testimonial_role'] ?? null,
                 'testimonial_industry' => $v['testimonial_industry'] ?? null,
                 'testimonial_service'  => $v['testimonial_service'] ?? null,
@@ -893,7 +950,7 @@ class PageController extends Controller
             'faq' => PageFaq::updateOrCreate(['page_id' => $page->id], [
                 'faq_category' => $v['faq_category'] ?? 'general',
                 'faq_order'    => $v['faq_order'] ?? 0,
-                'faq_items'    => json_encode(array_values($v['faqs'] ?? [])),
+                'faq_items'    => array_values($v['faqs'] ?? []),
             ]),
             'portfolio' => PagePortfolio::updateOrCreate(['page_id' => $page->id], [
                 'portfolio_desc'     => $v['portfolio_desc'] ?? null,
@@ -905,38 +962,52 @@ class PageController extends Controller
                 'gallery'            => $this->handleGalleryUpload($request, $page, $imageService),
             ]),
             'blog' => PageBlog::updateOrCreate(['page_id' => $page->id], [
-                'blog_content' => $v['blog_content'],
+                'blog_content' => $v['blog_content'] ?? null,
                 'excerpt'      => $v['excerpt'] ?? null,
             ]),
             'landing' => PageLandingPage::updateOrCreate(['page_id' => $page->id], [
-                'hero_headline'      => $v['hero_headline'],
+                'hero_headline'      => $v['hero_headline'] ?? null,
                 'hero_subheadline'   => $v['hero_subheadline'] ?? null,
                 'cta_primary_text'   => $v['cta_primary_text'] ?? null,
                 'cta_primary_url'    => $v['cta_primary_url'] ?? null,
                 'cta_secondary_text' => $v['cta_secondary_text'] ?? null,
                 'cta_secondary_url'  => $v['cta_secondary_url'] ?? null,
                 'landing_content'    => $v['landing_content'] ?? null,
-                'landing_stats'      => isset($v['landing_stats']) ? json_encode(array_values($v['landing_stats'])) : null,
+                'landing_stats'      => isset($v['landing_stats']) ? array_values($v['landing_stats']) : null,
             ]),
         };
     }
 
-    private function handleGalleryUpload(Request $request, ?Page $page, ImageUploadService $imageService): ?string
+
+    private function handleCsGalleryUpload(Request $request, ?Page $page, ImageUploadService $imageService): ?array
     {
-        $existing = [];
-        if ($page) {
-            $typeData = $page->portfolio;
-            $existing = $typeData ? (json_decode($typeData->gallery ?? '[]', true) ?? []) : [];
+        // The model casts `gallery` to array — no json_decode needed anymore.
+        $existing = $page?->caseStudy?->gallery ?? [];
+
+        if (!$request->hasFile('cs_gallery')) {
+            return $existing ?: null;
         }
+        foreach ($request->file('cs_gallery') as $file) {
+            if (!$file || !$file->isValid()) continue;
+            $upload = $imageService->uploadToPublic($file, 'page_images/case_study/gallery');
+            $existing[] = $upload['path'];
+        }
+        return $existing;
+    }
+
+    private function handleGalleryUpload(Request $request, ?Page $page, ImageUploadService $imageService): ?array
+    {
+        $existing = $page?->portfolio?->gallery ?? [];
+
         if (!$request->hasFile('gallery')) {
-            return $existing ? json_encode($existing) : null;
+            return $existing ?: null;
         }
         foreach ($request->file('gallery') as $file) {
             if (!$file || !$file->isValid()) continue;
             $upload     = $imageService->uploadToPublic($file, 'page_images/portfolio/gallery');
             $existing[] = $upload['path'];
         }
-        return json_encode($existing);
+        return $existing;
     }
 
     private function loadTypeData(Page $page): ?object
@@ -968,4 +1039,55 @@ class PageController extends Controller
             default       => ucfirst($type),
         };
     }
+
+    /**
+     * Draft path — no validation. Pull everything the form sent, as-is.
+     * Only guards against things that would literally crash the query
+     * (missing title/slug/page_type), and even those are auto-repaired,
+     * never rejected.
+     */
+    private function prepareDraftFields(Request $request, ?int $ignoreId = null): array
+    {
+        $data = $request->except(['_token', '_method', 'featured_image', 'gallery', 'cs_gallery']);
+
+        // Title: never block on this — just default it.
+        $data['title'] = trim((string) ($data['title'] ?? '')) ?: 'Untitled Draft';
+
+        // Slug: auto-generate from title if blank, silently de-duplicate instead of erroring.
+        $slug = Str::slug(trim((string) ($data['slug'] ?? '')) ?: $data['title']);
+        if ($slug === '') {
+            $slug = 'draft-' . Str::random(6);
+        }
+        $data['slug'] = $this->makeUniqueSlug($slug, $ignoreId);
+
+        // page_type / visibility / status: keep whatever was sent if valid, else safe default.
+        $data['page_type']  = in_array($data['page_type'] ?? '', self::PAGE_TYPES, true)
+            ? $data['page_type'] : 'service';
+        $data['visibility'] = in_array($data['visibility'] ?? '', ['public', 'private', 'password'], true)
+            ? $data['visibility'] : 'public';
+        $data['status']     = 'draft';
+
+        Log::debug('PageController@prepareDraftFields: bypassing validation for draft', [
+            'page_type' => $data['page_type'],
+            'slug'      => $data['slug'],
+        ]);
+
+        return $data;
+    }
+
+    /** Silently de-duplicate a slug instead of throwing a "slug taken" error. */
+    private function makeUniqueSlug(string $slug, ?int $ignoreId = null): string
+    {
+        $original = $slug;
+        $i = 2;
+        while (
+            Page::where('slug', $slug)
+                ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = $original . '-' . $i++;
+        }
+        return $slug;
+    }
+
 }
