@@ -32,7 +32,7 @@ class PageCaseStudy extends Model
         'kpis', 
         'technologies', 
         'tech_stack',
-        'cs_process_steps', 
+        'cs_process_steps',
         'achievements', 
         'before_after', 
         'compliance_items', 
@@ -40,6 +40,8 @@ class PageCaseStudy extends Model
         'testimonial_quote', 
         'testimonial_name', 
         'testimonial_role',
+        'cs_features',
+        'cs_faqs',
     ];
 
     protected $casts = [
@@ -53,6 +55,8 @@ class PageCaseStudy extends Model
         'before_after'        => 'array',
         'compliance_items'    => 'array',
         'gallery'             => 'array',
+        'cs_features'         => 'array',
+        'cs_faqs'             => 'array',
     ];
  
     // ── Relationships ────────────────────────────────────────

@@ -798,12 +798,22 @@ $(function () {
     $(this).find('.check-box').toggleClass('checked', $inp.prop('checked'));
   });
 
-  /* ── Submit loading state ── */
-  $('#loginForm').on('submit', function () {
+  /* ── Submit loading state (refresh CSRF first to survive long idle) ── */
+  $('#loginForm').on('submit', function (e) {
+    e.preventDefault();
+    var form = this;
     var $btn = $('#loginBtn');
     $('#loginBtnText').text('Signing in…');
     $btn.prop('disabled', true).css('opacity', '.75');
     $btn.find('i').removeClass('fa-sign-in-alt').addClass('fa-spinner fa-spin');
+
+    $.get('/csrf-refresh', function (data) {
+      $('input[name="_token"]', form).val(data.token);
+      form.submit();
+    }).fail(function () {
+      // If refresh fails, submit anyway (browser will handle any error)
+      form.submit();
+    });
   });
 
   /* ── Input focus: icon colour ── */

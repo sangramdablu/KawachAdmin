@@ -728,6 +728,13 @@ class PageController extends Controller
                 'cs_testimonial_quote'        => 'nullable|string|max:2000',
                 'cs_testimonial_name'         => 'nullable|string|max:150',
                 'cs_testimonial_role'         => 'nullable|string|max:150',
+                'cs_features'                 => 'nullable|array',
+                'cs_features.*.icon'          => 'nullable|string|max:60',
+                'cs_features.*.title'         => $reqWith('cs_features') . '|string|max:150',
+                'cs_features.*.desc'          => 'nullable|string|max:500',
+                'cs_faqs'                     => 'nullable|array',
+                'cs_faqs.*.question'          => $reqWith('cs_faqs') . '|string|max:400',
+                'cs_faqs.*.answer'            => $reqWith('cs_faqs') . '|string|max:3000',
             ],
             'team' => [
                 'job_title'       => "{$req}|string|max:150",
@@ -924,6 +931,8 @@ class PageController extends Controller
                 'testimonial_quote'    => $v['cs_testimonial_quote'] ?? null,
                 'testimonial_name'     => $v['cs_testimonial_name'] ?? null,
                 'testimonial_role'     => $v['cs_testimonial_role'] ?? null,
+                'cs_features'          => isset($v['cs_features']) ? array_values($v['cs_features']) : null,
+                'cs_faqs'              => isset($v['cs_faqs']) ? array_values($v['cs_faqs']) : null,
             ]),
             'team' => PageTeamMember::updateOrCreate(['page_id' => $page->id], [
                 'job_title'       => $v['job_title'] ?? null,

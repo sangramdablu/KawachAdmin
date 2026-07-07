@@ -621,6 +621,28 @@
             </div>
           </div>
 
+          {{-- FIX: NEW — Features Developed --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-check-circle"></i> Features Developed</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addCsFeatureBtn"><i class="fas fa-plus"></i> Add Feature</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="csFeaturesContainer"></div>
+            </div>
+          </div>
+
+          {{-- FIX: NEW — Case Study FAQ --}}
+          <div class="pb-card" style="margin-top:16px;">
+            <div class="pb-card-header">
+              <h2><i class="fas fa-question-circle"></i> FAQ</h2>
+              <button type="button" class="btn-pb btn-pb-outline btn-sm" id="addCsFaqBtn"><i class="fas fa-plus"></i> Add Q&amp;A</button>
+            </div>
+            <div class="pb-card-body">
+              <div class="repeatable-container" id="csFaqContainer"></div>
+            </div>
+          </div>
+
           {{-- FIX: NEW — Before vs After table rows --}}
           <div class="pb-card" style="margin-top:16px;">
             <div class="pb-card-header">
@@ -2170,6 +2192,70 @@ $(function () {
     @endif
   @endisset
   bindRemove($('#achievementsContainer'));
+
+  // Features Developed (Case Study)
+  let csFeatureCount = 0;
+  function addCsFeature(data) {
+    csFeatureCount++;
+    const h = `
+      <div class="pb-grid-2">
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-heading"></i> Title</label>
+          <input type="text" name="cs_features[${csFeatureCount}][title]" class="pb-input" placeholder="e.g. HD Video Consultation" value="${data?.title || ''}"/>
+        </div>
+        <div class="pb-form-group">
+          <label class="pb-label"><i class="fas fa-icons"></i> Icon</label>
+          <input type="text" name="cs_features[${csFeatureCount}][icon]" class="pb-input" placeholder="fas fa-video" value="${data?.icon || 'fas fa-star'}"/>
+        </div>
+      </div>
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-align-left"></i> Description</label>
+        <textarea name="cs_features[${csFeatureCount}][desc]" class="pb-textarea" rows="2">${data?.desc || ''}</textarea>
+      </div>`;
+    $('#csFeaturesContainer').append(makeRepeatItem('Feature', h, csFeatureCount));
+  }
+  $('#addCsFeatureBtn').on('click', () => addCsFeature());
+  @isset($typeData)
+    @if(isset($typeData->cs_features) && is_array($typeData->cs_features))
+      @foreach($typeData->cs_features as $f)
+        addCsFeature({ title: @json($f['title'] ?? ''), icon: @json($f['icon'] ?? 'fas fa-star'), desc: @json($f['desc'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  bindRemove($('#csFeaturesContainer'));
+  [
+    'featuresContainer','stepsContainer','kpiContainer','skillsContainer','faqContainer',
+    'landingStatsContainer','challengesContainer','goalsContainer','modulesContainer',
+    'techStackContainer','csStepsContainer','achievementsContainer','baContainer',
+    'complianceContainer','csFeaturesContainer','csFaqContainer',
+  ].forEach(id => { /* ...unchanged... */ });
+
+  
+
+  // FAQ (Case Study)
+  let csFaqCount = 0;
+  function addCsFaq(data) {
+    csFaqCount++;
+    const h = `
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-question"></i> Question</label>
+        <input type="text" name="cs_faqs[${csFaqCount}][question]" class="pb-input" placeholder="Frequently asked question…" value="${data?.question || ''}"/>
+      </div>
+      <div class="pb-form-group">
+        <label class="pb-label"><i class="fas fa-comment-dots"></i> Answer</label>
+        <textarea name="cs_faqs[${csFaqCount}][answer]" class="pb-textarea" rows="3">${data?.answer || ''}</textarea>
+      </div>`;
+    $('#csFaqContainer').append(makeRepeatItem('Q&A', h, csFaqCount));
+  }
+  $('#addCsFaqBtn').on('click', () => addCsFaq());
+  @isset($typeData)
+    @if(isset($typeData->cs_faqs) && is_array($typeData->cs_faqs))
+      @foreach($typeData->cs_faqs as $fq)
+        addCsFaq({ question: @json($fq['question'] ?? ''), answer: @json($fq['answer'] ?? '') });
+      @endforeach
+    @endif
+  @endisset
+  bindRemove($('#csFaqContainer'));
 
   // Before / After
   let baCount = 0;
