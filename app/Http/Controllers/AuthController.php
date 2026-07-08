@@ -44,7 +44,22 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt(['email'    => $request->email, 'password' => $request->password,])) {
+            if (Auth::user()->status !== 'active') {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Your account has been deactivated. Please contact an administrator.',
+                ]);
+            }
+
             $request->session()->regenerate();
+
+            if (Auth::user()->hasRole('client')) {
+                return redirect()->route('client.portal');
+            }
+
             return redirect()->route('dashboard');
         }
         return back()->withErrors([

@@ -85,15 +85,30 @@
         </div>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-sm mx-auto">
-            <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('dashboard') }}" 
+            <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('dashboard') }}"
                class="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg border border-slate-700 transition duration-200 shadow-md inline-flex items-center justify-center gap-2">
                 <i class="fa-solid fa-arrow-left text-xs"></i> Go Back
             </a>
-            
-            <a href="{{ route('dashboard') }}" 
+
+            @auth
+            <a href="{{ auth()->user()->hasRole('client') ? route('client.portal') : route('dashboard') }}"
                class="w-full sm:w-auto px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium rounded-lg transition duration-200 shadow-lg shadow-sky-600/20 inline-flex items-center justify-center gap-2">
-                <i class="fa-solid fa-house text-xs"></i> Dashboard Base
+                <i class="fa-solid fa-house text-xs"></i> My Home
             </a>
+
+            <form action="{{ route('logout') }}" method="POST" class="w-full sm:w-auto">
+                @csrf
+                <button type="submit"
+                        class="w-full sm:w-auto px-5 py-2.5 bg-transparent hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-sm font-medium rounded-lg border border-slate-700 transition duration-200 inline-flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i> Logout
+                </button>
+            </form>
+            @else
+            <a href="{{ route('login') }}"
+               class="w-full sm:w-auto px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium rounded-lg transition duration-200 shadow-lg shadow-sky-600/20 inline-flex items-center justify-center gap-2">
+                <i class="fa-solid fa-right-to-bracket text-xs"></i> Login
+            </a>
+            @endauth
         </div>
 
         <div class="mt-16 text-xs text-slate-600 tracking-wide uppercase">

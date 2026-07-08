@@ -7,6 +7,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\BillingAndAgreementController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientPortalController;
+use App\Http\Controllers\ClientBillingController;
 use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\InvitationController;
 
@@ -44,6 +45,13 @@ Route::middleware('guest')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Logout — must work for every authenticated role, never role-restricted.
+|--------------------------------------------------------------------------
+*/
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
 | Authenticated Routes
 | 'auth'  — must be logged in
 | 'admin' — must have any recognised Spatie role (see AdminMiddleware)
@@ -57,7 +65,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     |----------------------------------------------------------------------
     */
     Route::get('/dashboard', fn() => view('dashboard.dashboard'))->name('dashboard');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
     /*
     |----------------------------------------------------------------------
@@ -173,7 +180,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 |--------------------------------------------------------------------------
 */
  
-Route::middleware(['auth', 'check-role:super-admin,admin'])->prefix('billing')->name('billing.')->group(function () {
+Route::middleware(['auth', 'check-role:super-admin,admin', 'check-permission:settings.billing'])->prefix('billing')->name('billing.')->group(function () {
         // ── AJAX: live calculation (called on every form change) ──────────
         Route::post('calculate', [BillingAndAgreementController::class, 'calculate'])->name('calculate');
         // ── CRUD ──────────────────────────────────────────────────────────
@@ -231,23 +238,28 @@ Route::middleware(['auth', 'check-role:super-admin,admin'])->prefix('admin/roles
 Route::middleware(['auth', 'check-role:client'])->group(function () {
     Route::get('/client/portal', [ClientPortalController::class, 'index'])
          ->name('client.portal');
+
+    // Read-only view of the client's own agreements — no create/edit/delete.
+    Route::get('/client/billing',            [ClientBillingController::class, 'index'])->name('client.billing.index');
+    Route::get('/client/billing/{uuid}',     [ClientBillingController::class, 'show'])->name('client.billing.show');
+    Route::get('/client/billing/{uuid}/pdf', [ClientBillingController::class, 'pdf'])->name('client.billing.pdf');
 });
  
 // ── ADMIN: Client management ──────────────────────────────────────────────
 Route::middleware(['auth', 'check-role:super-admin,admin'])->group(function () {
     // Client users (CRUD)
-    Route::get('/clients',                [ClientController::class, 'index'])  ->name('clients.index');
+    Route::get('/clients',                [ClientController::class, 'index'])  ->middleware('check-permission:clients.view')->name('clients.index');
     Route::get('/clients/create',         [ClientController::class, 'create']) ->middleware('check-permission:clients.create')->name('clients.create');
     Route::post('/clients',               [ClientController::class, 'store'])  ->middleware('check-permission:clients.create')->name('clients.store');
     Route::get('/clients/{client}/edit',  [ClientController::class, 'edit'])   ->middleware('check-permission:clients.edit')->name('clients.edit');
     Route::put('/clients/{client}',       [ClientController::class, 'update']) ->middleware('check-permission:clients.edit')->name('clients.update');
     Route::delete('/clients/{client}',    [ClientController::class, 'destroy'])->middleware('check-permission:clients.delete')->name('clients.destroy');
     // Project progress management
-    Route::put('/client-projects/{project}/progress', [ClientController::class, 'updateProject'])->name('client-projects.update');
-    Route::post('/client-projects/{project}/tasks',   [ClientController::class, 'storeTask'])->name('client-projects.tasks.store');
-    Route::post('/client-projects/{project}/team',    [ClientController::class, 'storeTeamMember'])->name('client-projects.team.store');
+    Route::put('/client-projects/{project}/progress', [ClientController::class, 'updateProject'])->middleware('check-permission:clients.edit')->name('client-projects.update');
+    Route::post('/client-projects/{project}/tasks',   [ClientController::class, 'storeTask'])->middleware('check-permission:clients.edit')->name('client-projects.tasks.store');
+    Route::post('/client-projects/{project}/team',    [ClientController::class, 'storeTeamMember'])->middleware('check-permission:clients.edit')->name('client-projects.team.store');
     // Invoice management
-    Route::post('/clients/{client}/invoices', [ClientController::class, 'storeInvoice'])->name('clients.invoices.store');
+    Route::post('/clients/{client}/invoices', [ClientController::class, 'storeInvoice'])->middleware('check-permission:clients.edit')->name('clients.invoices.store');
 });
 
 // Route::post( '/agreement/sign/{token}', [BillingAndAgreementController::class, 'submitSignature'] )->name('billing.sign.submit');
@@ -290,7 +302,7 @@ Route::get('/agreements/signed/thank-you',    [BillingAndAgreementController::cl
 
 
 // ── Admin billing routes (auth protected) ────────────────────────────────
-Route::middleware(['auth', 'check-role:super-admin,admin'])->group(function () {
+Route::middleware(['auth', 'check-role:super-admin,admin', 'check-permission:settings.billing'])->group(function () {
     Route::get('/billing',                          [BillingAndAgreementController::class, 'index'])->name('billing.index');
     Route::get('/billing/create',                   [BillingAndAgreementController::class, 'create'])->name('billing.create');
     Route::post('/billing',                         [BillingAndAgreementController::class, 'store'])->name('billing.store');

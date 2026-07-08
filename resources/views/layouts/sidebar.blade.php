@@ -11,6 +11,16 @@
 
   <nav class="sidebar-nav">
 
+    @hasrole('client')
+    <!-- Billing & Agreement (client — view only) -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('client.billing.index') }}"
+          class="nav-link-item {{ request()->routeIs('client.billing.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-handshake"></i> Billing & Agreement
+      </a>
+    </div>
+    @else
+
     <!-- Dashboard -->
     <div class="nav-item-wrap">
     <a href="{{ route('dashboard') }}"
@@ -19,7 +29,7 @@
     </a>
     </div>
 
-    {{-- @hasanyrole('super-admin|admin') --}}
+    @can('blog.view')
     <!-- Blog -->
     <div class="nav-item-wrap">
       <a href="{{ route('blogs.index') }}"
@@ -27,6 +37,9 @@
           <i class="fa-solid fa-blog"></i> Blog
       </a>
     </div>
+    @endcan
+
+    @can('settings.billing')
     <!-- Billing -->
     <div class="nav-item-wrap">
       <a href="{{ route('billing.index') }}"
@@ -34,8 +47,9 @@
           <i class="fa-solid fa-handshake"></i> Billing & Agreement
       </a>
     </div>
-    {{-- @endhasanyrole --}}
+    @endcan
 
+    @can('pages.view')
     <!-- Page -->
     <div class="nav-item-wrap">
     <a href="{{ route('pages.index') }}"
@@ -43,7 +57,9 @@
         <i class="fa-solid fa-file-lines"></i> Page
     </a>
     </div>
+    @endcan
 
+    @hasanyrole('super-admin|admin')
     <!-- Roles & Permissions -->
     <div class="nav-item-wrap">
     <a href="{{ route('roles-access.roles.index') }}"
@@ -51,7 +67,9 @@
         <i class="fa-solid fa-unlock"></i> Role & Permission
     </a>
     </div>
+    @endhasanyrole
 
+    @can('clients.view')
     <!-- Clients -->
     <div class="nav-item-wrap">
       <a href="{{ route('clients.index') }}"
@@ -59,6 +77,7 @@
           <i class="fas fa-user-tie nav-icon"></i> Client
       </a>
     </div>
+    @endcan
 
     <!-- Reports -->
     <div class="nav-item-wrap">
@@ -113,6 +132,8 @@
         <a class="nav-link-item" data-page="Roles"><i class="fas fa-circle nav-icon" style="font-size:.4rem;"></i> Roles</a>
       </div>
     </div>
+
+    @endhasrole
 
   </nav>
 
