@@ -10,8 +10,21 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.core.min.css" rel="stylesheet">  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.core.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+  @auth
+    <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+    <script>
+      window.__authUserId = {{ auth()->id() }};
+      window.__reverbConfig = {
+        key: '{{ config('reverb.apps.apps.0.key') }}',
+        host: '{{ config('reverb.apps.apps.0.options.host') }}',
+        port: {{ config('reverb.apps.apps.0.options.port') }},
+        scheme: '{{ config('reverb.apps.apps.0.options.scheme') }}',
+      };
+    </script>
+  @endauth
   <script>
     (function () {
       const theme = localStorage.getItem('theme');

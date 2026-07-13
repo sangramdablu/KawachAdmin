@@ -91,12 +91,15 @@
         <i class="far fa-comment-dots nav-icon"></i> Messages
       </a>
     </div>
+    @can('tasks.view')
     <!-- Tasks -->
     <div class="nav-item-wrap">
-      <a class="nav-link-item" data-page="Tasks">
-        <i class="fas fa-tasks nav-icon"></i> Tasks
+      <a href="{{ route('tasks.index') }}"
+          class="nav-link-item {{ request()->routeIs('tasks.*') ? 'active' : '' }}">
+          <i class="fas fa-tasks nav-icon"></i> Tasks
       </a>
     </div>
+    @endcan
     <!-- Calendar -->
     <div class="nav-item-wrap">
       <a class="nav-link-item" data-page="Calendar">

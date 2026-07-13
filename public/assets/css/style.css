@@ -359,6 +359,7 @@
   .notif-body strong { font-size: .83rem; color: var(--text-dark); display: block; margin-bottom: 2px; }
   .notif-body p { font-size: .76rem; color: var(--text-muted); margin: 0; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .notif-time { font-size: .7rem; color: var(--text-muted); white-space: nowrap; margin-top: 2px; }
+  .notif-empty { padding: 28px 18px; text-align: center; color: var(--text-muted); font-size: .82rem; }
 
   .msg-item {
     display: flex;

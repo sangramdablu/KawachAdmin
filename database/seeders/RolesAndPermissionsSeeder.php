@@ -48,6 +48,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'clients.edit'   => 'Edit Clients',
             'clients.delete' => 'Delete Clients',
         ],
+        'Tasks' => [
+            'tasks.view'           => 'View Tasks',
+            'tasks.create'         => 'Create Tasks',
+            'tasks.edit'           => 'Edit Tasks',
+            'tasks.delete'         => 'Delete Tasks',
+            'tasks.manage-columns' => 'Manage Task Columns',
+        ],
     ];
 
     // Default permission sets per role
@@ -59,18 +66,21 @@ class RolesAndPermissionsSeeder extends Seeder
             'media.view','media.upload',
             'users.view','users.invite','users.edit',
             'settings.view',
+            'tasks.view','tasks.create','tasks.edit','tasks.delete','tasks.manage-columns',
         ],
         'editor' => [
             'pages.view','pages.create','pages.edit',
             'blog.view','blog.create','blog.edit',
             'media.view','media.upload',
+            'tasks.view','tasks.create','tasks.edit',
         ],
-        'viewer'  => ['pages.view','blog.view','media.view'],
+        'viewer'  => ['pages.view','blog.view','media.view','tasks.view'],
         'content-manager' => [
             'pages.view','pages.create','pages.edit','pages.publish',
             'blog.view','blog.create','blog.edit','blog.publish',
             'media.view','media.upload',
             'users.view',
+            'tasks.view','tasks.create','tasks.edit',
         ],
         'client' => [
             'clients.view',

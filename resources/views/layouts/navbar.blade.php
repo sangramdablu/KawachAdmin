@@ -14,7 +14,7 @@
     <!-- Notifications -->
     <button class="icon-btn" id="btnNotif" title="Notifications">
       <i class="fas fa-bell"></i>
-      <span class="badge-dot badge-red" id="notifBadge">3</span>
+      <span class="badge-dot badge-red" id="notifBadge" style="{{ ($unreadNotifCount ?? 0) ? '' : 'display:none;' }}">{{ $unreadNotifCount ?? 0 }}</span>
     </button>
 
     <!-- Messages -->

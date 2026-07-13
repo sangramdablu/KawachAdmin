@@ -9,52 +9,23 @@
 <!-- ══════════ NOTIFICATION DROPDOWN ══════════ -->
 <div class="topbar-dropdown" id="notifDropdown">
   <div class="dropdown-head">
-    <h6><i class="fas fa-bell" style="color:var(--primary);margin-right:6px;"></i> Notifications <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">(3 new)</span></h6>
+    <h6><i class="fas fa-bell" style="color:var(--primary);margin-right:6px;"></i> Notifications <span id="notifHeadCount" style="font-size:.75rem;color:var(--text-muted);font-weight:600;">({{ $unreadNotifCount ?? 0 }} new)</span></h6>
     <button class="dropdown-mark-all" id="markAllRead">Mark all read</button>
   </div>
-  <div class="dropdown-body">
-    <div class="notif-item unread" data-id="1">
-      <div class="notif-icon ni-blue"><i class="fas fa-chart-line"></i></div>
-      <div class="notif-body">
-        <strong>Revenue milestone reached</strong>
-        <p>Monthly revenue crossed $24,000 target</p>
-        <span class="notif-time"><i class="fas fa-clock" style="font-size:.65rem;"></i> 2 mins ago</span>
+  <div class="dropdown-body" id="notifList">
+    @forelse(($notifications ?? collect()) as $n)
+      <div class="notif-item {{ $n->read_at ? '' : 'unread' }}" data-id="{{ $n->id }}" data-url="{{ $n->data['url'] ?? '#' }}">
+        <div class="notif-icon" style="background:{{ ($n->data['color'] ?? '#1a73e8') }}1a; color:{{ $n->data['color'] ?? '#1a73e8' }};"><i class="{{ $n->data['icon'] ?? 'fas fa-bell' }}"></i></div>
+        <div class="notif-body">
+          <strong>{{ $n->data['title'] ?? 'Notification' }}</strong>
+          <p>{{ $n->data['message'] ?? '' }}</p>
+          <span class="notif-time"><i class="fas fa-clock" style="font-size:.65rem;"></i> {{ $n->created_at->diffForHumans() }}</span>
+        </div>
       </div>
-    </div>
-    <div class="notif-item unread" data-id="2">
-      <div class="notif-icon ni-green"><i class="fas fa-user-plus"></i></div>
-      <div class="notif-body">
-        <strong>New team member joined</strong>
-        <p>Sarah Johnson accepted the invitation</p>
-        <span class="notif-time"><i class="fas fa-clock" style="font-size:.65rem;"></i> 18 mins ago</span>
-      </div>
-    </div>
-    <div class="notif-item unread" data-id="3">
-      <div class="notif-icon ni-red"><i class="fas fa-exclamation-triangle"></i></div>
-      <div class="notif-body">
-        <strong>Server alert</strong>
-        <p>CPU usage exceeded 85% on Node-03</p>
-        <span class="notif-time"><i class="fas fa-clock" style="font-size:.65rem;"></i> 42 mins ago</span>
-      </div>
-    </div>
-    <div class="notif-item" data-id="4">
-      <div class="notif-icon ni-yellow"><i class="fas fa-star"></i></div>
-      <div class="notif-body">
-        <strong>New 5-star review</strong>
-        <p>A client left an excellent review on your project</p>
-        <span class="notif-time"><i class="fas fa-clock" style="font-size:.65rem;"></i> 2 hours ago</span>
-      </div>
-    </div>
-    <div class="notif-item" data-id="5">
-      <div class="notif-icon ni-purple"><i class="fas fa-robot"></i></div>
-      <div class="notif-body">
-        <strong>AI Analytics report ready</strong>
-        <p>Weekly AI insights report has been generated</p>
-        <span class="notif-time"><i class="fas fa-clock" style="font-size:.65rem;"></i> Yesterday</span>
-      </div>
-    </div>
+    @empty
+      <div class="notif-empty" id="notifEmpty">No notifications yet</div>
+    @endforelse
   </div>
-  <div class="dropdown-footer"><a href="#">View all notifications →</a></div>
 </div>
 
 <!-- ══════════ MESSAGES DROPDOWN ══════════ -->
@@ -173,6 +144,9 @@
 {{-- CDN libraries --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+@auth
+  <script src="{{ asset('assets/js/notifications.js') }}"></script>
+@endauth
 @stack('scripts')
 
 </body>

@@ -21,6 +21,7 @@ $(function () {
     $('#toastStack').append($t);
     setTimeout(() => $t.fadeOut(300, () => $t.remove()), 3200);
   }
+  window.showToast = showToast;
 
   /* ─── SIDEBAR TOGGLE (mobile) ─── */
   $('#toggleBtn').on('click', function (e) {
@@ -74,15 +75,27 @@ $(function () {
     if (!isOpen) $('#notifDropdown').addClass('show');
   });
 
-  /* Mark individual notification read */
+  /* Mark individual notification read, then follow its link */
   $(document).on('click', '.notif-item', function () {
-    $(this).removeClass('unread');
+    const $item = $(this);
+    const id = $item.data('id');
+    const url = $item.data('url');
+    const wasUnread = $item.hasClass('unread');
+    $item.removeClass('unread');
     updateNotifBadge();
+    if (wasUnread && id) {
+      $.post(`/notifications/${id}/read`).always(function () {
+        if (url && url !== '#') window.location.href = url;
+      });
+    } else if (url && url !== '#') {
+      window.location.href = url;
+    }
   });
 
   /* Mark all read */
   $('#markAllRead').on('click', function (e) {
     e.stopPropagation();
+    $.post('/notifications/mark-all-read');
     $('.notif-item').removeClass('unread');
     updateNotifBadge();
     showToast('All notifications marked as read', '#00c896', 'fas fa-check-circle');
@@ -90,9 +103,10 @@ $(function () {
 
   function updateNotifBadge() {
     const count = $('.notif-item.unread').length;
-    if (count > 0) { $('#notifBadge').text(count).show(); }
-    else { $('#notifBadge').hide(); }
+    if (count > 0) { $('#notifBadge').text(count).show(); $('#notifHeadCount').text('(' + count + ' new)'); }
+    else { $('#notifBadge').hide(); $('#notifHeadCount').text('(0 new)'); }
   }
+  window.updateNotifBadge = updateNotifBadge;
 
   /* ─── MESSAGES DROPDOWN ─── */
   $('#btnMessages').on('click', function (e) {

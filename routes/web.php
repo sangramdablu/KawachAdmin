@@ -10,6 +10,8 @@ use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ClientBillingController;
 use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -171,6 +173,52 @@ Route::middleware(['auth', 'admin'])->group(function () {
     */
     Route::get('/admin/roles-access', [RoleAccessController::class, 'index'])->name('roles-access.index')->middleware('check-role:super-admin,admin');
 
+    /*
+    |----------------------------------------------------------------------
+    | Tasks (Kanban board) Routes
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('tasks')->name('tasks.')->group(function () {
+
+        Route::middleware('check-permission:tasks.view')->group(function () {
+            Route::get('/', [TaskController::class, 'index'])->name('index');
+            Route::get('/cards/{card}/comments', [TaskController::class, 'getComments'])->name('cards.comments.index');
+            Route::post('/cards/{card}/comments', [TaskController::class, 'storeComment'])->name('cards.comments.store');
+            Route::delete('/comments/{comment}', [TaskController::class, 'destroyComment'])->name('cards.comments.destroy');
+        });
+
+        Route::middleware('check-permission:tasks.create')->group(function () {
+            Route::post('/cards', [TaskController::class, 'storeCard'])->name('cards.store');
+        });
+
+        Route::middleware('check-permission:tasks.edit')->group(function () {
+            Route::put('/cards/{card}', [TaskController::class, 'updateCard'])->name('cards.update');
+            Route::patch('/cards/{card}/move', [TaskController::class, 'moveCard'])->name('cards.move');
+        });
+
+        Route::middleware('check-permission:tasks.delete')->group(function () {
+            Route::delete('/cards/{card}', [TaskController::class, 'destroyCard'])->name('cards.destroy');
+        });
+
+        Route::middleware('check-permission:tasks.manage-columns')->group(function () {
+            Route::post('/lists', [TaskController::class, 'storeList'])->name('lists.store');
+            Route::put('/lists/{taskList}', [TaskController::class, 'updateList'])->name('lists.update');
+            Route::patch('/lists/reorder', [TaskController::class, 'reorderLists'])->name('lists.reorder');
+            Route::delete('/lists/{taskList}', [TaskController::class, 'destroyList'])->name('lists.destroy');
+        });
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Notifications (generic — used by comments today, any future event)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('/{id}/read', [NotificationController::class, 'markRead'])->name('read');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllRead'])->name('read-all');
+    });
+
 });
 
 /*
@@ -288,16 +336,16 @@ Route::middleware(['throttle:10,1'])->group(function () {
 
 // ── Public signing routes (NO auth — token-gated) ────────────────────────
 // These must be OUTSIDE any auth middleware group
-Route::get('/agreements/sign/{token}',        [BillingAndAgreementController::class, 'signAgreement'])
+Route::get('/agreements/sign/{token}', [BillingAndAgreementController::class, 'signAgreement'])
      ->name('billing.sign')
      ->where('token', '[a-f0-9]{64}');   // only 64-char hex tokens accepted
 
-Route::post('/agreements/sign/{token}',       [BillingAndAgreementController::class, 'submitSignature'])
+Route::post('/agreements/sign/{token}', [BillingAndAgreementController::class, 'submitSignature'])
      ->name('billing.sign.submit')
      ->where('token', '[a-f0-9]{64}')
      ->middleware('throttle:5,10');       // 5 requests per 10 minutes per IP
 
-Route::get('/agreements/signed/thank-you',    [BillingAndAgreementController::class, 'signSuccess'])
+Route::get('/agreements/signed/thank-you', [BillingAndAgreementController::class, 'signSuccess'])
      ->name('billing.sign.success');
 
 
