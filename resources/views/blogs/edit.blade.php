@@ -27,10 +27,10 @@
       <button class="btn-be btn-outline" id="btnPreview" type="button">
         <i class="fas fa-eye"></i> Preview
       </button>
-      <button type="submit" name="action" value="draft" class="btn-be btn-outline">
+      <button type="submit" name="action" value="draft" class="btn-be btn-outline js-blog-save-btn" id="topbarDraft">
         <i class="fas fa-save"></i> Save Draft
       </button>
-      <button type="submit" name="action" value="publish" class="btn-be btn-success">
+      <button type="submit" name="action" value="publish" class="btn-be btn-success js-blog-save-btn" id="topbarPublish">
         <i class="fas fa-rocket"></i> Update Post
       </button>
     </div>
@@ -561,10 +561,10 @@
             </div>
 
             <div style="padding-top:8px;display:flex;gap:8px;flex-direction:column;">
-              <button type="button" class="btn-be btn-success" id="sidebarPublish">
+              <button type="submit" name="action" value="publish" class="btn-be btn-success js-blog-save-btn" id="sidebarPublish">
                 <i class="fas fa-rocket"></i> Update &amp; Publish
               </button>
-              <button type="button" class="btn-be btn-outline" id="sidebarDraft">
+              <button type="submit" name="action" value="draft" class="btn-be btn-outline js-blog-save-btn" id="sidebarDraft">
                 <i class="fas fa-save"></i> Save as Draft
               </button>
             </div>

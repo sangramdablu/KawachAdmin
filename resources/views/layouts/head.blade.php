@@ -12,18 +12,27 @@
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.core.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+  @php
+    $__broadcastDriver = config('broadcasting.default');
+    $__broadcastConn = config("broadcasting.connections.$__broadcastDriver", []);
+    $__broadcastConfig = [
+        'key'     => $__broadcastConn['key'] ?? null,
+        'host'    => $__broadcastConn['options']['host'] ?? null,
+        'port'    => $__broadcastConn['options']['port'] ?? null,
+        'scheme'  => $__broadcastConn['options']['scheme'] ?? null,
+        'cluster' => $__broadcastConn['options']['cluster'] ?? null,
+    ];
+  @endphp
   @auth
-    <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
-    <script>
-      window.__authUserId = {{ auth()->id() }};
-      window.__reverbConfig = {
-        key: '{{ config('reverb.apps.apps.0.key') }}',
-        host: '{{ config('reverb.apps.apps.0.options.host') }}',
-        port: {{ config('reverb.apps.apps.0.options.port') }},
-        scheme: '{{ config('reverb.apps.apps.0.options.scheme') }}',
-      };
-    </script>
+    @if(in_array($__broadcastDriver, ['reverb', 'pusher']))
+      <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+      <script>
+        window.__authUserId = {{ auth()->id() }};
+        window.__broadcastDriver = '{{ $__broadcastDriver }}';
+        window.__broadcastConfig = @json($__broadcastConfig);
+      </script>
+    @endif
   @endauth
   <script>
     (function () {

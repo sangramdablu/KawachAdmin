@@ -34,6 +34,19 @@ class BlogController extends Controller
 
     public function store(Request $request, ImageUploadService $imageService)
     {
+        $request->validate([
+            'title'          => 'required|string|max:255',
+            'slug'           => 'nullable|string|max:255|unique:blogs,slug',
+            'content'        => 'required|string|min:10',
+            'category_id'    => 'nullable|exists:categories,id',
+            'featured_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+            'og_image'       => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+            'meta_title'     => 'nullable|max:70',
+            'meta_description' => 'nullable|max:170',
+            'focus_keyword'  => 'nullable|string|max:255',
+            'status'         => 'nullable|in:draft,published,scheduled,pending',
+        ]);
+
         try {
             DB::beginTransaction();
 
@@ -56,24 +69,38 @@ class BlogController extends Controller
                 $featuredImage = $upload['path'];
             }
 
-            // Status logic
-            $status = $request->action === 'publish' ? 'published' : 'draft';
+            // Status logic — same resolution as update(), so every Draft/Publish
+            // button (top bar or sidebar, create or edit) behaves consistently.
+            $action = $request->input('action');
+            $status = match (true) {
+                $action === 'publish' => 'published',
+                $action === 'draft'   => 'draft',
+                default               => $request->input('status', 'draft'),
+            };
             $publishedAt = $status === 'published' ? now() : null;
 
             // SAVE (create OR update)
             $blog->fill([
                 'title' => $request->title,
-                'slug' => Str::slug($request->slug),
+                'slug' => Str::slug($request->slug ?: $request->title),
                 'content' => $request->content,
                 'excerpt' => $request->excerpt,
                 'featured_image' => $featuredImage,
+                'image_alt' => $request->image_alt,
+                'image_title' => $request->image_title,
+                'image_caption' => $request->image_caption,
                 'meta_title' => $request->meta_title ?? $request->title,
                 'meta_description' => $request->meta_description ?? $request->excerpt,
                 'focus_keyword' => $request->focus_keyword,
                 'category_id' => $request->category_id,
                 'status' => $status,
+                'visibility' => $request->visibility ?? 'public',
+                'post_password' => $request->post_password,
+                'allow_comments' => $request->boolean('allow_comments', true),
                 'published_at' => $publishedAt,
-                'reading_time' => $this->calculateReadingTime($request->content),
+                'reading_time' => $request->filled('reading_time')
+                    ? (int) $request->reading_time
+                    : $this->calculateReadingTime($request->content),
             ]);
 
             $blog->save();
@@ -85,13 +112,29 @@ class BlogController extends Controller
             BlogSeo::updateOrCreate(
                 ['blog_id' => $blog->id],
                 [
-                    'og_title' => $request->og_title,
-                    'og_description' => $request->og_description,
-                    'canonical_url' => $request->canonical_url,
-                    'robots' => $request->robots,
-                    'schema_type' => $request->schema_type,
+                    'og_title'            => $request->og_title,
+                    'og_description'      => $request->og_description,
+                    'canonical_url'       => $request->canonical_url,
+                    'robots'              => $request->robots ?? 'index, follow',
+                    'schema_type'         => $request->schema_type ?? 'Article',
+                    'schema_author'       => $request->schema_author,
+                    'schema_rating_value' => $request->schema_rating_value,
+                    'schema_rating_count' => $request->schema_rating_count,
+                    'meta_keywords'       => $request->meta_keywords,
+                    'twitter_card'        => $request->twitter_card ?? 'summary_large_image',
+                    'twitter_creator'     => $request->twitter_creator,
+                    'hreflang'            => $request->hreflang ?? 'en',
+                    'sitemap_priority'    => $request->sitemap_priority ?? '0.9',
+                    'sitemap_changefreq'  => $request->sitemap_changefreq ?? 'daily',
+                    'custom_head_scripts' => $request->custom_head_scripts,
                 ]
             );
+
+            // OG Image (separate upload)
+            if ($request->hasFile('og_image')) {
+                $ogUpload = $imageService->uploadToPublic($request->file('og_image'));
+                $blog->seo()->update(['og_image' => $ogUpload['path']]);
+            }
 
             DB::commit();
 
@@ -148,7 +191,7 @@ class BlogController extends Controller
                     'title'        => $request->title ?? 'Untitled Draft',
                     'content'      => $request->content ?? '',
                     'status'       => 'draft',
-                    'user_id'      => auth()->id(),
+                    'author_id'    => auth()->id(),
                     'reading_time' => $this->calculateReadingTime($request->content),
                 ]);
             }
@@ -156,11 +199,21 @@ class BlogController extends Controller
             BlogSeo::updateOrCreate(
                 ['blog_id' => $blog->id],
                 [
-                    'og_title'        => $request->og_title,
-                    'og_description'  => $request->og_description,
-                    'canonical_url'   => $request->canonical_url,
-                    'robots'          => $request->robots,
-                    'schema_type'     => $request->schema_type,
+                    'og_title'            => $request->og_title,
+                    'og_description'      => $request->og_description,
+                    'canonical_url'       => $request->canonical_url,
+                    'robots'              => $request->robots,
+                    'schema_type'         => $request->schema_type,
+                    'meta_keywords'       => $request->meta_keywords,
+                    'schema_author'       => $request->schema_author,
+                    'schema_rating_value' => $request->schema_rating_value,
+                    'schema_rating_count' => $request->schema_rating_count,
+                    'twitter_card'        => $request->twitter_card,
+                    'twitter_creator'     => $request->twitter_creator,
+                    'hreflang'            => $request->hreflang,
+                    'sitemap_priority'    => $request->sitemap_priority,
+                    'sitemap_changefreq'  => $request->sitemap_changefreq,
+                    'custom_head_scripts' => $request->custom_head_scripts,
                 ]
             );
             // TAGS
@@ -254,22 +307,24 @@ class BlogController extends Controller
        UPDATE  (final submit from edit page)
     ───────────────────────────────────────────────────────── */
     
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, ImageUploadService $imageService)
     {
         try {
             $blog = Blog::findOrFail($id);
-            $validator = Validator::make($request->all(), [
+
+            Validator::make($request->all(), [
                 'title'          => 'required|string|max:255',
                 'slug'           => 'required|string|max:255|unique:blogs,slug,' . $blog->id,
                 'content'        => 'required|string|min:10',
                 'category_id'    => 'nullable|exists:categories,id',
                 'featured_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+                'og_image'       => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
                 'meta_title'     => 'nullable|max:70',
                 'meta_description' => 'nullable|max:170',
                 'focus_keyword'  => 'nullable|string|max:255',
-                'status'         => 'required|in:draft,published,scheduled,pending',
+                'status'         => 'nullable|in:draft,published,scheduled,pending',
                 'published_at'   => 'nullable|date',
-            ]);
+            ])->validate();
 
             DB::beginTransaction();
 
@@ -295,7 +350,14 @@ class BlogController extends Controller
             }
 
             // ── Status / publish date ───────────────────────
-            $status      = $request->status;
+            // Same resolution as store(), so every Draft/Publish button (top
+            // bar or sidebar) behaves consistently regardless of page.
+            $action = $request->input('action');
+            $status = match (true) {
+                $action === 'publish' => 'published',
+                $action === 'draft'   => 'draft',
+                default               => $request->input('status', $blog->status),
+            };
             $publishedAt = $blog->published_at; // keep existing
 
             if ($status === 'published' && !$blog->published_at) {
@@ -326,8 +388,10 @@ class BlogController extends Controller
                 'published_at'     => $publishedAt,
                 'visibility'       => $request->visibility ?? $blog->visibility ?? 'public',
                 'post_password'    => $request->post_password,
-                'allow_comments'   => $request->allow_comments ?? 1,
-                'reading_time'     => $this->calculateReadingTime($request->content),
+                'allow_comments'   => $request->boolean('allow_comments', true),
+                'reading_time'     => $request->filled('reading_time')
+                    ? (int) $request->reading_time
+                    : $this->calculateReadingTime($request->content),
             ]);
 
             // ── Tags ────────────────────────────────────────

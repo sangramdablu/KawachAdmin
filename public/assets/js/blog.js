@@ -343,6 +343,31 @@ class ImageUploader {
       $(document).trigger('blog:toast', ['Featured image set', 'var(--success)', 'fas fa-image']);
     };
     reader.readAsDataURL(file);
+
+    // Upload to the server so window.featuredImagePath is a real path the
+    // (non-multipart) autosave request can reference. The full-quality file
+    // itself still gets submitted normally via the form on the real Save/Publish.
+    const formData = new FormData();
+    formData.append('image', file);
+    const draftIdEl = document.getElementById('draft_id');
+    formData.append('draft_id', draftIdEl ? draftIdEl.value : '');
+
+    $.ajax({
+      url: '/upload-image',
+      method: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+      },
+      success: (res) => {
+        window.featuredImagePath = res.path;
+      },
+      error: (err) => {
+        console.error('Featured image upload failed:', err);
+      },
+    });
   }
 
   _remove() {
@@ -352,7 +377,7 @@ class ImageUploader {
     this.$zone.show();
     this.hasImage = false;
     if (this.socialPreview) this.socialPreview.setImage(null);
-    if ($('#removeFeaturedImg').length) $('#removeFeaturedImg').val('1');
+    if ($('#removeFeaturedFlag').length) $('#removeFeaturedFlag').val('1');
     $(document).trigger('blog:imageChanged');
     $(document).trigger('blog:toast', ['Featured image removed', 'var(--warning)', 'fas fa-trash']);
   }
@@ -592,12 +617,10 @@ class DraftManager {
   }
 
   _resolveLocalKey() {
-    let key = sessionStorage.getItem('current_draft_key');
-    if (!key) {
-      key = 'blog_draft_' + Date.now();
-      sessionStorage.setItem('current_draft_key', key);
-    }
-    return key;
+    // Keyed by the actual post id (not a generic per-tab session key) so
+    // switching between different posts in the same tab can never restore
+    // one post's stale local draft over another post's freshly-loaded content.
+    return this.draftId ? ('blog_draft_' + this.draftId) : 'blog_draft_new';
   }
 
   _collect() {
@@ -673,19 +696,26 @@ class DraftManager {
         ...data
       },
       success: (res) => {
-        if (res.draft_id) {
+        if (res.draft_id && res.draft_id !== this.draftId) {
+          const oldKey = this.localKey;
           this.draftId = res.draft_id;
+          this.localKey = this._resolveLocalKey();
+          // Move any locally-saved content over to the now-id-scoped key so
+          // it isn't orphaned under the temporary 'blog_draft_new' slot.
+          const existing = localStorage.getItem(oldKey);
+          if (existing) {
+            localStorage.setItem(this.localKey, existing);
+            localStorage.removeItem(oldKey);
+          }
           const input = document.getElementById('draft_id');
           if (input) input.value = res.draft_id;
         }
-        if (res.draft_id) this.draftId = res.draft_id;
       }
     });
   }
 
   clearLocal() {
     localStorage.removeItem(this.localKey);
-    sessionStorage.removeItem('current_draft_key');
   }
 
   _startTimers() {
@@ -713,8 +743,12 @@ class FormSubmitter {
   }
 
   _bind() {
-    $('#btnPublish, #sidebarPublish').on('click', () => this.submit('published'));
-    $('#btnSaveDraft, #sidebarDraft').on('click', () => this.submit('draft'));
+    // Every Draft/Publish button (top bar or sidebar, create or edit page) is
+    // a real `type="submit" name="action" value="draft|publish"` button, so
+    // its value is reliably included in the POST — this handler only syncs
+    // content + validates, and blocks the submit on failure. It never calls
+    // form.submit() itself, since that would drop the clicked button's value.
+    $(document).on('click', '.js-blog-save-btn', (e) => this.handleSaveClick(e));
 
     $('#btnPreview').on('click', () => {
       const slug = this.slugManager.getSlug();
@@ -761,18 +795,29 @@ class FormSubmitter {
     });
   }
 
-  submit(status) {
+  handleSaveClick(e) {
     // sync hidden textarea
     $('#blogContent').val(this.quill.root.innerHTML);
-    $('#postStatus').val(status);
 
-    // validation
+    // Keep the status select visually in sync (other UI, like the schedule-
+    // date field, reads this select). The button's own value is "draft" or
+    // "publish" (action semantics) but the select's option values are
+    // "draft"/"published" — map before assigning, since setting a value that
+    // matches no <option> leaves the select with nothing selected, and a
+    // <select> with no selected option is dropped from the submit entirely.
+    const action = $(e.currentTarget).val();
+    const statusMap = { draft: 'draft', publish: 'published' };
+    if (statusMap[action]) $('#postStatus').val(statusMap[action]);
+
+    // validation — block the native submit on failure
     if (!$('#blogTitle').val().trim()) {
+      e.preventDefault();
       $(document).trigger('blog:toast', ['Please enter a post title', 'var(--danger)', 'fas fa-exclamation-circle']);
       $('#blogTitle').focus();
       return;
     }
     if (!$('#blogContent').val().trim() || this.quill.getText().trim().length < 10) {
+      e.preventDefault();
       $(document).trigger('blog:toast', ['Content is too short to save', 'var(--danger)', 'fas fa-exclamation-circle']);
       return;
     }
@@ -783,7 +828,7 @@ class FormSubmitter {
     // Clear local draft on intentional submit
     if (this.draftManager) this.draftManager.clearLocal();
 
-    $('#blogForm')[0].submit();
+    // No preventDefault beyond this point — let the button's native submit proceed.
   }
 }
 
@@ -959,34 +1004,6 @@ class BlogEditor {
   }
 
 }
-
-
-$('#featuredImgInput').on('change', function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  const formData = new FormData();
-  formData.append('image', file);
-  formData.append('draft_id', document.getElementById('draft_id').value);
-
-  $.ajax({
-    url: "/upload-image",
-    method: "POST",
-    data: formData,
-    processData: false,
-    contentType: false,
-    headers: {
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-    },
-    success: function(res) {
-      console.log(res);
-      window.featuredImagePath = res.path;
-    },
-    error: function(err) {
-      console.error(err);
-    }
-  });
-});
 
 // Expose globally so the Blade script can instantiate it
 window.BlogEditor = BlogEditor;

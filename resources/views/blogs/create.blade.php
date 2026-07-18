@@ -29,10 +29,10 @@
       <button class="btn-be btn-outline" id="btnPreview" type="button">
         <i class="fas fa-eye"></i> Preview
       </button>
-      <button type="submit" name="action" value="draft" class="btn-be btn-outline">
+      <button type="submit" name="action" value="draft" class="btn-be btn-outline js-blog-save-btn" id="topbarDraft">
         <i class="fas fa-save"></i> Save Draft
       </button>
-      <button type="submit" name="action" value="publish" class="btn-be btn-success">
+      <button type="submit" name="action" value="publish" class="btn-be btn-success js-blog-save-btn" id="topbarPublish">
         <i class="fas fa-rocket"></i> Publish
       </button>
     </div>
@@ -185,11 +185,11 @@
             </div>
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-link" style="color:var(--primary);font-size:.8rem;"></i> Canonical URL <span class="lbl-badge lbl-optional">Optional</span></label>
-              <input type="url" name="canonical_url" class="be-input" placeholder="https://yourdomain.com/blog/your-slug (leave blank for auto)" value="{{ old('canonical_url') }}"/>
+              <input type="url" name="canonical_url" id="canonicalUrl" class="be-input" placeholder="https://yourdomain.com/blog/your-slug (leave blank for auto)" value="{{ old('canonical_url') }}"/>
             </div>
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-robot" style="color:var(--primary);font-size:.8rem;"></i> Robots Directive <span class="lbl-badge lbl-seo">SEO</span></label>
-              <select name="robots" class="be-select">
+              <select name="robots" id="robotsSelect" class="be-select">
                 <option value="index, follow"     {{ old('robots','index, follow') == 'index, follow'     ? 'selected':'' }}>index, follow (Default)</option>
                 <option value="noindex, follow"   {{ old('robots') == 'noindex, follow'   ? 'selected':'' }}>noindex, follow</option>
                 <option value="index, nofollow"   {{ old('robots') == 'index, nofollow'   ? 'selected':'' }}>index, nofollow</option>
@@ -393,8 +393,8 @@
               <input type="text" name="reading_time" id="readingTimeField" class="be-input" placeholder="e.g. 5 min read" value="{{ old('reading_time') }}"/>
             </div>
             <div style="padding-top:8px;display:flex;gap:8px;flex-direction:column;">
-              <button type="button" class="btn-be btn-success" id="sidebarPublish"><i class="fas fa-rocket"></i> Publish Now</button>
-              <button type="submit" name="action" value="draft" class="btn-be btn-outline"><i class="fas fa-save"></i> Save Draft</button>
+              <button type="submit" name="action" value="publish" class="btn-be btn-success js-blog-save-btn" id="sidebarPublish"><i class="fas fa-rocket"></i> Publish Now</button>
+              <button type="submit" name="action" value="draft" class="btn-be btn-outline js-blog-save-btn" id="sidebarDraft"><i class="fas fa-save"></i> Save Draft</button>
             </div>
           </div>
         </div>

@@ -10,23 +10,34 @@
   if (typeof window.__authUserId === 'undefined' || window.__authUserId === null) return;
   if (typeof Echo === 'undefined') return;
 
-  const cfg = window.__reverbConfig || {};
+  const driver = window.__broadcastDriver;
+  const cfg = window.__broadcastConfig || {};
+  const authHeaders = { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content };
 
-  window.Echo = new Echo({
-    broadcaster: 'reverb',
-    key: cfg.key,
-    wsHost: cfg.host,
-    wsPort: cfg.port,
-    wssPort: cfg.port,
-    forceTLS: cfg.scheme === 'https',
-    enabledTransports: cfg.scheme === 'https' ? ['wss'] : ['ws'],
-    authEndpoint: '/broadcasting/auth',
-    auth: {
-      headers: {
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-      },
-    },
-  });
+  if (driver === 'pusher') {
+    window.Echo = new Echo({
+      broadcaster: 'pusher',
+      key: cfg.key,
+      cluster: cfg.cluster,
+      forceTLS: true,
+      authEndpoint: '/broadcasting/auth',
+      auth: { headers: authHeaders },
+    });
+  } else if (driver === 'reverb') {
+    window.Echo = new Echo({
+      broadcaster: 'reverb',
+      key: cfg.key,
+      wsHost: cfg.host,
+      wsPort: cfg.port,
+      wssPort: cfg.port,
+      forceTLS: cfg.scheme === 'https',
+      enabledTransports: cfg.scheme === 'https' ? ['wss'] : ['ws'],
+      authEndpoint: '/broadcasting/auth',
+      auth: { headers: authHeaders },
+    });
+  } else {
+    return;
+  }
 
   function renderNotification(n) {
     const list = document.getElementById('notifList');

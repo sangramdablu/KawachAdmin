@@ -95,10 +95,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
              ->name('blogs.fhy6adv645gv5zd5');
     });
 
-    // 3. Independent Media Upload Permissions
+    // 3. Inline editor image uploads — gated by blog.edit since this is only
+    //    ever called from inside the blog editor itself.
     Route::post('/upload-image', [BlogController::class, 'uploadImage'])
          ->name('blogs.upload.image')
-         ->middleware('check-permission:media.upload');
+         ->middleware('check-permission:blog.edit');
 
     // Route::middleware('check-permission:blog.view')->group(function () {
     //     Route::resource('blogs', BlogController::class);

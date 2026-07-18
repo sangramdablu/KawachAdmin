@@ -220,12 +220,17 @@ html[data-theme="dark"] #taskBoard .priority-badge.high   { background: rgba(255
 #taskBoard .card-ghost > * { visibility: hidden; }
 #taskBoard .card-chosen { box-shadow: var(--shadow-md); cursor: grabbing; }
 #taskBoard .card-drag-fallback {
+  /* Sortable repositions this clone via an inline transform on every mouse
+     move; the base .task-card transition on "transform" would ease toward
+     each new position instead of snapping, making it visibly lag behind the
+     cursor. Killing the transition here lets it track the pointer 1:1. */
+  transition: none !important;
   opacity: .95;
-  transform: rotate(2deg) scale(1.03);
   box-shadow: 0 14px 30px rgba(0,0,0,.28) !important;
   cursor: grabbing;
 }
 #taskBoard .list-ghost { opacity: .35; }
+#taskBoard .task-list.list-chosen { transition: none !important; }
 
 body.dragging-active,
 body.dragging-active * {
@@ -563,7 +568,7 @@ body.dragging-active * {
       animation: 200,
       easing: 'cubic-bezier(0.2, 0, 0, 1)',
       forceFallback: true,
-      fallbackTolerance: 3,
+      fallbackTolerance: 0,
       swapThreshold: 0.65,
       disabled: !CAN.edit,
       ghostClass: 'card-ghost',
@@ -597,7 +602,7 @@ body.dragging-active * {
       animation: 200,
       easing: 'cubic-bezier(0.2, 0, 0, 1)',
       forceFallback: true,
-      fallbackTolerance: 3,
+      fallbackTolerance: 0,
       ghostClass: 'list-ghost',
       chosenClass: 'list-chosen',
       onStart: () => document.body.classList.add('dragging-active'),

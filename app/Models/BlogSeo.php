@@ -17,6 +17,16 @@ class BlogSeo extends Model
         'canonical_url',
         'robots',
         'schema_type',
+        'meta_keywords',
+        'schema_author',
+        'schema_rating_value',
+        'schema_rating_count',
+        'twitter_card',
+        'twitter_creator',
+        'hreflang',
+        'sitemap_priority',
+        'sitemap_changefreq',
+        'custom_head_scripts',
     ];
 
     public function blog() {
