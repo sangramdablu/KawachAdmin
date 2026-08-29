@@ -272,7 +272,7 @@ class BlogController extends Controller
             if ($blog) {
                 // Optional: delete old image
                 if ($blog->featured_image) {
-                    Storage::disk('public')->delete($blog->featured_image);
+                    $this->deleteUploadedImage($blog->featured_image);
                 }
 
                 $blog->update([
@@ -287,6 +287,30 @@ class BlogController extends Controller
         ]);
     }
 
+    /**
+     * Delete a previously-uploaded blog image from disk.
+     *
+     * ImageUploadService::uploadToPublic() writes files straight into
+     * public/<folder> via $file->move(), NOT into storage/app/public — so
+     * Storage::disk('public')->delete() (which resolves against
+     * storage/app/public) was silently a no-op here: it always returned
+     * false without deleting anything, since the file never existed at that
+     * path. Old featured images were never actually removed on replace/
+     * remove, they just piled up in public/blog_images. Delete from the
+     * same place the file was actually written instead.
+     */
+    private function deleteUploadedImage(?string $relativePath): void
+    {
+        if (!$relativePath) {
+            return;
+        }
+
+        $fullPath = public_path($relativePath);
+
+        if (is_file($fullPath)) {
+            @unlink($fullPath);
+        }
+    }
 
     private function calculateReadingTime($content){
         $wordCount = str_word_count(strip_tags($content));
@@ -296,6 +320,36 @@ class BlogController extends Controller
     public function create(){
         $categories = Category::all();
         return view('blogs.create', compact('categories'));
+    }
+
+    /**
+     * Handle the "+ Add New" category button in the blog editor sidebar.
+     * Previously that button only added a fake <option value="new_...">
+     * client-side with nothing persisted behind it, so saving the post
+     * with the new category selected always failed the
+     * `category_id => nullable|exists:categories,id` validation rule.
+     */
+    public function storeCategory(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255|unique:categories,name',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $category = Category::create([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name) . '-' . Str::random(5),
+        ]);
+
+        return response()->json([
+            'id'   => $category->id,
+            'name' => $category->name,
+        ]);
     }
 
     public function edit($id)
@@ -334,7 +388,7 @@ class BlogController extends Controller
             // User wants to remove the image
             if ($request->input('remove_featured_image') == '1') {
                 if ($blog->featured_image) {
-                    Storage::disk('public')->delete($blog->featured_image);
+                    $this->deleteUploadedImage($blog->featured_image);
                 }
                 $featuredImage = null;
             }
@@ -343,7 +397,7 @@ class BlogController extends Controller
             if ($request->hasFile('featured_image')) {
                 // Delete old image
                 if ($blog->featured_image) {
-                    Storage::disk('public')->delete($blog->featured_image);
+                    $this->deleteUploadedImage($blog->featured_image);
                 }
                 $upload        = $imageService->uploadToPublic($request->file('featured_image'));
                 $featuredImage = $upload['path'];

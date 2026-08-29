@@ -787,11 +787,26 @@ class FormSubmitter {
     $('#btnSaveCat').on('click', () => {
       const name = $('#newCatInput').val().trim();
       if (!name) return;
-      $('<option>').val('new_' + Date.now()).text(name).prop('selected', true)
-        .appendTo('#categorySelect');
-      $('#newCatInput').val('');
-      $('#newCatField').slideUp(200);
-      $(document).trigger('blog:toast', [`Category "${name}" added`, 'var(--success)', 'fas fa-folder-plus']);
+      // Persist it server-side (POST /blogs/category/store) instead of just
+      // appending a fake <option value="new_...">: that placeholder id never
+      // matched a real row, so saving the post with it selected always
+      // failed the category_id "exists:categories,id" validation rule.
+      $.ajax({
+        url: '/blogs/category/store',
+        method: 'POST',
+        data: { name },
+        success: (res) => {
+          $('<option>').val(res.id).text(res.name).prop('selected', true)
+            .appendTo('#categorySelect');
+          $('#newCatInput').val('');
+          $('#newCatField').slideUp(200);
+          $(document).trigger('blog:toast', [`Category "${res.name}" added`, 'var(--success)', 'fas fa-folder-plus']);
+        },
+        error: (xhr) => {
+          const msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Could not add category';
+          $(document).trigger('blog:toast', [msg, 'var(--danger)', 'fas fa-exclamation-circle']);
+        },
+      });
     });
   }
 

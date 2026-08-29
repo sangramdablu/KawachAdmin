@@ -93,6 +93,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
         // Autosave route
         Route::post('/blogs/fhy6adv645gv5zd5', [BlogController::class, 'autosave'])
              ->name('blogs.fhy6adv645gv5zd5');
+
+        // Inline "+ Add New" category button in the blog editor sidebar — it
+        // used to only append a fake client-side <option value="new_...">
+        // with no backend record behind it, so saving the post with that
+        // category selected always failed validation
+        // (category_id => nullable|exists:categories,id). This gives it a
+        // real endpoint so the new option points at a persisted category.
+        Route::post('/blogs/category/store', [BlogController::class, 'storeCategory'])
+             ->name('blogs.category.store');
     });
 
     // 3. Inline editor image uploads — gated by blog.edit since this is only

@@ -138,7 +138,18 @@
 <script src="{{ asset('assets/js/script.js') }}"></script>
 <script>
   function clearDraftSession() {
+    // 'current_draft_key' was never actually used by the blog editor — the
+    // DraftManager module in blog.js persists unsaved "New Post" content
+    // under the localStorage key 'blog_draft_new' (see DraftManager._resolveLocalKey
+    // in public/assets/js/blog.js). Clearing the old unused key was a no-op,
+    // so leftover content from an abandoned draft would silently reappear
+    // the next time "New Post" was opened. Remove the key that's actually used.
     sessionStorage.removeItem('current_draft_key');
+    try {
+      localStorage.removeItem('blog_draft_new');
+    } catch (e) {
+      // localStorage unavailable (private mode, etc.) — nothing to clear anyway
+    }
   }
 </script>
 {{-- CDN libraries --}}

@@ -572,8 +572,9 @@
             {{-- Danger zone --}}
             <div class="danger-zone">
               <div class="danger-zone-title"><i class="fas fa-exclamation-triangle"></i> Danger Zone</div>
-              <a href="{{ route('blogs.destroy', $blog->id) }}"
+              <a href="#"
                 class="btn-be btn-danger-outline btn-sm btn-delete-blog"
+                data-id="{{ encrypt($blog->id) }}"
                 data-title="{{ $blog->title }}"
                 style="width:100%;justify-content:center;">
                 <i class="fas fa-trash"></i> Delete This Post
@@ -758,6 +759,52 @@
     });
 
   });
+</script>
+
+{{-- ── Delete post (Danger Zone) ──
+     The button used to be a plain <a href="{{ route('blogs.destroy', ...) }}">
+     which just navigated (GET) to a route that only accepts DELETE, so every
+     click 405'd instead of deleting anything. It's now wired to fire the same
+     AJAX DELETE the blogs list page uses, with the id encrypted (the
+     destroy() controller method calls Crypt::decrypt() on it). --}}
+<script>
+$(function () {
+  $('.btn-delete-blog').on('click', function (e) {
+    e.preventDefault();
+    var $btn = $(this);
+    var id = $btn.data('id');
+    var title = $btn.data('title');
+
+    if (!confirm('Delete "' + title + '"? This action cannot be undone.')) {
+      return;
+    }
+
+    $.ajax({
+      url: '/blogs/' + id,
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function (res) {
+        if (res.success) {
+          window.showToast(res.message, 'var(--danger)', 'fas fa-trash');
+          setTimeout(function () {
+            window.location.href = '{{ route('blogs.index') }}';
+          }, 600);
+        } else {
+          window.showToast(res.message, '#ff4d6d', 'fas fa-exclamation-circle');
+        }
+      },
+      error: function (xhr) {
+        var msg = 'Delete failed';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          msg = xhr.responseJSON.message;
+        }
+        window.showToast(msg, '#ff4d6d', 'fas fa-times-circle');
+      }
+    });
+  });
+});
 </script>
 
 @if(session('toast'))
