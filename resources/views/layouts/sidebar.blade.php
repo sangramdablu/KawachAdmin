@@ -39,6 +39,23 @@
     </div>
     @endcan
 
+    @can('blog.edit')
+    @php
+      // Live COUNT() so the sidebar badge never drifts — no cached number.
+      $pendingCommentsNavCount = \App\Models\BlogComment::where('status', 'pending')->count();
+    @endphp
+    <!-- Blog Comments -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('blog-comments.index') }}"
+          class="nav-link-item {{ request()->routeIs('blog-comments.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-comment-dots"></i> Comments
+          @if($pendingCommentsNavCount > 0)
+            <span style="margin-left:auto;background:#ffb830;color:#1a1a2e;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:10px;">{{ $pendingCommentsNavCount }}</span>
+          @endif
+      </a>
+    </div>
+    @endcan
+
     @can('settings.billing')
     <!-- Billing -->
     <div class="nav-item-wrap">

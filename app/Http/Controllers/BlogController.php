@@ -20,7 +20,16 @@ class BlogController extends Controller
 {
     public function index()
     {
-        $posts = Blog::with(['category', 'seo'])->latest()->get();
+        // Live like/comment counts per post — computed via COUNT() subqueries
+        // (withCount), never a cached/denormalized column, so they can't drift.
+        $posts = Blog::with(['category', 'seo'])
+            ->withCount([
+                'likes',
+                'comments as approved_comments_count' => fn ($q) => $q->where('status', 'approved'),
+                'comments as pending_comments_count'   => fn ($q) => $q->where('status', 'pending'),
+            ])
+            ->latest()
+            ->get();
         $totalPosts = $posts->count();
         $counts = [
             'all' => Blog::count(),
@@ -28,6 +37,9 @@ class BlogController extends Controller
             'published' => Blog::where('status', 'published')->count(),
             'draft' => Blog::where('status', 'draft')->count(),
             'scheduled' => Blog::where('status', 'scheduled')->count(),
+            'likes' => \App\Models\BlogLike::count(),
+            'comments' => \App\Models\BlogComment::where('status', 'approved')->count(),
+            'pendingComments' => \App\Models\BlogComment::where('status', 'pending')->count(),
         ];
         return view('blogs.index', compact('posts', 'totalPosts', 'counts'));
     }
@@ -354,7 +366,12 @@ class BlogController extends Controller
 
     public function edit($id)
     {
-        $blog = Blog::findOrFail($id);
+        $blog = Blog::withCount([
+            'likes',
+            'comments as approved_comments_count' => fn ($q) => $q->where('status', 'approved'),
+            'comments as pending_comments_count'   => fn ($q) => $q->where('status', 'pending'),
+        ])->findOrFail($id);
+
         return view('blogs.edit', compact('blog'));
     }
     /* ─────────────────────────────────────────────────────────

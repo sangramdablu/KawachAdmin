@@ -12,6 +12,7 @@ use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\BlogCommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,6 +103,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
         // real endpoint so the new option points at a persisted category.
         Route::post('/blogs/category/store', [BlogController::class, 'storeCategory'])
              ->name('blogs.category.store');
+
+        // Blog comment moderation queue — reuses blog.edit rather than a new
+        // permission, since anyone who can edit blog content already
+        // moderates its comments.
+        Route::get('/blog-comments', [BlogCommentController::class, 'index'])->name('blog-comments.index');
+        Route::post('/blog-comments/{comment}/approve', [BlogCommentController::class, 'approve'])->name('blog-comments.approve');
+        Route::post('/blog-comments/{comment}/reject', [BlogCommentController::class, 'reject'])->name('blog-comments.reject');
+        Route::delete('/blog-comments/{comment}', [BlogCommentController::class, 'destroy'])->name('blog-comments.destroy');
     });
 
     // 3. Inline editor image uploads — gated by blog.edit since this is only

@@ -1,12 +1,12 @@
 @extends('layouts.master')
-@section('title', 'Edit Blogs — KawachTech Software Solutions')
+@section('title', 'Edit Newsroom Article — KawachTech Software Solutions')
 @section('content')
 
 {{-- ================== MARKUP ================= --}}
 <div id="blogEditor">
 <div class="be-wrap">
 
-  <form id="blogForm" method="POST" action="{{ route('blogs.update', $blog->id) }}" enctype="multipart/form-data">
+  <form id="newsForm" method="POST" action="{{ route('news.update', $news->id) }}" enctype="multipart/form-data">
       @csrf
       @method('PUT')
   {{-- ── TOP BAR ── --}}
@@ -16,22 +16,22 @@
         <div class="be-breadcrumb">
           <a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
           <i class="fas fa-chevron-right" style="font-size:.55rem;"></i>
-          <a href="{{ route('blogs.index') }}">Blogs</a>
+          <a href="{{ route('news.index') }}">Newsroom</a>
           <i class="fas fa-chevron-right" style="font-size:.55rem;"></i>
-          <span>Edit Post</span>
+          <span>Edit Article</span>
         </div>
-        <div class="be-title-h1">✏️ Edit Blog Post</div>
+        <div class="be-title-h1">✏️ Edit Newsroom Article</div>
       </div>
     </div>
     <div class="be-topbar-actions">
       <button class="btn-be btn-outline" id="btnPreview" type="button">
         <i class="fas fa-eye"></i> Preview
       </button>
-      <button type="submit" name="action" value="draft" class="btn-be btn-outline js-blog-save-btn" id="topbarDraft">
+      <button type="submit" name="action" value="draft" class="btn-be btn-outline js-news-save-btn" id="topbarDraft">
         <i class="fas fa-save"></i> Save Draft
       </button>
-      <button type="submit" name="action" value="publish" class="btn-be btn-success js-blog-save-btn" id="topbarPublish">
-        <i class="fas fa-rocket"></i> Update Post
+      <button type="submit" name="action" value="publish" class="btn-be btn-success js-news-save-btn" id="topbarPublish">
+        <i class="fas fa-rocket"></i> Update Article
       </button>
     </div>
   </div>
@@ -45,41 +45,41 @@
     <div class="stat-item"><i class="fas fa-image"></i> Images: <strong id="imgCount">0</strong></div>
     <div class="stat-item"><i class="fas fa-paragraph"></i> Paragraphs: <strong id="paraCount">0</strong></div>
     <div class="stat-item" style="margin-left:auto;">
-      <i class="fas fa-eye" style="color:var(--primary);"></i> Views: <strong>{{ number_format($blog->views ?? 0) }}</strong>
+      <i class="fas fa-eye" style="color:var(--primary);"></i> Views: <strong>{{ number_format($news->views ?? 0) }}</strong>
     </div>
     <div class="stat-item">
-      <i class="fas fa-calendar-alt" style="color:var(--muted);"></i> Created: <strong>{{ $blog->created_at->format('M d, Y') }}</strong>
+      <i class="fas fa-calendar-alt" style="color:var(--muted);"></i> Created: <strong>{{ $news->created_at->format('M d, Y') }}</strong>
     </div>
   </div>
 
   {{-- ── LAST SAVED NOTICE ── --}}
   <div class="last-saved-bar">
     <i class="fas fa-history"></i>
-    Last updated: <strong>{{ $blog->updated_at->diffForHumans() }}</strong>
+    Last updated: <strong>{{ $news->updated_at->diffForHumans() }}</strong>
     &nbsp;·&nbsp;
-    <span class="status-chip status-{{ $blog->status }}">{{ ucfirst($blog->status) }}</span>
-    @if($blog->status === 'published' && $blog->published_at)
-      &nbsp;·&nbsp; Published: <strong>{{ $blog->published_at->format('M d, Y H:i') }}</strong>
+    <span class="status-chip status-{{ $news->status }}">{{ ucfirst($news->status) }}</span>
+    @if($news->status === 'published' && $news->published_at)
+      &nbsp;·&nbsp; Published: <strong>{{ $news->published_at->format('M d, Y H:i') }}</strong>
     @endif
   </div>
 
     <div class="be-grid">
-      <input type="hidden" id="draft_id" value="{{ $blog->id }}">
+      <input type="hidden" id="draft_id" value="{{ $news->id }}">
       {{-- ════════════════ LEFT COLUMN — Main Content ════════════════ --}}
       <div class="be-left">
 
         {{-- ── TITLE ── --}}
         <div class="be-card">
           <div class="be-card-header">
-            <h2><i class="fas fa-heading"></i> Post Title</h2>
+            <h2><i class="fas fa-heading"></i> Article Title</h2>
           </div>
           <div class="be-card-body">
             <div class="be-form-group">
               <div class="input-with-counter">
-                <input type="text" name="title" id="blogTitle" class="be-input is-title"
-                  placeholder="Enter your compelling blog title…"
+                <input type="text" name="title" id="newsTitle" class="be-input is-title"
+                  placeholder="Enter the headline…"
                   maxlength="70" autocomplete="off" required
-                  value="{{ old('title', $blog->title) }}" />
+                  value="{{ old('title', $news->title) }}" />
                 <span class="char-counter" id="titleCounter">0/70</span>
               </div>
               <div class="be-input-hint">
@@ -95,10 +95,10 @@
                 <span class="lbl-badge lbl-required">Required</span>
               </label>
               <div class="slug-row">
-                <span class="slug-prefix" id="slugPrefix">{{ config('app.url') }}/blog/</span>
-                <input type="text" name="slug" id="blogSlug" class="slug-input"
-                  placeholder="your-post-slug" autocomplete="off"
-                  value="{{ old('slug', $blog->slug) }}" />
+                <span class="slug-prefix" id="slugPrefix">{{ config('app.url') }}/newsroom/</span>
+                <input type="text" name="slug" id="newsSlug" class="slug-input"
+                  placeholder="your-article-slug" autocomplete="off"
+                  value="{{ old('slug', $news->slug) }}" />
                 <button type="button" class="btn-icon" id="btnRegenerateSlug" title="Re-generate slug">
                   <i class="fas fa-sync-alt"></i>
                 </button>
@@ -123,26 +123,43 @@
             <div class="ql-wrapper">
               <div id="quillEditor"></div>
             </div>
-            <textarea name="content" id="blogContent" style="display:none;">{{ old('content', $blog->content) }}</textarea>
+            <textarea name="content" id="newsContent" style="display:none;">{{ old('content', $news->content) }}</textarea>
           </div>
         </div>
 
-        {{-- ── EXCERPT / DESCRIPTION ── --}}
+        {{-- ── EXCERPT / SUMMARY ── --}}
         <div class="be-card" style="margin-top:18px;">
           <div class="be-card-header">
-            <h2><i class="fas fa-align-left"></i> Excerpt / Short Description</h2>
+            <h2><i class="fas fa-align-left"></i> Excerpt / Short Summary</h2>
+            <span class="lbl-badge" style="background:#fef3e2;color:#b8860b;">AEO</span>
           </div>
           <div class="be-card-body">
             <div class="be-form-group">
               <div class="input-with-counter">
-                <textarea name="excerpt" id="blogExcerpt" class="be-textarea"
-                  placeholder="Write a brief summary…" maxlength="300" rows="4">{{ old('excerpt', $blog->excerpt) }}</textarea>
+                <textarea name="excerpt" id="newsExcerpt" class="be-textarea"
+                  placeholder="A concise, self-contained summary an AI assistant could quote directly as the answer…" maxlength="300" rows="4">{{ old('excerpt', $news->excerpt) }}</textarea>
                 <span class="char-counter" id="excerptCounter">0/300</span>
               </div>
               <div class="be-input-hint">
                 <i class="fas fa-info-circle"></i>
-                Keep it under 160 characters if used as meta description.
+                This doubles as the AI-answer-friendly summary (AEO) and the fallback meta description.
               </div>
+            </div>
+          </div>
+        </div>
+
+        {{-- ── EXTERNAL COVERAGE ── --}}
+        <div class="be-card" style="margin-top:18px;">
+          <div class="be-card-header"><h2><i class="fas fa-external-link-alt"></i> External Coverage</h2></div>
+          <div class="be-card-body">
+            <div class="be-input-hint" style="margin-bottom:12px;"><i class="fas fa-info-circle"></i> Leave both fields blank for the company's own announcements. Fill them in only for "As featured in {Publication}" style items.</div>
+            <div class="be-form-group">
+              <label class="be-label"><i class="fas fa-newspaper" style="color:var(--primary);font-size:.8rem;"></i> Publication / Source Name <span class="lbl-badge lbl-optional">Optional</span></label>
+              <input type="text" name="external_source_name" id="externalSourceName" class="be-input" placeholder="e.g. TechRadar" value="{{ old('external_source_name', $news->external_source_name) }}"/>
+            </div>
+            <div class="be-form-group">
+              <label class="be-label"><i class="fas fa-link" style="color:var(--primary);font-size:.8rem;"></i> Source URL <span class="lbl-badge lbl-optional">Optional</span></label>
+              <input type="url" name="external_source_url" class="be-input" placeholder="https://example.com/the-article" value="{{ old('external_source_url', $news->external_source_url) }}"/>
             </div>
           </div>
         </div>
@@ -154,15 +171,14 @@
           </div>
           <div class="be-card-body">
 
-            {{-- Current image (if exists) --}}
-            @if($blog->featured_image)
+            @if($news->featured_image)
             <div class="current-img-notice">
               <i class="fas fa-image"></i> Current image saved. Upload a new one to replace it.
             </div>
             @endif
 
-            <div class="img-upload-zone {{ $blog->featured_image ? 'has-image' : '' }}" id="featuredImgZone"
-              style="{{ $blog->featured_image ? 'display:none;' : '' }}">
+            <div class="img-upload-zone {{ $news->featured_image ? 'has-image' : '' }}" id="featuredImgZone"
+              style="{{ $news->featured_image ? 'display:none;' : '' }}">
               <input type="file" name="featured_image" id="featuredImgInput" accept="image/jpeg,image/png,image/webp,image/gif"/>
               <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
               <div class="upload-text">
@@ -171,9 +187,9 @@
               </div>
             </div>
 
-            <div class="img-preview-wrap" id="featuredPreview" style="{{ $blog->featured_image ? 'display:block;' : 'display:none;' }}">
-              <img src="{{ $blog->featured_image ? asset($blog->featured_image) : '' }}"
-                alt="{{ old('image_alt', $blog->image_alt ?? '') }}"
+            <div class="img-preview-wrap" id="featuredPreview" style="{{ $news->featured_image ? 'display:block;' : 'display:none;' }}">
+              <img src="{{ $news->featured_image ? asset($news->featured_image) : '' }}"
+                alt="{{ old('image_alt', $news->image_alt ?? '') }}"
                 id="featuredPreviewImg"/>
               <div class="img-preview-actions">
                 <button type="button" class="btn-be btn-outline btn-sm" id="btnChangeFeatured">
@@ -185,10 +201,8 @@
               </div>
             </div>
 
-            {{-- Remove existing image flag --}}
             <input type="hidden" name="remove_featured_image" id="removeFeaturedFlag" value="0"/>
 
-            {{-- Image SEO fields --}}
             <div class="be-form-group" style="margin-top:16px;">
               <label class="be-label">
                 <i class="fas fa-tag" style="color:var(--primary);font-size:.8rem;"></i> Image Alt Text
@@ -196,7 +210,7 @@
               </label>
               <input type="text" name="image_alt" id="imageAlt" class="be-input"
                 placeholder="Describe the image for screen readers and search engines…"
-                maxlength="125" value="{{ old('image_alt', $blog->image_alt ?? '') }}" />
+                maxlength="125" value="{{ old('image_alt', $news->image_alt ?? '') }}" />
             </div>
 
             <div class="be-form-group">
@@ -206,7 +220,7 @@
               </label>
               <input type="text" name="image_title" id="imageTitle" class="be-input"
                 placeholder="Tooltip text shown on mouse-over…" maxlength="125"
-                value="{{ old('image_title', $blog->image_title ?? '') }}" />
+                value="{{ old('image_title', $news->image_title ?? '') }}" />
             </div>
 
             <div class="be-form-group">
@@ -216,7 +230,7 @@
               </label>
               <input type="text" name="image_caption" id="imageCaption" class="be-input"
                 placeholder="Caption displayed below the image…"
-                value="{{ old('image_caption', $blog->image_caption ?? '') }}" />
+                value="{{ old('image_caption', $news->image_caption ?? '') }}" />
             </div>
           </div>
         </div>
@@ -238,8 +252,8 @@
               </label>
               <div style="position:relative;">
                 <input type="text" name="focus_keyword" id="focusKeyword" class="be-input"
-                  placeholder="e.g. best ai tools for developers"
-                  value="{{ old('focus_keyword', $blog->focus_keyword) }}" />
+                  placeholder="e.g. kawach technology company news"
+                  value="{{ old('focus_keyword', $news->focus_keyword) }}" />
                 <span class="kw-density" id="kwDensityBadge" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);"></span>
               </div>
             </div>
@@ -251,8 +265,8 @@
               </label>
               <div class="input-with-counter">
                 <input type="text" name="meta_title" id="metaTitle" class="be-input"
-                  placeholder="Leave blank to use post title | max 60 chars"
-                  maxlength="70" value="{{ old('meta_title', $blog->meta_title) }}" />
+                  placeholder="Leave blank to use article title | max 60 chars"
+                  maxlength="70" value="{{ old('meta_title', $news->meta_title) }}" />
                 <span class="char-counter" id="metaTitleCounter">0/60</span>
               </div>
               <div class="meter-bar"><div class="meter-fill" id="metaTitleMeter" style="width:0%;"></div></div>
@@ -266,7 +280,7 @@
               <div class="input-with-counter">
                 <textarea name="meta_description" id="metaDescription" class="be-textarea"
                   placeholder="Compelling description shown in Google results…"
-                  maxlength="170" rows="3">{{ old('meta_description', $blog->meta_description) }}</textarea>
+                  maxlength="170" rows="3">{{ old('meta_description', $news->meta_description) }}</textarea>
                 <span class="char-counter" id="metaDescCounter">0/160</span>
               </div>
               <div class="meter-bar"><div class="meter-fill" id="metaDescMeter" style="width:0%;"></div></div>
@@ -276,9 +290,9 @@
             <div class="be-form-group">
               <div class="seo-preview">
                 <div class="seo-preview-label"><i class="fas fa-google"></i> Google SERP Preview</div>
-                <div class="seo-url" id="serpUrl">{{ config('app.url') }} › blog › {{ $blog->slug }}</div>
-                <a class="seo-title-prev" id="serpTitle">{{ $blog->meta_title ?: $blog->title }}</a>
-                <div class="seo-desc-prev" id="serpDesc">{{ $blog->meta_description ?: $blog->excerpt }}</div>
+                <div class="seo-url" id="serpUrl">{{ config('app.url') }} › newsroom › {{ $news->slug }}</div>
+                <a class="seo-title-prev" id="serpTitle">{{ $news->meta_title ?: $news->title }}</a>
+                <div class="seo-desc-prev" id="serpDesc">{{ $news->meta_description ?: $news->excerpt }}</div>
               </div>
             </div>
 
@@ -291,7 +305,7 @@
                 <input class="tags-input" id="metaKeywordsInput" placeholder="Type keyword and press Enter or comma…" />
               </div>
               <input type="hidden" name="meta_keywords" id="metaKeywordsHidden"
-                value="{{ old('meta_keywords', $blog->seo->meta_keywords ?? '') }}"/>
+                value="{{ old('meta_keywords', $news->seo->meta_keywords ?? '') }}"/>
             </div>
 
             <div class="be-form-group">
@@ -300,8 +314,8 @@
                 <span class="lbl-badge lbl-optional">Optional</span>
               </label>
               <input type="url" name="canonical_url" id="canonicalUrl" class="be-input"
-                placeholder="https://yourdomain.com/blog/your-slug"
-                value="{{ old('canonical_url', $blog->seo->canonical_url ?? '') }}" />
+                placeholder="https://yourdomain.com/newsroom/your-slug"
+                value="{{ old('canonical_url', $news->seo->canonical_url ?? '') }}" />
             </div>
 
             <div class="be-form-group">
@@ -310,7 +324,7 @@
                 <span class="lbl-badge lbl-seo">SEO</span>
               </label>
               <select name="robots" id="robotsSelect" class="be-select">
-                @php $robots = old('robots', $blog->seo->robots ?? 'index, follow'); @endphp
+                @php $robots = old('robots', $news->seo->robots ?? 'index, follow'); @endphp
                 <option value="index, follow" {{ $robots == 'index, follow' ? 'selected':'' }}>index, follow (Default)</option>
                 <option value="noindex, follow" {{ $robots == 'noindex, follow' ? 'selected':'' }}>noindex, follow</option>
                 <option value="index, nofollow" {{ $robots == 'index, nofollow' ? 'selected':'' }}>index, nofollow</option>
@@ -334,10 +348,8 @@
             </div>
             <div class="social-preview-card">
               <div class="sp-img" id="spImgWrap">
-                @if($blog->seo && $blog->seo->og_image)
-                  <img src="{{ $blog->featured_image ? asset($blog->featured_image) : '' }}" alt="" id="spPreviewImg" style="display:block;width:100%;height:100%;object-fit:cover;"/>
-                @elseif($blog->featured_image)
-                  <img src="{{ $blog->featured_image ? asset($blog->featured_image) : '' }}" alt="" id="spPreviewImg" style="display:block;width:100%;height:100%;object-fit:cover;"/>
+                @if($news->featured_image)
+                  <img src="{{ asset($news->featured_image) }}" alt="" id="spPreviewImg" style="display:block;width:100%;height:100%;object-fit:cover;"/>
                 @else
                   <i class="fas fa-image"></i>
                   <img src="" alt="" id="spPreviewImg" style="display:none;"/>
@@ -345,8 +357,8 @@
               </div>
               <div class="sp-info">
                 <div class="sp-site" id="spSite">{{ strtoupper(parse_url(config('app.url'), PHP_URL_HOST)) }}</div>
-                <div class="sp-title" id="spTitle">{{ $blog->seo->og_title ?? $blog->meta_title ?? $blog->title }}</div>
-                <div class="sp-desc" id="spDesc">{{ $blog->seo->og_description ?? $blog->meta_description ?? $blog->excerpt }}</div>
+                <div class="sp-title" id="spTitle">{{ $news->seo->og_title ?? $news->meta_title ?? $news->title }}</div>
+                <div class="sp-desc" id="spDesc">{{ $news->seo->og_description ?? $news->meta_description ?? $news->excerpt }}</div>
               </div>
             </div>
 
@@ -354,12 +366,12 @@
               <label class="be-label"><i class="fas fa-heading" style="color:var(--primary);font-size:.8rem;"></i> OG Title <span class="lbl-badge lbl-optional">Optional</span></label>
               <input type="text" name="og_title" id="ogTitle" class="be-input"
                 placeholder="Custom title for social sharing"
-                value="{{ old('og_title', $blog->seo->og_title ?? '') }}"/>
+                value="{{ old('og_title', $news->seo->og_title ?? '') }}"/>
             </div>
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-align-left" style="color:var(--primary);font-size:.8rem;"></i> OG Description <span class="lbl-badge lbl-optional">Optional</span></label>
               <textarea name="og_description" id="ogDescription" class="be-textarea" rows="2"
-                placeholder="Custom description for social sharing…">{{ old('og_description', $blog->seo->og_description ?? '') }}</textarea>
+                placeholder="Custom description for social sharing…">{{ old('og_description', $news->seo->og_description ?? '') }}</textarea>
             </div>
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-image" style="color:var(--primary);font-size:.8rem;"></i> OG Image <span class="lbl-badge lbl-optional">Optional</span></label>
@@ -372,7 +384,7 @@
 
             <div class="be-form-group">
               <label class="be-label"><i class="fab fa-twitter" style="color:#1da1f2;font-size:.8rem;"></i> Twitter Card Type</label>
-              @php $twitterCard = old('twitter_card', $blog->seo->twitter_card ?? 'summary_large_image'); @endphp
+              @php $twitterCard = old('twitter_card', $news->seo->twitter_card ?? 'summary_large_image'); @endphp
               <select name="twitter_card" class="be-select">
                 <option value="summary_large_image" {{ $twitterCard == 'summary_large_image' ? 'selected':'' }}>summary_large_image (Recommended)</option>
                 <option value="summary" {{ $twitterCard == 'summary' ? 'selected':'' }}>summary (Small square image)</option>
@@ -382,7 +394,7 @@
             <div class="be-form-group">
               <label class="be-label"><i class="fab fa-twitter" style="color:#1da1f2;font-size:.8rem;"></i> Twitter @username <span class="lbl-badge lbl-optional">Optional</span></label>
               <input type="text" name="twitter_creator" class="be-input" placeholder="@yourhandle"
-                value="{{ old('twitter_creator', $blog->seo->twitter_creator ?? '') }}"/>
+                value="{{ old('twitter_creator', $news->seo->twitter_creator ?? '') }}"/>
             </div>
           </div>
         </div>
@@ -393,31 +405,23 @@
             <h2><i class="fas fa-code"></i> Schema / Structured Data</h2>
           </div>
           <div class="be-card-body">
-            @php $schemaType = old('schema_type', $blog->seo->schema_type ?? 'Article'); @endphp
+            @php $schemaType = old('schema_type', $news->seo->schema_type ?? 'NewsArticle'); @endphp
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-layer-group" style="color:var(--primary);font-size:.8rem;"></i> Schema Type <span class="lbl-badge lbl-seo">SEO</span></label>
               <div class="schema-pills">
-                @foreach(['Article','BlogPosting','HowTo','FAQPage','Review','NewsArticle'] as $type)
+                @foreach(['NewsArticle','Article','PressReleaseArticle'] as $type)
                 <label class="schema-pill {{ $schemaType === $type ? 'active' : '' }}">
                   <input type="radio" name="schema_type" value="{{ $type }}" {{ $schemaType === $type ? 'checked':'' }} style="display:none;"/>
-                  <i class="fas {{ $type === 'HowTo' ? 'fa-list-ol' : ($type === 'FAQPage' ? 'fa-question-circle' : ($type === 'Review' ? 'fa-star' : 'fa-newspaper')) }}"></i> {{ $type }}
+                  <i class="fas {{ $type === 'PressReleaseArticle' ? 'fa-bullhorn' : 'fa-newspaper' }}"></i> {{ $type }}
                 </label>
                 @endforeach
               </div>
+              <div class="be-input-hint"><i class="fas fa-info-circle"></i> NewsArticle is the correct schema.org type for a company newsroom item — distinct from BlogPosting.</div>
             </div>
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-user" style="color:var(--primary);font-size:.8rem;"></i> Author Name</label>
               <input type="text" name="schema_author" class="be-input" placeholder="Author full name"
-                value="{{ old('schema_author', $blog->seo->schema_author ?? auth()->user()->name ?? '') }}"/>
-            </div>
-            <div class="be-form-group">
-              <label class="be-label"><i class="fas fa-star" style="color:var(--primary);font-size:.8rem;"></i> Rating (if Review) <span class="lbl-badge lbl-optional">Optional</span></label>
-              <div style="display:flex;gap:8px;">
-                <input type="number" name="schema_rating_value" class="be-input" placeholder="Rating (1-5)" min="1" max="5" step=".1"
-                  value="{{ old('schema_rating_value', $blog->seo->schema_rating_value ?? '') }}"/>
-                <input type="number" name="schema_rating_count" class="be-input" placeholder="Review count" min="0"
-                  value="{{ old('schema_rating_count', $blog->seo->schema_rating_count ?? '') }}"/>
-              </div>
+                value="{{ old('schema_author', $news->seo->schema_author ?? auth()->user()->name ?? '') }}"/>
             </div>
           </div>
         </div>
@@ -428,7 +432,7 @@
             <h2><i class="fas fa-cogs"></i> Advanced SEO</h2>
           </div>
           <div class="be-card-body">
-            @php $hreflang = old('hreflang', $blog->seo->hreflang ?? 'en'); @endphp
+            @php $hreflang = old('hreflang', $news->seo->hreflang ?? 'en'); @endphp
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-globe" style="color:var(--primary);font-size:.8rem;"></i> Hreflang / Language</label>
               <select name="hreflang" class="be-select">
@@ -437,7 +441,7 @@
                 @endforeach
               </select>
             </div>
-            @php $sitemapPriority = old('sitemap_priority', $blog->seo->sitemap_priority ?? '0.9'); @endphp
+            @php $sitemapPriority = old('sitemap_priority', $news->seo->sitemap_priority ?? '0.8'); @endphp
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-sitemap" style="color:var(--primary);font-size:.8rem;"></i> Sitemap Priority</label>
               <select name="sitemap_priority" class="be-select">
@@ -446,7 +450,7 @@
                 @endforeach
               </select>
             </div>
-            @php $changefreq = old('sitemap_changefreq', $blog->seo->sitemap_changefreq ?? 'daily'); @endphp
+            @php $changefreq = old('sitemap_changefreq', $news->seo->sitemap_changefreq ?? 'daily'); @endphp
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-sync" style="color:var(--primary);font-size:.8rem;"></i> Sitemap Change Frequency</label>
               <select name="sitemap_changefreq" class="be-select">
@@ -459,7 +463,7 @@
               <label class="be-label"><i class="fas fa-code" style="color:var(--primary);font-size:.8rem;"></i> Custom Head Scripts <span class="lbl-badge lbl-optional">Optional</span></label>
               <textarea name="custom_head_scripts" class="be-textarea" rows="3"
                 style="font-family:monospace;font-size:.8rem;"
-                placeholder="&lt;script&gt; or &lt;style&gt; injected into &lt;head&gt; for this post only…">{{ old('custom_head_scripts', $blog->seo->custom_head_scripts ?? '') }}</textarea>
+                placeholder="&lt;script&gt; or &lt;style&gt; injected into &lt;head&gt; for this article only…">{{ old('custom_head_scripts', $news->seo->custom_head_scripts ?? '') }}</textarea>
             </div>
           </div>
         </div>
@@ -504,7 +508,7 @@
           <div class="be-card-header"><h2><i class="fas fa-cog"></i> Publish Settings</h2></div>
           <div class="be-card-body">
 
-            @php $visibility = old('visibility', $blog->visibility ?? 'public'); @endphp
+            @php $visibility = old('visibility', $news->visibility ?? 'public'); @endphp
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-eye" style="color:var(--primary);font-size:.8rem;"></i> Visibility</label>
               <div class="vis-pills">
@@ -516,24 +520,14 @@
                   <input type="radio" name="visibility" value="private" {{ $visibility === 'private' ? 'checked':'' }} style="display:none;"/>
                   <i class="fas fa-lock"></i> Private
                 </label>
-                <label class="vis-pill {{ $visibility === 'password' ? 'active':'' }}">
-                  <input type="radio" name="visibility" value="password" {{ $visibility === 'password' ? 'checked':'' }} style="display:none;"/>
-                  <i class="fas fa-key"></i> Password
-                </label>
               </div>
             </div>
 
-            <div class="be-form-group" id="passwordField" style="{{ $visibility === 'password' ? '' : 'display:none;' }}">
-              <label class="be-label"><i class="fas fa-key" style="color:var(--primary);font-size:.8rem;"></i> Post Password</label>
-              <input type="password" name="post_password" class="be-input" placeholder="Enter password…"/>
-            </div>
-
-            @php $status = old('status', $blog->status ?? 'draft'); @endphp
+            @php $status = old('status', $news->status ?? 'draft'); @endphp
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-flag" style="color:var(--primary);font-size:.8rem;"></i> Status</label>
               <select name="status" id="postStatus" class="be-select">
                 <option value="draft" {{ $status == 'draft' ? 'selected':'' }}>Draft</option>
-                <option value="pending" {{ $status == 'pending' ? 'selected':'' }}>Pending Review</option>
                 <option value="published" {{ $status == 'published' ? 'selected':'' }}>Published</option>
                 <option value="scheduled" {{ $status == 'scheduled' ? 'selected':'' }}>Scheduled</option>
               </select>
@@ -542,29 +536,21 @@
             <div class="be-form-group" id="scheduleField" style="{{ $status === 'scheduled' ? '' : 'display:none;' }}">
               <label class="be-label"><i class="fas fa-calendar-alt" style="color:var(--primary);font-size:.8rem;"></i> Publish Date &amp; Time</label>
               <input type="datetime-local" name="published_at" class="be-input"
-                value="{{ old('published_at', $blog->published_at ? $blog->published_at->format('Y-m-d\TH:i') : '') }}"/>
-            </div>
-
-            <div class="be-form-group">
-              <label class="be-label"><i class="fas fa-comments" style="color:var(--primary);font-size:.8rem;"></i> Comments</label>
-              <select name="allow_comments" class="be-select">
-                <option value="1" {{ ($blog->allow_comments ?? 1) == 1 ? 'selected':'' }}>Allow comments</option>
-                <option value="0" {{ ($blog->allow_comments ?? 1) == 0 ? 'selected':'' }}>Disable comments</option>
-              </select>
+                value="{{ old('published_at', $news->published_at ? $news->published_at->format('Y-m-d\TH:i') : '') }}"/>
             </div>
 
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-clock" style="color:var(--primary);font-size:.8rem;"></i> Reading Time Override <span class="lbl-badge lbl-optional">Optional</span></label>
               <input type="text" name="reading_time" id="readingTimeField" class="be-input"
-                placeholder="e.g. 5 min read"
-                value="{{ old('reading_time', $blog->reading_time ?? '') }}"/>
+                placeholder="e.g. 3 min read"
+                value="{{ old('reading_time', $news->reading_time ?? '') }}"/>
             </div>
 
             <div style="padding-top:8px;display:flex;gap:8px;flex-direction:column;">
-              <button type="submit" name="action" value="publish" class="btn-be btn-success js-blog-save-btn" id="sidebarPublish">
+              <button type="submit" name="action" value="publish" class="btn-be btn-success js-news-save-btn" id="sidebarPublish">
                 <i class="fas fa-rocket"></i> Update &amp; Publish
               </button>
-              <button type="submit" name="action" value="draft" class="btn-be btn-outline js-blog-save-btn" id="sidebarDraft">
+              <button type="submit" name="action" value="draft" class="btn-be btn-outline js-news-save-btn" id="sidebarDraft">
                 <i class="fas fa-save"></i> Save as Draft
               </button>
             </div>
@@ -573,11 +559,11 @@
             <div class="danger-zone">
               <div class="danger-zone-title"><i class="fas fa-exclamation-triangle"></i> Danger Zone</div>
               <a href="#"
-                class="btn-be btn-danger-outline btn-sm btn-delete-blog"
-                data-id="{{ encrypt($blog->id) }}"
-                data-title="{{ $blog->title }}"
+                class="btn-be btn-danger-outline btn-sm btn-delete-news"
+                data-id="{{ encrypt($news->id) }}"
+                data-title="{{ $news->title }}"
                 style="width:100%;justify-content:center;">
-                <i class="fas fa-trash"></i> Delete This Post
+                <i class="fas fa-trash"></i> Delete This Article
               </a>
             </div>
 
@@ -599,23 +585,10 @@
             </div>
             <select name="category_id" id="categorySelect" class="be-select">
               <option value="">— Select Category —</option>
-              @foreach($categories ?? [] as $cat)
-                <option value="{{ $cat->id }}" {{ (old('category_id', $blog->category_id) == $cat->id) ? 'selected':'' }}>{{ $cat->name }}</option>
+              @foreach($categories ?? \App\Models\Category::all() as $cat)
+                <option value="{{ $cat->id }}" {{ (old('category_id', $news->category_id) == $cat->id) ? 'selected':'' }}>{{ $cat->name }}</option>
               @endforeach
-              @if(empty($categories))
-                <option value="1" {{ $blog->category_id == 1 ? 'selected':'' }}>Technology</option>
-                <option value="2" {{ $blog->category_id == 2 ? 'selected':'' }}>AI &amp; Machine Learning</option>
-                <option value="3" {{ $blog->category_id == 3 ? 'selected':'' }}>Web Development</option>
-                <option value="4" {{ $blog->category_id == 4 ? 'selected':'' }}>Cloud &amp; DevOps</option>
-                <option value="5" {{ $blog->category_id == 5 ? 'selected':'' }}>Business</option>
-              @endif
             </select>
-            <div class="be-form-group" style="margin-top:12px;">
-              <label class="be-label"><i class="fas fa-folder-open" style="color:var(--primary);font-size:.8rem;"></i> Sub-Category <span class="lbl-badge lbl-optional">Optional</span></label>
-              <select name="subcategory_id" class="be-select">
-                <option value="">— None —</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -627,18 +600,17 @@
               <div class="tags-wrap" id="postTagsWrap">
                 <input class="tags-input" id="postTagsInput" placeholder="Add tag, press Enter…"/>
               </div>
-              {{-- Pre-fill existing tags --}}
               <input type="hidden" name="tags" id="postTagsHidden"
-                value="{{ old('tags', $blog->tags->pluck('name')->implode(',')) }}"/>
+                value="{{ old('tags', $news->tags->pluck('name')->implode(',')) }}"/>
               <div class="be-input-hint"><i class="fas fa-info-circle"></i> Separate tags with Enter or comma</div>
             </div>
             <div id="suggestedTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
               <span style="font-size:.7rem;color:var(--muted);width:100%;margin-bottom:2px;font-weight:700;">Suggested:</span>
-              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Technology">Technology</span>
-              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="AI">AI</span>
-              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Web Dev">Web Dev</span>
-              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Tutorial">Tutorial</span>
-              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Tips">Tips</span>
+              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Company News">Company News</span>
+              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Milestone">Milestone</span>
+              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Press Release">Press Release</span>
+              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Partnership">Partnership</span>
+              <span class="tag-pill suggested-tag" style="cursor:pointer;" data-tag="Media Coverage">Media Coverage</span>
             </div>
           </div>
         </div>
@@ -648,66 +620,48 @@
           <div class="be-card-header"><h2><i class="fas fa-user-pen"></i> Author</h2></div>
           <div class="be-card-body">
             <select name="author_id" class="be-select">
-              <option value="{{ $blog->author_id ?? auth()->id() }}">
-                {{ $blog->author->name ?? auth()->user()->name ?? 'Admin User' }}
+              <option value="{{ $news->author_id ?? auth()->id() }}">
+                {{ $news->author->name ?? auth()->user()->name ?? 'Admin User' }}
               </option>
             </select>
           </div>
         </div>
 
-        {{-- ── REVISION HISTORY ── --}}
+        {{-- ── ARTICLE INFO ── --}}
         <div class="be-card">
-          <div class="be-card-header"><h2><i class="fas fa-history"></i> Post Info</h2></div>
+          <div class="be-card-header"><h2><i class="fas fa-history"></i> Article Info</h2></div>
           <div class="be-card-body">
             <div class="post-meta-list">
               <div class="pml-row">
-                <span class="pml-label"><i class="fas fa-hashtag"></i> Post ID</span>
-                <span class="pml-value">#{{ $blog->id }}</span>
+                <span class="pml-label"><i class="fas fa-hashtag"></i> Article ID</span>
+                <span class="pml-value">#{{ $news->id }}</span>
               </div>
               <div class="pml-row">
                 <span class="pml-label"><i class="fas fa-eye"></i> Total Views</span>
-                <span class="pml-value">{{ number_format($blog->views ?? 0) }}</span>
+                <span class="pml-value">{{ number_format($news->views ?? 0) }}</span>
               </div>
               <div class="pml-row">
                 <span class="pml-label"><i class="fas fa-calendar-plus"></i> Created</span>
-                <span class="pml-value">{{ $blog->created_at->format('M d, Y') }}</span>
+                <span class="pml-value">{{ $news->created_at->format('M d, Y') }}</span>
               </div>
               <div class="pml-row">
                 <span class="pml-label"><i class="fas fa-edit"></i> Last Updated</span>
-                <span class="pml-value">{{ $blog->updated_at->format('M d, Y H:i') }}</span>
+                <span class="pml-value">{{ $news->updated_at->format('M d, Y H:i') }}</span>
               </div>
-              @if($blog->published_at)
+              @if($news->published_at)
               <div class="pml-row">
                 <span class="pml-label"><i class="fas fa-rocket"></i> Published</span>
-                <span class="pml-value">{{ $blog->published_at->format('M d, Y H:i') }}</span>
+                <span class="pml-value">{{ $news->published_at->format('M d, Y H:i') }}</span>
               </div>
               @endif
               <div class="pml-row">
                 <span class="pml-label"><i class="fas fa-clock"></i> Read Time</span>
-                <span class="pml-value">{{ $blog->reading_time ?? '—' }}</span>
-              </div>
-              <div class="pml-row">
-                <span class="pml-label"><i class="fas fa-heart" style="color:var(--danger);"></i> Likes</span>
-                <span class="pml-value">{{ number_format($blog->likes_count ?? 0) }}</span>
-              </div>
-              <div class="pml-row">
-                <span class="pml-label"><i class="fas fa-comment-dots" style="color:#9333ea;"></i> Comments</span>
-                <span class="pml-value">
-                  {{ number_format($blog->approved_comments_count ?? 0) }}
-                  @if(($blog->pending_comments_count ?? 0) > 0)
-                    <span class="status-badge badge-pending" style="font-size:.6rem;padding:2px 6px;margin-left:4px;">{{ $blog->pending_comments_count }} pending</span>
-                  @endif
-                </span>
+                <span class="pml-value">{{ $news->reading_time ?? '—' }}</span>
               </div>
             </div>
-            @if(($blog->pending_comments_count ?? 0) > 0)
-            <a href="{{ route('blog-comments.index', ['status' => 'pending']) }}" class="btn-be btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:12px;">
-              <i class="fas fa-comment-dots"></i> Moderate {{ $blog->pending_comments_count }} Pending Comment{{ $blog->pending_comments_count > 1 ? 's' : '' }}
-            </a>
-            @endif
-            @if($blog->status === 'published')
-            <a href="{{ url('/blog/' . $blog->slug) }}" target="_blank" class="btn-be btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:12px;">
-              <i class="fas fa-external-link-alt"></i> View Live Post
+            @if($news->status === 'published')
+            <a href="{{ url('/newsroom/' . $news->slug) }}" target="_blank" class="btn-be btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:12px;">
+              <i class="fas fa-external-link-alt"></i> View Live Article
             </a>
             @endif
           </div>
@@ -720,40 +674,19 @@
 </div>{{-- /be-wrap --}}
 </div>{{-- /blogEditor --}}
 
-{{-- ── DELETE CONFIRMATION MODAL ── --}}
-{{-- <div class="modal-backdrop" id="deleteModal" style="display:none;">
-  <div class="modal-box">
-    <div class="modal-icon" style="color:var(--danger);"><i class="fas fa-trash-alt"></i></div>
-    <h3 style="margin:0 0 8px;color:var(--text);">Delete Post?</h3>
-    <p style="color:var(--muted);font-size:.85rem;margin:0 0 20px;">
-      You are about to permanently delete "<strong id="deleteModalTitle"></strong>". This action cannot be undone.
-    </p>
-    <div style="display:flex;gap:10px;">
-      <button class="btn-be btn-outline" id="deleteCancelBtn" style="flex:1;">Cancel</button>
-      <form id="deleteForm" method="POST" style="flex:1;">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="btn-be" style="width:100%;background:var(--danger);color:#fff;border-color:var(--danger);">
-          <i class="fas fa-trash"></i> Yes, Delete
-        </button>
-      </form>
-    </div>
-  </div>
-</div> --}}
-
 @endsection
 
 
 @push('scripts')
-{{-- ── Modular blog editor (versioned for cache busting) ── --}}
-<script src="{{ asset('assets/js/blog.js') }}?v={{ filemtime(public_path('assets/js/blog.js')) }}"></script>
+{{-- ── Modular news editor (versioned for cache busting) — adapted from blog.js ── --}}
+<script src="{{ asset('assets/js/news.js') }}?v={{ filemtime(public_path('assets/js/news.js')) }}"></script>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
 
     const quill = new Quill('#quillEditor', {
       theme: 'snow',
-      placeholder: 'Edit your blog post content here…',
+      placeholder: 'Edit the newsroom article here…',
       modules: {
         toolbar: [
           [{ 'header': [1, 2, 3, 4, false] }],
@@ -764,30 +697,29 @@
     });
 
     // preload content
-    const existingContent = document.getElementById('blogContent').value;
+    const existingContent = document.getElementById('newsContent').value;
     if (existingContent) {
       quill.clipboard.dangerouslyPasteHTML(existingContent);
     }
 
-    // 👉 INIT YOUR MODULAR SYSTEM HERE
-    new BlogEditor({
+    new NewsEditor({
       quill: quill,
-      autosaveUrl: "{{ route('blogs.fhy6adv645gv5zd5') }}",
+      autosaveUrl: "{{ route('news.autosave') }}",
       csrfToken: "{{ csrf_token() }}"
     });
 
   });
 </script>
 
-{{-- ── Delete post (Danger Zone) ──
-     The button used to be a plain <a href="{{ route('blogs.destroy', ...) }}">
-     which just navigated (GET) to a route that only accepts DELETE, so every
-     click 405'd instead of deleting anything. It's now wired to fire the same
-     AJAX DELETE the blogs list page uses, with the id encrypted (the
-     destroy() controller method calls Crypt::decrypt() on it). --}}
+{{-- ── Delete article (Danger Zone) ──
+     Wired as an AJAX DELETE with the id encrypted (NewsController::destroy()
+     calls Crypt::decrypt() on it) — built correctly from the start, mirroring
+     the FIXED Blog delete pattern (see BlogController::destroy() /
+     blogs/edit.blade.php), not the earlier plain-<a>-to-a-DELETE-only-route
+     bug that 405'd on every click before it was corrected this session. --}}
 <script>
 $(function () {
-  $('.btn-delete-blog').on('click', function (e) {
+  $('.btn-delete-news').on('click', function (e) {
     e.preventDefault();
     var $btn = $(this);
     var id = $btn.data('id');
@@ -798,7 +730,7 @@ $(function () {
     }
 
     $.ajax({
-      url: '/blogs/' + id,
+      url: '/news/' + id,
       method: 'DELETE',
       headers: {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -807,7 +739,7 @@ $(function () {
         if (res.success) {
           window.showToast(res.message, 'var(--danger)', 'fas fa-trash');
           setTimeout(function () {
-            window.location.href = '{{ route('blogs.index') }}';
+            window.location.href = '{{ route('news.index') }}';
           }, 600);
         } else {
           window.showToast(res.message, '#ff4d6d', 'fas fa-exclamation-circle');
@@ -825,27 +757,12 @@ $(function () {
 });
 </script>
 
-@if(session('toast'))
-<script>
-$(function(){
-    const toast = @json(session('toast'));
-
-    let color = '#00c896';
-    let icon  = 'fas fa-check-circle';
-
-    if (toast.type === 'error') {
-        color = '#ff4d6d';
-        icon  = 'fas fa-times-circle';
-    }
-
-    if (toast.type === 'warning') {
-        color = '#ffb830';
-        icon  = 'fas fa-exclamation-triangle';
-    }
-
-    window.showToast(toast.message, color, icon);
-});
-</script>
+{{-- ── Session flash toasts ── --}}
+@if(session('success'))
+<script>$(function(){ window.showToast(`{!! session('success') !!}`, '#00c896', 'fas fa-check-circle'); });</script>
 @endif
 
+@if(session('error'))
+<script>$(function(){ window.showToast(`{!! session('error') !!}`, '#ff4d6d', 'fas fa-times-circle'); });</script>
+@endif
 @endpush

@@ -26,6 +26,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'blog.delete'  => 'Delete Blogs',
             'blog.publish' => 'Publish Blogs',
         ],
+        'Newsroom' => [
+            'news.view'    => 'View Newsroom',
+            'news.create'  => 'Write Newsroom Articles',
+            'news.edit'    => 'Edit Newsroom Articles',
+            'news.delete'  => 'Delete Newsroom Articles',
+            'news.publish' => 'Publish Newsroom Articles',
+        ],
         'Media' => [
             'media.view'   => 'View Media',
             'media.upload' => 'Upload Media',
@@ -63,6 +70,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'admin' => [
             'pages.view','pages.create','pages.edit','pages.publish',
             'blog.view','blog.create','blog.edit','blog.publish',
+            'news.view','news.create','news.edit','news.publish',
             'media.view','media.upload',
             'users.view','users.invite','users.edit',
             'settings.view',
@@ -71,13 +79,15 @@ class RolesAndPermissionsSeeder extends Seeder
         'editor' => [
             'pages.view','pages.create','pages.edit',
             'blog.view','blog.create','blog.edit',
+            'news.view','news.create','news.edit',
             'media.view','media.upload',
             'tasks.view','tasks.create','tasks.edit',
         ],
-        'viewer'  => ['pages.view','blog.view','media.view','tasks.view'],
+        'viewer'  => ['pages.view','blog.view','news.view','media.view','tasks.view'],
         'content-manager' => [
             'pages.view','pages.create','pages.edit','pages.publish',
             'blog.view','blog.create','blog.edit','blog.publish',
+            'news.view','news.create','news.edit','news.publish',
             'media.view','media.upload',
             'users.view',
             'tasks.view','tasks.create','tasks.edit',

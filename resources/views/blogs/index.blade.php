@@ -788,17 +788,18 @@ html[data-theme="dark"] #blogList .share-url-row input {
     <div class="stat-ov-card">
       <div class="stat-ov-icon" style="background:#fff4d6;color:var(--warning);"><i class="fas fa-heart"></i></div>
       <div class="stat-ov-body">
-        <div class="stat-ov-val">29450</div>
+        <div class="stat-ov-val">{{ number_format($counts['likes'] ?? 0) }}</div>
         <div class="stat-ov-lbl">Total Likes</div>
-        <div class="stat-ov-delta" style="color:var(--success);"><i class="fas fa-arrow-up"></i> +5.8%</div>
       </div>
     </div>
     <div class="stat-ov-card">
       <div class="stat-ov-icon" style="background:#f3e8ff;color:#9333ea;"><i class="fas fa-comment-dots"></i></div>
       <div class="stat-ov-body">
-        <div class="stat-ov-val">6820</div>
+        <div class="stat-ov-val">{{ number_format($counts['comments'] ?? 0) }}</div>
         <div class="stat-ov-lbl">Comments</div>
-        <div class="stat-ov-delta" style="color:var(--success);"><i class="fas fa-arrow-up"></i> +3.1%</div>
+        @if(($counts['pendingComments'] ?? 0) > 0)
+          <div class="stat-ov-delta" style="color:var(--warning);"><i class="fas fa-hourglass-half"></i> {{ $counts['pendingComments'] }} pending</div>
+        @endif
       </div>
     </div>
   </div>
@@ -935,13 +936,16 @@ html[data-theme="dark"] #blogList .share-url-row input {
             <td class="hide-mobile">
               <div class="stat-cell">
                 <i class="fas fa-heart" style="color:#ff4d6d;"></i>
-                {{ number_format($post['likes']) }}
+                {{ number_format($post->likes_count ?? 0) }}
               </div>
             </td>
             <td class="hide-mobile">
               <div class="stat-cell">
                 <i class="fas fa-comment-dots" style="color:#9333ea;"></i>
-                {{ number_format($post['comments']) }}
+                {{ number_format($post->approved_comments_count ?? 0) }}
+                @if(($post->pending_comments_count ?? 0) > 0)
+                  <span class="status-badge badge-pending" style="font-size:.6rem;padding:2px 6px;margin-left:4px;" title="Pending moderation">{{ $post->pending_comments_count }} pending</span>
+                @endif
               </div>
             </td>
             <td class="hide-mobile">
@@ -972,7 +976,7 @@ html[data-theme="dark"] #blogList .share-url-row input {
                 <button class="btn-icon" title="Share post" onclick="openShareModal('{{ $post->title }}', '/blog/{{ $post['slug'] }}')">
                   <i class="fas fa-share-alt"></i>
                 </button>
-                <button class="btn-icon" title="View stats" onclick="openStatsModal( '{{ addslashes($post->title) }}', {{ $post->views ?? 0 }}, {{ $post->likes ?? 0 }}, {{ $post->comments ?? 0 }} )">
+                <button class="btn-icon" title="View stats" onclick="openStatsModal( '{{ addslashes($post->title) }}', {{ $post->views ?? 0 }}, {{ $post->likes_count ?? 0 }}, {{ $post->approved_comments_count ?? 0 }} )">
                   <i class="fas fa-chart-line"></i>
                 </button>
                 @can('blog.delete')
@@ -1042,11 +1046,14 @@ html[data-theme="dark"] #blogList .share-url-row input {
             </div>
             <div class="card-stat">
               <i class="fas fa-heart" style="color:var(--danger);"></i>
-              <strong>{{ number_format($post['likes']) }}</strong> likes
+              <strong>{{ number_format($post->likes_count ?? 0) }}</strong> likes
             </div>
             <div class="card-stat">
               <i class="fas fa-comment-dots" style="color:#9333ea;"></i>
-              <strong>{{ number_format($post['comments']) }}</strong> cmts
+              <strong>{{ number_format($post->approved_comments_count ?? 0) }}</strong> cmts
+              @if(($post->pending_comments_count ?? 0) > 0)
+                <span style="color:var(--warning);font-weight:700;">({{ $post->pending_comments_count }} pending)</span>
+              @endif
             </div>
           </div>
 
@@ -1068,7 +1075,7 @@ html[data-theme="dark"] #blogList .share-url-row input {
             <button class="btn-bl btn-outline btn-xs" onclick="openShareModal('{{ $post->title }}', '/blog/{{ $post['slug'] }}')">
               <i class="fas fa-share-alt"></i> Share
             </button>   
-            <button class="btn-bl btn-outline btn-xs" onclick="openStatsModal('{{ $post->title }}', {{ number_format($post->views ?? 0) }}, {{ $post['likes'] ?? 0 }}, {{ $post['comments'] ?? 0 }})">
+            <button class="btn-bl btn-outline btn-xs" onclick="openStatsModal('{{ $post->title }}', {{ number_format($post->views ?? 0) }}, {{ $post->likes_count ?? 0 }}, {{ $post->approved_comments_count ?? 0 }})">
               <i class="fas fa-chart-line"></i> Stats
             </button>
             <button class="btn-bl btn-danger btn-xs ms-auto" onclick="openDeleteModal('{{ encrypt($post->id) }}', '{{ addslashes($post->title) }}')">
