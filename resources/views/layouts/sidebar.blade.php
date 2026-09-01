@@ -11,6 +11,15 @@
 
   <nav class="sidebar-nav">
 
+    <!-- My Profile — every authenticated role, including client, since this
+         is a self-service page gated only by 'auth' (see routes/web.php). -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('profile.show') }}"
+          class="nav-link-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+          <i class="fas fa-id-badge nav-icon"></i> My Profile
+      </a>
+    </div>
+
     @hasrole('client')
     <!-- Billing & Agreement (client — view only) -->
     <div class="nav-item-wrap">
@@ -52,6 +61,16 @@
           @if($pendingCommentsNavCount > 0)
             <span style="margin-left:auto;background:#ffb830;color:#1a1a2e;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:10px;">{{ $pendingCommentsNavCount }}</span>
           @endif
+      </a>
+    </div>
+    @endcan
+
+    @can('news.view')
+    <!-- Newsroom -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('news.index') }}"
+          class="nav-link-item {{ request()->routeIs('news.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-newspaper"></i> Newsroom
       </a>
     </div>
     @endcan
@@ -141,17 +160,15 @@
         <a class="nav-link-item" data-page="Archived"><i class="fas fa-circle nav-icon" style="font-size:.4rem;"></i> Archived</a>
       </div>
     </div>
-    <!-- Team (expandable) -->
+    @can('users.view')
+    <!-- Team -->
     <div class="nav-item-wrap">
-      <a class="nav-link-item has-sub" data-sub="sub-team">
-        <i class="fas fa-users nav-icon"></i> Team
-        <i class="fas fa-chevron-right nav-arrow"></i>
+      <a href="{{ route('team.index') }}"
+          class="nav-link-item {{ request()->routeIs('team.*') ? 'active' : '' }}">
+          <i class="fas fa-users nav-icon"></i> Team
       </a>
-      <div class="nav-submenu" id="sub-team">
-        <a class="nav-link-item" data-page="Members"><i class="fas fa-circle nav-icon" style="font-size:.4rem;"></i> Members</a>
-        <a class="nav-link-item" data-page="Roles"><i class="fas fa-circle nav-icon" style="font-size:.4rem;"></i> Roles</a>
-      </div>
     </div>
+    @endcan
 
     @endhasrole
 

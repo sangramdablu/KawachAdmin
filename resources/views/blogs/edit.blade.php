@@ -407,8 +407,8 @@
             </div>
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-user" style="color:var(--primary);font-size:.8rem;"></i> Author Name</label>
-              <input type="text" name="schema_author" class="be-input" placeholder="Author full name"
-                value="{{ old('schema_author', $blog->seo->schema_author ?? auth()->user()->name ?? '') }}"/>
+              <div class="be-input" style="opacity:.75;cursor:not-allowed;user-select:none;">{{ $blog->author?->name ?? auth()->user()->name ?? 'Admin User' }}</div>
+              <div class="be-input-hint"><i class="fas fa-lock"></i> Set automatically from the post's author account.</div>
             </div>
             <div class="be-form-group">
               <label class="be-label"><i class="fas fa-star" style="color:var(--primary);font-size:.8rem;"></i> Rating (if Review) <span class="lbl-badge lbl-optional">Optional</span></label>
@@ -647,11 +647,10 @@
         <div class="be-card">
           <div class="be-card-header"><h2><i class="fas fa-user-pen"></i> Author</h2></div>
           <div class="be-card-body">
-            <select name="author_id" class="be-select">
-              <option value="{{ $blog->author_id ?? auth()->id() }}">
-                {{ $blog->author->name ?? auth()->user()->name ?? 'Admin User' }}
-              </option>
-            </select>
+            <div class="be-input" style="opacity:.75;cursor:not-allowed;user-select:none;display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-user-circle"></i> {{ $blog->author?->name ?? auth()->user()->name ?? 'Admin User' }}
+            </div>
+            <div class="be-input-hint"><i class="fas fa-lock"></i> Original author is preserved and cannot be reassigned by editing.</div>
           </div>
         </div>
 

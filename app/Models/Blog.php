@@ -61,4 +61,8 @@ class Blog extends Model
         return $this->hasMany(BlogLike::class);
     }
 
+    public function author() {
+        return $this->belongsTo(User::class, 'author_id');
+    }
+
 }

@@ -95,13 +95,31 @@
 </div>
 
 <!-- ══════════ USER DROPDOWN ══════════ -->
+@php
+  // Real logged-in user — no more hardcoded "Arjun Kumar" placeholder.
+  // Role line: designation if set, else the user's Spatie role name,
+  // else a generic fallback. Avatar: real photo if uploaded, else the
+  // same generated-initials+deterministic-colour scheme already used by
+  // RoleAccessController::formatUser()/TeamController (via the shared
+  // getInitialsAttribute()/getAvatarColorAttribute() accessors on User).
+  $__topbarUser = auth()->user();
+  if ($__topbarUser) {
+      $__topbarUser->loadMissing('roles');
+      $__topbarRoleName = $__topbarUser->designation
+          ?: ($__topbarUser->roles->first()?->name ? ucfirst(str_replace('-', ' ', $__topbarUser->roles->first()->name)) : 'Team Member');
+  }
+@endphp
 <div class="topbar-dropdown user-dropdown" id="userDropdown">
   <div class="user-info">
-    <div class="user-dp">AK</div>
-    <div class="user-name">Arjun Kumar</div>
-    <div class="user-role">Lead Developer</div>
+    @if($__topbarUser && $__topbarUser->avatar)
+      <div class="user-dp" style="background:center/cover no-repeat url('{{ $__topbarUser->avatar_url }}');"></div>
+    @else
+      <div class="user-dp" style="background:{{ $__topbarUser->avatar_color ?? 'var(--primary)' }};">{{ $__topbarUser->initials ?? '?' }}</div>
+    @endif
+    <div class="user-name">{{ $__topbarUser->name ?? 'Guest' }}</div>
+    <div class="user-role">{{ $__topbarRoleName ?? '' }}</div>
   </div>
-  <a class="user-menu-item"><i class="fas fa-user-circle"></i> My Profile</a>
+  <a class="user-menu-item" href="{{ route('profile.show') }}"><i class="fas fa-user-circle"></i> My Profile</a>
   <a class="user-menu-item"><i class="fas fa-cog"></i> Account Settings</a>
   <a class="user-menu-item"><i class="fas fa-shield-alt"></i> Privacy</a>
   <a class="user-menu-item"><i class="fas fa-question-circle"></i> Help & Support</a>

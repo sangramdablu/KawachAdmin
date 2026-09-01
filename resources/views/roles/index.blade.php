@@ -498,6 +498,35 @@
           <option value="pending">Pending</option>
         </select>
       </div>
+
+      {{-- ── Team page profile fields ── --}}
+      <div style="margin:16px 0 4px;padding-top:14px;border-top:1px solid var(--border);">
+        <label class="ram-label" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+          <span><i class="fas fa-users"></i> Show on Team page</span>
+          <input type="checkbox" id="editUserIsTeamMember" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;"/>
+        </label>
+        <p style="font-size:.72rem;color:var(--text-muted);margin:4px 0 0;">When enabled, this user appears on the public Team page with the details below.</p>
+      </div>
+      <div class="ram-form-group">
+        <label class="ram-label"><i class="fas fa-id-badge"></i> Designation</label>
+        <input type="text" class="ram-input" id="editUserDesignation" placeholder="e.g. Senior Content Manager"/>
+      </div>
+      <div class="ram-form-group">
+        <label class="ram-label"><i class="fas fa-layer-group"></i> Team</label>
+        <input type="text" class="ram-input" id="editUserTeamRole" placeholder="e.g. Content Team, Engineering"/>
+      </div>
+      <div class="ram-form-group">
+        <label class="ram-label"><i class="fas fa-list-check"></i> Responsibilities</label>
+        <textarea class="ram-textarea" id="editUserResponsibilities" rows="2" placeholder="Comma-separated or free text"></textarea>
+      </div>
+      <div class="ram-form-group">
+        <label class="ram-label"><i class="fas fa-camera"></i> Avatar</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="ram-avatar" id="editUserAvatarPreview" style="width:46px;height:46px;font-size:.88rem;background-size:cover;background-position:center;"></div>
+          <input type="file" id="editUserAvatarFile" accept="image/png,image/jpeg,image/webp,image/gif" style="font-size:.78rem;"/>
+        </div>
+        <p style="font-size:.72rem;color:var(--text-muted);margin:4px 0 0;">Uploads immediately when a file is chosen.</p>
+      </div>
       {{-- Inherited permissions from role --}}
       <div class="ram-form-group">
         <label class="ram-label"><i class="fas fa-key"></i> Permissions from role</label>
@@ -679,7 +708,7 @@ function renderUsersTable(users) {
               onchange="onCheckChange()" style="accent-color:var(--primary);"/></td>
         <td>
           <div class="ram-user-cell">
-            <div class="ram-avatar" style="background:${u.avatarBg};">${u.avatar}</div>
+            <div class="ram-avatar" style="${u.avatarUrl ? `background:center/cover no-repeat url('${u.avatarUrl}');` : `background:${u.avatarBg};`}">${u.avatarUrl ? '' : u.avatar}</div>
             <div>
               <div class="ram-user-name">${u.name}</div>
               <div class="ram-user-email">${u.email}</div>
@@ -765,6 +794,23 @@ window.editUser = function (id) {
   document.getElementById('editUserRole').value          = u.role;
   document.getElementById('editUserStatus').value        = u.status;
 
+  // Team page profile fields
+  document.getElementById('editUserIsTeamMember').checked   = !!u.isTeamMember;
+  document.getElementById('editUserDesignation').value      = u.designation || '';
+  document.getElementById('editUserTeamRole').value         = u.teamRole || '';
+  document.getElementById('editUserResponsibilities').value = u.responsibilities || '';
+  document.getElementById('editUserAvatarFile').value       = '';
+  const avatarPreview = document.getElementById('editUserAvatarPreview');
+  if (u.avatarUrl) {
+    avatarPreview.style.backgroundImage = `url('${u.avatarUrl}')`;
+    avatarPreview.textContent = '';
+    avatarPreview.style.background = `center/cover no-repeat url('${u.avatarUrl}')`;
+  } else {
+    avatarPreview.style.backgroundImage = '';
+    avatarPreview.textContent = u.avatar;
+    avatarPreview.style.background = u.avatarBg;
+  }
+
   // Current role badge
   const col = u.roleColor || 'viewer';
   document.getElementById('editUserCurrentRole').innerHTML =
@@ -802,17 +848,58 @@ window.editUser = function (id) {
   openModal('editUserModal');
 };
 
+/* ── Avatar upload (uploads immediately on file select, via
+   ImageUploadService on the backend — same as Blog/News images) ── */
+document.getElementById('editUserAvatarFile').addEventListener('change', async function () {
+  const id   = document.getElementById('editingUserId').value;
+  const file = this.files[0];
+  if (!id || !file) return;
+
+  const fd = new FormData();
+  fd.append('avatar', file);
+
+  try {
+    const res  = await fetch(`${ROUTES.userUpdate}/${id}/avatar`, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+      body: fd,
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || 'Avatar upload failed');
+
+    const avatarPreview = document.getElementById('editUserAvatarPreview');
+    avatarPreview.textContent = '';
+    avatarPreview.style.background = `center/cover no-repeat url('${data.avatarUrl}')`;
+
+    const idx = USERS.findIndex(x => x.id == id);
+    if (idx !== -1) USERS[idx] = data.user;
+    filteredUsers = filteredUsers.map(x => x.id == id ? data.user : x);
+    renderUsersTable(filteredUsers);
+
+    toast('Avatar updated.', 'var(--green)', 'fas fa-check-circle');
+  } catch (e) {
+    toast(e.message, 'var(--red)', 'fas fa-exclamation-circle');
+  }
+});
+
 /* ── Save user edits (role + status) ── */
 window.saveUserEdit = async function () {
   const id     = document.getElementById('editingUserId').value;
   const role   = document.getElementById('editUserRole').value;
   const status = document.getElementById('editUserStatus').value;
 
+  const is_team_member   = document.getElementById('editUserIsTeamMember').checked;
+  const designation      = document.getElementById('editUserDesignation').value.trim();
+  const team_role        = document.getElementById('editUserTeamRole').value.trim();
+  const responsibilities = document.getElementById('editUserResponsibilities').value.trim();
+
   if (!role) { toast('Please select a role.', 'var(--red)', 'fas fa-exclamation-circle'); return; }
 
   setLoading('saveUserBtn', true);
   try {
-    const data = await api(`${ROUTES.userUpdate}/${id}`, 'PATCH', { role, status });
+    const data = await api(`${ROUTES.userUpdate}/${id}`, 'PATCH', {
+      role, status, is_team_member, designation, team_role, responsibilities,
+    });
 
     // Update local array
     const idx = USERS.findIndex(u => u.id == id);

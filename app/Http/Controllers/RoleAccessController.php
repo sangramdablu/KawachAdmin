@@ -18,6 +18,7 @@ use App\Models\AccessActivityLog;
 use App\Models\UserInvitation;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use App\Services\InvitationService;
+use App\Services\ImageUploadService;
 
 class RoleAccessController extends Controller
 {
@@ -93,12 +94,17 @@ class RoleAccessController extends Controller
         ]);
     }
 
-    /* USERS  —  Update a single user's role + status */
+    /* USERS  —  Update a single user's role + status (+ Team-page profile fields) */
     public function updateUser(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
-            'role'   => ['required', 'string', Rule::exists('roles', 'name')],
-            'status' => ['required', Rule::in(['active', 'inactive', 'pending'])],
+            'role'             => ['required', 'string', Rule::exists('roles', 'name')],
+            'status'           => ['required', Rule::in(['active', 'inactive', 'pending'])],
+            // Team page / profile fields — all optional, purely additive.
+            'is_team_member'   => ['sometimes', 'boolean'],
+            'designation'      => ['sometimes', 'nullable', 'string', 'max:120'],
+            'team_role'        => ['sometimes', 'nullable', 'string', 'max:120'],
+            'responsibilities' => ['sometimes', 'nullable', 'string', 'max:2000'],
         ]);
 
         $oldRole = $user->roles->first()?->name ?? '—';
@@ -107,7 +113,14 @@ class RoleAccessController extends Controller
         try {
             // Sync role via Spatie
             $user->syncRoles([$validated['role']]);
-            $user->update(['status' => $validated['status']]);
+
+            $updateData = ['status' => $validated['status']];
+            foreach (['is_team_member', 'designation', 'team_role', 'responsibilities'] as $field) {
+                if (array_key_exists($field, $validated)) {
+                    $updateData[$field] = $validated[$field];
+                }
+            }
+            $user->update($updateData);
 
             // Log
             if ($oldRole !== $validated['role']) {
@@ -119,6 +132,9 @@ class RoleAccessController extends Controller
             if ($validated['status'] === 'inactive') {
                 AccessActivityLog::record('red', "<strong>" . auth()->user()->name . "</strong> deactivated <strong>{$user->name}</strong>");
             }
+            if (array_key_exists('is_team_member', $validated) && (bool) $validated['is_team_member'] && !$user->getOriginal('is_team_member')) {
+                AccessActivityLog::record('green', "<strong>" . auth()->user()->name . "</strong> added <strong>{$user->name}</strong> to the Team page");
+            }
 
             DB::commit();
             return response()->json(['success' => true, 'user' => $this->formatUser($user->fresh('roles'))]);
@@ -127,6 +143,28 @@ class RoleAccessController extends Controller
             Log::error('RoleAccessController@updateUser: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * USERS — Upload/replace a user's avatar (separate multipart endpoint
+     * since the Edit User modal's main save is a JSON PATCH). Reuses
+     * ImageUploadService::uploadToPublic() — the same service Blog/News/
+     * Pages already use — rather than building new upload handling.
+     */
+    public function updateAvatar(Request $request, User $user, ImageUploadService $imageService): JsonResponse
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+        ]);
+
+        $upload = $imageService->uploadToPublic($request->file('avatar'), 'avatars');
+        $user->update(['avatar' => $upload['path']]);
+
+        return response()->json([
+            'success' => true,
+            'avatarUrl' => $upload['url'],
+            'user' => $this->formatUser($user->fresh('roles')),
+        ]);
     }
 
     /* USERS  —  Toggle ban / unban */
@@ -466,16 +504,25 @@ class RoleAccessController extends Controller
         $avatarBg = $colours[$user->id % count($colours)];
 
         return [
-            'id'        => $user->id,
-            'name'      => $user->name,
-            'email'     => $user->email,
-            'role'      => $role?->name ?? 'viewer',
-            'roleColor' => $meta?->color ?? 'viewer',
-            'status'    => $user->status ?? 'active',
-            'last'      => $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->diffForHumans() : 'Never',
-            'joined'    => $user->created_at->format('M Y'),
-            'avatar'    => $initials,
-            'avatarBg'  => $avatarBg,
+            'id'               => $user->id,
+            'name'             => $user->name,
+            'email'            => $user->email,
+            'role'             => $role?->name ?? 'viewer',
+            'roleColor'        => $meta?->color ?? 'viewer',
+            'status'           => $user->status ?? 'active',
+            'last'             => $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->diffForHumans() : 'Never',
+            'joined'           => $user->created_at->format('M Y'),
+            // Generated-initials fallback avatar (always present)
+            'avatar'           => $initials,
+            'avatarBg'         => $avatarBg,
+            // Real uploaded avatar — null when none set; UI falls back to
+            // the initials avatar above when this is null.
+            'avatarUrl'        => $user->avatar ? asset($user->avatar) : null,
+            // Team-page / profile fields
+            'isTeamMember'     => (bool) $user->is_team_member,
+            'designation'      => $user->designation,
+            'teamRole'         => $user->team_role,
+            'responsibilities' => $user->responsibilities,
         ];
     }
 

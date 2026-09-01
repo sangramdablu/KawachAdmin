@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\BillingAndAgreementController;
@@ -13,6 +14,8 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\BlogCommentController;
+use App\Http\Controllers\TeamController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +58,19 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 /*
 |--------------------------------------------------------------------------
+| My Profile — self-service, every authenticated role.
+| Deliberately 'auth' only (NOT 'admin'/'check-permission', same reasoning
+| as /logout above): a user views/edits only their own record here, so
+| there is nothing to gate by role or permission — a client-role user
+| (who would get a 403 from AdminMiddleware) must still be able to reach
+| their own profile.
+|--------------------------------------------------------------------------
+*/
+Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show')->middleware('auth');
+Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
 | Authenticated Routes
 | 'auth'  — must be logged in
 | 'admin' — must have any recognised Spatie role (see AdminMiddleware)
@@ -85,6 +101,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // 1. Only register 'index' since your BlogController doesn't have a 'show' method
     Route::middleware('check-permission:blog.view')->group(function () {
         Route::resource('blogs', BlogController::class)->only(['index']);
+
+        // Real per-day view counts for the Stats modal's 30-day chart —
+        // replaces what used to be Math.random() fake data client-side.
+        Route::get('/blogs/{blog}/view-series', [BlogController::class, 'viewSeries'])
+             ->name('blogs.view-series');
     });
 
     // 2. Registers create, store, edit, update, and destroy (skipping index and show)
@@ -130,6 +151,40 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Route::post('/upload-image', [BlogController::class, 'uploadImage'])
     //      ->name('blogs.upload.image')
     //      ->middleware('check-permission:media.upload');
+
+    /*
+    |----------------------------------------------------------------------
+    | Newsroom Routes (mirrors the Blog route group above)
+    |----------------------------------------------------------------------
+    | news.index   GET    /news
+    | news.create  GET    /news/create
+    | news.store   POST   /news
+    | news.edit    GET    /news/{news}/edit
+    | news.update  PUT    /news/{news}
+    | news.destroy DELETE /news/{news}
+    |----------------------------------------------------------------------
+    */
+    Route::middleware('check-permission:news.view')->group(function () {
+        Route::resource('news', NewsController::class)->only(['index']);
+    });
+
+    Route::middleware('check-permission:news.edit')->group(function () {
+        Route::resource('news', NewsController::class)->except(['index', 'show']);
+
+        Route::post('/news/autosave', [NewsController::class, 'autosave'])
+             ->name('news.autosave');
+
+        // Same "+ Add New" category fix as blogs.category.store — persists a
+        // real category row instead of a client-side-only placeholder.
+        Route::post('/news/category/store', [NewsController::class, 'storeCategory'])
+             ->name('news.category.store');
+    });
+
+    // Inline editor image uploads — gated by news.edit since this is only
+    // ever called from inside the news editor itself.
+    Route::post('/news-upload-image', [NewsController::class, 'uploadImage'])
+         ->name('news.upload.image')
+         ->middleware('check-permission:news.edit');
 
     /*
     |----------------------------------------------------------------------
@@ -191,6 +246,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
     |----------------------------------------------------------------------
     */
     Route::get('/admin/roles-access', [RoleAccessController::class, 'index'])->name('roles-access.index')->middleware('check-role:super-admin,admin');
+
+    /*
+    |----------------------------------------------------------------------
+    | Team
+    |----------------------------------------------------------------------
+    | Read-only view onto the existing Users system, filtered to
+    | is_team_member = true. Gated on users.view (not a new permission)
+    | since it is fundamentally a view onto Users, not a separate module.
+    | Membership itself is toggled via the existing Edit User modal
+    | (roles/index.blade.php -> RoleAccessController::updateUser()).
+    |----------------------------------------------------------------------
+    */
+    Route::middleware('check-permission:users.view')->group(function () {
+        Route::get('/team', [TeamController::class, 'index'])->name('team.index');
+    });
 
     /*
     |----------------------------------------------------------------------
@@ -277,6 +347,7 @@ Route::middleware(['auth', 'check-role:super-admin,admin'])->prefix('admin/roles
     Route::get('users/export', [RoleAccessController::class, 'exportUsers'])->name('users.export');   // GET before {user} wildcard
     Route::post('users/bulk', [RoleAccessController::class, 'bulkAction'])->name('users.bulk');      // POST before {user} wildcard
     Route::patch('users/{user}', [RoleAccessController::class, 'updateUser'])->name('users.update');
+    Route::post('users/{user}/avatar', [RoleAccessController::class, 'updateAvatar'])->name('users.avatar');
     Route::patch('users/{user}/toggle-ban', [RoleAccessController::class, 'toggleBan'])->name('users.toggle-ban');
     Route::delete('users/{user}', [RoleAccessController::class, 'removeUser'])->name('users.destroy');
     Route::post('users/{user}/reset-pwd', [RoleAccessController::class, 'resetPassword'])->name('users.reset-password');

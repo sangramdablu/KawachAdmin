@@ -8,6 +8,7 @@ use App\Models\Blog;
 use App\Models\Tag;
 use App\Models\BlogSeo;
 use App\Models\Category;
+use App\Models\BlogViewLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -105,6 +106,7 @@ class BlogController extends Controller
                 'meta_description' => $request->meta_description ?? $request->excerpt,
                 'focus_keyword' => $request->focus_keyword,
                 'category_id' => $request->category_id,
+                'author_id' => $blog->author_id ?? auth()->id(),
                 'status' => $status,
                 'visibility' => $request->visibility ?? 'public',
                 'post_password' => $request->post_password,
@@ -129,7 +131,7 @@ class BlogController extends Controller
                     'canonical_url'       => $request->canonical_url,
                     'robots'              => $request->robots ?? 'index, follow',
                     'schema_type'         => $request->schema_type ?? 'Article',
-                    'schema_author'       => $request->schema_author,
+                    'schema_author'       => $blog->author?->name ?? auth()->user()->name,
                     'schema_rating_value' => $request->schema_rating_value,
                     'schema_rating_count' => $request->schema_rating_count,
                     'meta_keywords'       => $request->meta_keywords,
@@ -217,7 +219,7 @@ class BlogController extends Controller
                     'robots'              => $request->robots,
                     'schema_type'         => $request->schema_type,
                     'meta_keywords'       => $request->meta_keywords,
-                    'schema_author'       => $request->schema_author,
+                    'schema_author'       => $blog->author?->name ?? auth()->user()->name,
                     'schema_rating_value' => $request->schema_rating_value,
                     'schema_rating_count' => $request->schema_rating_count,
                     'twitter_card'        => $request->twitter_card,
@@ -322,6 +324,45 @@ class BlogController extends Controller
         if (is_file($fullPath)) {
             @unlink($fullPath);
         }
+    }
+
+    /**
+     * GET /blogs/{blog}/view-series
+     *
+     * Real daily view counts for the last 30 days, sourced from
+     * blog_view_logs (a timestamped event log written by the public site
+     * on every page view — the `views` column is just a running total and
+     * can't answer "how many on March 3rd?"). Fills in zero for days with
+     * no recorded views rather than skipping them, so the chart has a
+     * point for every day.
+     */
+    public function viewSeries($id)
+    {
+        // Raw $id + manual lookup, not implicit {blog} model binding — Blog
+        // overrides getRouteKeyName() to 'slug', so implicit binding here
+        // would try to match the numeric id against the slug column and
+        // 404. Same reason edit()/update()/destroy() in this controller
+        // all take a raw $id instead of a type-hinted Blog $blog.
+        $blog = Blog::findOrFail($id);
+
+        $since = now()->subDays(29)->startOfDay();
+
+        $counts = BlogViewLog::where('blog_id', $blog->id)
+            ->where('viewed_at', '>=', $since)
+            ->selectRaw('DATE(viewed_at) as day, COUNT(*) as total')
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
+        $labels = [];
+        $data = [];
+
+        for ($i = 29; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $labels[] = $date->format('M j');
+            $data[] = (int) ($counts[$date->format('Y-m-d')] ?? 0);
+        }
+
+        return response()->json(['labels' => $labels, 'data' => $data]);
     }
 
     private function calculateReadingTime($content){
@@ -477,7 +518,7 @@ class BlogController extends Controller
                     'canonical_url'         => $request->canonical_url,
                     'robots'                => $request->robots ?? 'index, follow',
                     'schema_type'           => $request->schema_type ?? 'Article',
-                    'schema_author'         => $request->schema_author,
+                    'schema_author'         => $blog->author?->name ?? auth()->user()->name,
                     'schema_rating_value'   => $request->schema_rating_value,
                     'schema_rating_count'   => $request->schema_rating_count,
                     'meta_keywords'         => $request->meta_keywords,

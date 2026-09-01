@@ -976,7 +976,7 @@ html[data-theme="dark"] #blogList .share-url-row input {
                 <button class="btn-icon" title="Share post" onclick="openShareModal('{{ $post->title }}', '/blog/{{ $post['slug'] }}')">
                   <i class="fas fa-share-alt"></i>
                 </button>
-                <button class="btn-icon" title="View stats" onclick="openStatsModal( '{{ addslashes($post->title) }}', {{ $post->views ?? 0 }}, {{ $post->likes_count ?? 0 }}, {{ $post->approved_comments_count ?? 0 }} )">
+                <button class="btn-icon" title="View stats" onclick="openStatsModal( {{ $post->id }}, '{{ addslashes($post->title) }}', {{ $post->views ?? 0 }}, {{ $post->likes_count ?? 0 }}, {{ $post->approved_comments_count ?? 0 }}, '{{ addslashes($post->category->name ?? 'Uncategorized') }}', '{{ $post->published_at?->format('M d, Y') ?? 'Not published' }}', '{{ ucfirst($post->status) }}', {{ $post->reading_time ?? 0 }} )">
                   <i class="fas fa-chart-line"></i>
                 </button>
                 @can('blog.delete')
@@ -1075,7 +1075,7 @@ html[data-theme="dark"] #blogList .share-url-row input {
             <button class="btn-bl btn-outline btn-xs" onclick="openShareModal('{{ $post->title }}', '/blog/{{ $post['slug'] }}')">
               <i class="fas fa-share-alt"></i> Share
             </button>   
-            <button class="btn-bl btn-outline btn-xs" onclick="openStatsModal('{{ $post->title }}', {{ number_format($post->views ?? 0) }}, {{ $post->likes_count ?? 0 }}, {{ $post->approved_comments_count ?? 0 }})">
+            <button class="btn-bl btn-outline btn-xs" onclick="openStatsModal( {{ $post->id }}, '{{ addslashes($post->title) }}', {{ $post->views ?? 0 }}, {{ $post->likes_count ?? 0 }}, {{ $post->approved_comments_count ?? 0 }}, '{{ addslashes($post->category->name ?? 'Uncategorized') }}', '{{ $post->published_at?->format('M d, Y') ?? 'Not published' }}', '{{ ucfirst($post->status) }}', {{ $post->reading_time ?? 0 }} )">
               <i class="fas fa-chart-line"></i> Stats
             </button>
             <button class="btn-bl btn-danger btn-xs ms-auto" onclick="openDeleteModal('{{ encrypt($post->id) }}', '{{ addslashes($post->title) }}')">
@@ -1191,72 +1191,46 @@ html[data-theme="dark"] #blogList .share-url-row input {
           <div class="stats-mini-val" id="statComments" style="color:#9333ea;">0</div>
           <div class="stats-mini-lbl"><i class="fas fa-comment" style="font-size:.68rem;"></i> Comments</div>
         </div>
-        <div class="stats-mini-card">
-          <div class="stats-mini-val" style="color:var(--success);">4.2%</div>
-          <div class="stats-mini-lbl"><i class="fas fa-mouse-pointer" style="font-size:.68rem;"></i> CTR</div>
-        </div>
-        <div class="stats-mini-card">
-          <div class="stats-mini-val" style="color:var(--warning);">3:24</div>
-          <div class="stats-mini-lbl"><i class="fas fa-clock" style="font-size:.68rem;"></i> Avg. Time</div>
-        </div>
-        <div class="stats-mini-card">
-          <div class="stats-mini-val" style="color:var(--muted);">62%</div>
-          <div class="stats-mini-lbl"><i class="fas fa-sign-out-alt" style="font-size:.68rem;"></i> Bounce Rate</div>
-        </div>
       </div>
 
       <div style="font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Views — Last 30 Days</div>
       <div class="stats-chart-wrap"><canvas id="statsChartCanvas"></canvas></div>
+      <div id="statsChartEmpty" style="display:none;text-align:center;padding:24px 12px;color:var(--muted);font-size:.82rem;">
+        <i class="fas fa-chart-line" style="font-size:1.4rem;display:block;margin-bottom:8px;opacity:.4;"></i>
+        No views recorded yet in the last 30 days.
+      </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;">
-        <div>
-          <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Traffic Sources</div>
-          <div style="display:flex;flex-direction:column;gap:6px;" id="trafficSources">
-            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;"></div>
-              <span style="flex:1;color:var(--text);">Organic Search</span>
-              <strong style="color:var(--text);">48%</strong>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;"></div>
-              <span style="flex:1;color:var(--text);">Direct</span>
-              <strong style="color:var(--text);">27%</strong>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;">
-              <div style="width:8px;height:8px;border-radius:50%;background:#1877f2;flex-shrink:0;"></div>
-              <span style="flex:1;color:var(--text);">Social</span>
-              <strong style="color:var(--text);">16%</strong>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--warning);flex-shrink:0;"></div>
-              <span style="flex:1;color:var(--text);">Referral</span>
-              <strong style="color:var(--text);">9%</strong>
-            </div>
-          </div>
+      {{-- Real post details — replaces a previous "Traffic Sources / Top
+           Devices" breakdown that was permanently-hardcoded fake percentages
+           (identical for every post, not backed by any real tracking). This
+           app doesn't have referrer/device analytics, so rather than keep
+           showing invented numbers as if they were real, this shows what
+           actually is real and available for this post. --}}
+      <div style="font-size:.8rem;font-weight:700;color:var(--muted);margin:16px 0 10px;text-transform:uppercase;letter-spacing:.5px;">Post Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;">
+          <i class="fas fa-folder" style="color:var(--primary);width:14px;"></i>
+          <span style="color:var(--muted);">Category:</span>
+          <strong id="statCategory" style="color:var(--text);"></strong>
         </div>
-        <div>
-          <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Top Devices</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;">
-              <i class="fas fa-mobile-alt" style="color:var(--primary);width:12px;"></i>
-              <span style="flex:1;color:var(--text);">Mobile</span><strong style="color:var(--text);">54%</strong>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;">
-              <i class="fas fa-desktop" style="color:var(--success);width:12px;"></i>
-              <span style="flex:1;color:var(--text);">Desktop</span><strong style="color:var(--text);">38%</strong>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;">
-              <i class="fas fa-tablet-alt" style="color:var(--warning);width:12px;"></i>
-              <span style="flex:1;color:var(--text);">Tablet</span><strong style="color:var(--text);">8%</strong>
-            </div>
-          </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;">
+          <i class="fas fa-calendar-alt" style="color:var(--primary);width:14px;"></i>
+          <span style="color:var(--muted);">Published:</span>
+          <strong id="statPublished" style="color:var(--text);"></strong>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;">
+          <i class="fas fa-clock" style="color:var(--primary);width:14px;"></i>
+          <span style="color:var(--muted);">Reading time:</span>
+          <strong id="statReadingTime" style="color:var(--text);"></strong>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;">
+          <i class="fas fa-circle-dot" style="color:var(--primary);width:14px;"></i>
+          <span style="color:var(--muted);">Status:</span>
+          <strong id="statStatus" style="color:var(--text);"></strong>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-bl btn-primary btn-sm">
-        <i class="fas fa-external-link-alt"></i> Full Report
-      </button>
       <button class="btn-bl btn-outline" onclick="closeModal('statsModal')">Close</button>
     </div>
   </div>
@@ -1530,63 +1504,74 @@ $(function () {
   /* ══════════════════════════ STATS MODAL + CHART  ══════════════════════════ */
   var statsChart = null;
 
-  window.openStatsModal = function (title, views, likes, comments) {
+  window.openStatsModal = function (id, title, views, likes, comments, category, published, status, readingTime) {
     $('#statsPostTitle').text(title);
     $('#statViews').text(Number(views).toLocaleString());
     $('#statLikes').text(Number(likes).toLocaleString());
     $('#statComments').text(Number(comments).toLocaleString());
+    $('#statCategory').text(category);
+    $('#statPublished').text(published);
+    $('#statStatus').text(status);
+    $('#statReadingTime').text(readingTime > 0 ? (readingTime + ' min') : '—');
     $('#statsModal').addClass('show');
+    $('#statsChartEmpty').hide();
+    $('#statsChartCanvas').show();
 
-    // Generate random 30-day data
-    var labels = [];
-    var data = [];
-    for (var i = 29; i >= 0; i--) {
-      var d = new Date();
-      d.setDate(d.getDate() - i);
-      labels.push(d.toLocaleDateString('en-US', { month:'short', day:'numeric' }));
-      data.push(Math.floor(Math.random() * (views / 10)) + Math.floor(views / 30));
-    }
+    // Real per-day view counts from blog_view_logs — no more Math.random().
+    fetch('/blogs/' + id + '/view-series', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (series) {
+        var hasAnyViews = series.data.some(function (v) { return v > 0; });
+        if (!hasAnyViews) {
+          $('#statsChartCanvas').hide();
+          $('#statsChartEmpty').show();
+          if (statsChart) { statsChart.destroy(); statsChart = null; }
+          return;
+        }
 
-    setTimeout(function () {
-      var ctx = document.getElementById('statsChartCanvas').getContext('2d');
-      var grad = ctx.createLinearGradient(0, 0, 0, 200);
-      grad.addColorStop(0, 'rgba(26,115,232,.45)');
-      grad.addColorStop(1, 'rgba(26,115,232,.02)');
+        var ctx = document.getElementById('statsChartCanvas').getContext('2d');
+        var grad = ctx.createLinearGradient(0, 0, 0, 200);
+        grad.addColorStop(0, 'rgba(26,115,232,.45)');
+        grad.addColorStop(1, 'rgba(26,115,232,.02)');
 
-      if (statsChart) { statsChart.destroy(); }
-      statsChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Views',
-            data: data,
-            borderColor: '#1a73e8',
-            borderWidth: 2.5,
-            backgroundColor: grad,
-            fill: true,
-            tension: .42,
-            pointRadius: 0,
-            pointHoverRadius: 5
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 9 }, color: '#8a9bb5', maxTicksLimit: 8 }
-            },
-            y: {
-              grid: { color: 'rgba(0,0,0,.05)' },
-              ticks: { font: { size: 9 }, color: '#8a9bb5' }
+        if (statsChart) { statsChart.destroy(); }
+        statsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: series.labels,
+            datasets: [{
+              label: 'Views',
+              data: series.data,
+              borderColor: '#1a73e8',
+              borderWidth: 2.5,
+              backgroundColor: grad,
+              fill: true,
+              tension: .42,
+              pointRadius: 0,
+              pointHoverRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 9 }, color: '#8a9bb5', maxTicksLimit: 8 }
+              },
+              y: {
+                grid: { color: 'rgba(0,0,0,.05)' },
+                ticks: { font: { size: 9 }, color: '#8a9bb5', precision: 0 }
+              }
             }
           }
-        }
+        });
+      })
+      .catch(function () {
+        $('#statsChartCanvas').hide();
+        $('#statsChartEmpty').show();
       });
-    }, 100);
   };
 
   /* ══════════════════════════ DELETE MODAL  ══════════════════════════ */
