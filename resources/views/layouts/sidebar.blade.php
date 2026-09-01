@@ -11,15 +11,6 @@
 
   <nav class="sidebar-nav">
 
-    <!-- My Profile — every authenticated role, including client, since this
-         is a self-service page gated only by 'auth' (see routes/web.php). -->
-    <div class="nav-item-wrap">
-      <a href="{{ route('profile.show') }}"
-          class="nav-link-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-          <i class="fas fa-id-badge nav-icon"></i> My Profile
-      </a>
-    </div>
-
     @hasrole('client')
     <!-- Billing & Agreement (client — view only) -->
     <div class="nav-item-wrap">
