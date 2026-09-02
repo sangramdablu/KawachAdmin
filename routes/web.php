@@ -9,6 +9,10 @@ use App\Http\Controllers\BillingAndAgreementController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ClientBillingController;
+use App\Http\Controllers\Client\ApprovalCenterController;
+use App\Http\Controllers\Client\DesignController;
+use App\Http\Controllers\Client\ChangeRequestController;
+use App\Http\Controllers\Client\BugController;
 use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\TaskController;
@@ -381,6 +385,31 @@ Route::middleware(['auth', 'check-role:client'])->group(function () {
     Route::get('/client/billing',            [ClientBillingController::class, 'index'])->name('client.billing.index');
     Route::get('/client/billing/{uuid}',     [ClientBillingController::class, 'show'])->name('client.billing.show');
     Route::get('/client/billing/{uuid}/pdf', [ClientBillingController::class, 'pdf'])->name('client.billing.pdf');
+
+    // ── Approval Center (decisions-needed: pending designs + responded CRs) ──
+    Route::get('/client/approvals', [ApprovalCenterController::class, 'index'])->name('client.approvals.index');
+
+    // ── Designs ──────────────────────────────────────────────────────────
+    Route::get('/client/designs',                          [DesignController::class, 'index'])->name('client.designs.index');
+    Route::get('/client/designs/{design}',                 [DesignController::class, 'show'])->name('client.designs.show');
+    Route::post('/client/designs/{design}/comments',       [DesignController::class, 'storeComment'])->name('client.designs.comments.store');
+    Route::post('/client/designs/{design}/approve',        [DesignController::class, 'approve'])->name('client.designs.approve');
+    Route::post('/client/designs/{design}/request-changes',[DesignController::class, 'requestChanges'])->name('client.designs.request-changes');
+
+    // ── Change Requests ──────────────────────────────────────────────────
+    Route::get('/client/change-requests',           [ChangeRequestController::class, 'index'])->name('client.change-requests.index');
+    Route::get('/client/change-requests/create',    [ChangeRequestController::class, 'create'])->name('client.change-requests.create');
+    Route::post('/client/change-requests',          [ChangeRequestController::class, 'store'])->name('client.change-requests.store');
+    Route::get('/client/change-requests/{changeRequest}',         [ChangeRequestController::class, 'show'])->name('client.change-requests.show');
+    Route::post('/client/change-requests/{changeRequest}/approve',[ChangeRequestController::class, 'approve'])->name('client.change-requests.approve');
+    Route::post('/client/change-requests/{changeRequest}/reject', [ChangeRequestController::class, 'reject'])->name('client.change-requests.reject');
+    Route::post('/client/change-requests/{changeRequest}/clarify',[ChangeRequestController::class, 'clarify'])->name('client.change-requests.clarify');
+
+    // ── Bug Reports ──────────────────────────────────────────────────────
+    Route::get('/client/bugs',          [BugController::class, 'index'])->name('client.bugs.index');
+    Route::get('/client/bugs/create',   [BugController::class, 'create'])->name('client.bugs.create');
+    Route::post('/client/bugs',         [BugController::class, 'store'])->name('client.bugs.store');
+    Route::get('/client/bugs/{bug}',    [BugController::class, 'show'])->name('client.bugs.show');
 });
  
 // ── ADMIN: Client management ──────────────────────────────────────────────
@@ -393,11 +422,18 @@ Route::middleware(['auth', 'check-role:super-admin,admin'])->group(function () {
     Route::put('/clients/{client}',       [ClientController::class, 'update']) ->middleware('check-permission:clients.edit')->name('clients.update');
     Route::delete('/clients/{client}',    [ClientController::class, 'destroy'])->middleware('check-permission:clients.delete')->name('clients.destroy');
     // Project progress management
+    Route::get('/client-projects/{project}',           [ClientController::class, 'showProject'])->middleware('check-permission:clients.view')->name('client-projects.show');
     Route::put('/client-projects/{project}/progress', [ClientController::class, 'updateProject'])->middleware('check-permission:clients.edit')->name('client-projects.update');
     Route::post('/client-projects/{project}/tasks',   [ClientController::class, 'storeTask'])->middleware('check-permission:clients.edit')->name('client-projects.tasks.store');
     Route::post('/client-projects/{project}/team',    [ClientController::class, 'storeTeamMember'])->middleware('check-permission:clients.edit')->name('client-projects.team.store');
     // Invoice management
     Route::post('/clients/{client}/invoices', [ClientController::class, 'storeInvoice'])->middleware('check-permission:clients.edit')->name('clients.invoices.store');
+    // Designs
+    Route::post('/client-projects/{project}/designs', [ClientController::class, 'storeDesign'])->middleware('check-permission:clients.edit')->name('client-projects.designs.store');
+    // Change requests
+    Route::put('/client-projects/{project}/change-requests/{changeRequest}/respond', [ClientController::class, 'respondChangeRequest'])->middleware('check-permission:clients.edit')->name('client-projects.change-requests.respond');
+    // Bugs
+    Route::put('/client-projects/{project}/bugs/{bug}/status', [ClientController::class, 'updateBugStatus'])->middleware('check-permission:clients.edit')->name('client-projects.bugs.update-status');
 });
 
 // Route::post( '/agreement/sign/{token}', [BillingAndAgreementController::class, 'submitSignature'] )->name('billing.sign.submit');

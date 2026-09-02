@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClientPortalBug;
+use App\Models\ClientPortalChangeRequest;
+use App\Models\ClientPortalDesign;
 use App\Models\ClientPortalInvoice;
 use App\Models\ClientPortalProject;
 use App\Models\ClientPortalTask;
 use App\Models\ClientPortalTeam;
 use App\Models\User;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -401,5 +406,109 @@ class ClientController extends Controller
         }
 
         return back()->with('success', 'Invoice added.');
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // SINGLE-PROJECT ADMIN WORKSPACE (tasks / team / invoices / designs /
+    // change requests / bugs — one page per ClientPortalProject)
+    // ══════════════════════════════════════════════════════════════════════
+
+    public function showProject(string $projectId)
+    {
+        $project = ClientPortalProject::with([
+            'clientUser',
+            'tasks',
+            'team',
+            'designs.comments',
+            'changeRequests',
+            'bugs',
+        ])->findOrFail($projectId);
+
+        $invoices = ClientPortalInvoice::where('client_user_id', $project->client_user_id)
+            ->latest('invoice_date')
+            ->get();
+
+        return view('clients.project', compact('project', 'invoices'));
+    }
+
+    // ── Upload a design for client review ──────────────────────────────────
+    public function storeDesign(Request $request, string $projectId)
+    {
+        $project = ClientPortalProject::findOrFail($projectId);
+
+        $data = $request->validate([
+            'title'      => 'required|string|max:255',
+            'version'    => 'nullable|string|max:30',
+            'image'      => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'figma_url'  => 'nullable|url|max:500',
+        ]);
+
+        $upload = app(ImageUploadService::class)->uploadToPublic($request->file('image'), 'client_designs');
+
+        DB::beginTransaction();
+        try {
+            ClientPortalDesign::create([
+                'client_portal_project_id' => $project->id,
+                'title'                    => $data['title'],
+                'version'                  => $data['version'] ?? 'v1',
+                'image_path'               => $upload['path'],
+                'figma_url'                => $data['figma_url'] ?? null,
+                'status'                   => 'pending',
+                'uploaded_by'              => auth()->id(),
+            ]);
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('ClientController@storeDesign failed', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Could not upload design.']);
+        }
+
+        return back()->with('success', 'Design uploaded.');
+    }
+
+    // ── Respond to a change request with an estimate / cost / impact ───────
+    public function respondChangeRequest(Request $request, string $projectId, string $changeRequestId)
+    {
+        $changeRequest = ClientPortalChangeRequest::where('client_portal_project_id', $projectId)
+            ->findOrFail($changeRequestId);
+
+        $data = $request->validate([
+            'estimated_hours' => 'nullable|numeric|min:0|max:9999',
+            'additional_cost' => 'nullable|numeric|min:0|max:9999999',
+            'deadline_impact' => 'nullable|string|max:100',
+            'response_note'   => 'nullable|string|max:2000',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $changeRequest->update([
+                ...$data,
+                'responded_by' => auth()->id(),
+                'responded_at' => now(),
+                'status'       => 'responded',
+            ]);
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('ClientController@respondChangeRequest failed', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Could not save response.']);
+        }
+
+        return back()->with('success', 'Response sent to client.');
+    }
+
+    // ── Update a bug's workflow status ──────────────────────────────────────
+    public function updateBugStatus(Request $request, string $projectId, string $bugId)
+    {
+        $bug = ClientPortalBug::where('client_portal_project_id', $projectId)
+            ->findOrFail($bugId);
+
+        $data = $request->validate([
+            'status' => 'required|in:reported,under_review,in_progress,fixed,ready_for_testing,closed',
+        ]);
+
+        $bug->update($data);
+
+        return back()->with('success', 'Bug status updated.');
     }
 }

@@ -12,6 +12,46 @@
   <nav class="sidebar-nav">
 
     @hasrole('client')
+    <!-- Dashboard (client's own projects/tasks/team — scoped to client_user_id) -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('client.portal') }}"
+          class="nav-link-item {{ request()->routeIs('client.portal') ? 'active' : '' }}">
+          <i class="fas fa-th-large nav-icon"></i> Dashboard
+      </a>
+    </div>
+
+    <!-- Approvals (client — pending designs / responded change requests) -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('client.approvals.index') }}"
+          class="nav-link-item {{ request()->routeIs('client.approvals.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-check-double"></i> Approvals
+      </a>
+    </div>
+
+    <!-- Designs (client) -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('client.designs.index') }}"
+          class="nav-link-item {{ request()->routeIs('client.designs.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-palette"></i> Designs
+      </a>
+    </div>
+
+    <!-- Change Requests (client) -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('client.change-requests.index') }}"
+          class="nav-link-item {{ request()->routeIs('client.change-requests.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-code-pull-request"></i> Change Requests
+      </a>
+    </div>
+
+    <!-- Bug Reports (client) -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('client.bugs.index') }}"
+          class="nav-link-item {{ request()->routeIs('client.bugs.*') ? 'active' : '' }}">
+          <i class="fa-solid fa-bug"></i> Bug Reports
+      </a>
+    </div>
+
     <!-- Billing & Agreement (client — view only) -->
     <div class="nav-item-wrap">
       <a href="{{ route('client.billing.index') }}"

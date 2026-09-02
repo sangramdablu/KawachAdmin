@@ -56,7 +56,16 @@
             <div style="font-weight:700;color:#0c0f1a;">{{ $client->name }}</div>
           </td>
           <td style="padding:12px 16px;color:#3a3f5c;">{{ $client->email }}</td>
-          <td style="padding:12px 16px;text-align:center;color:#3a3f5c;">{{ $client->clientPortalProjects->count() }}</td>
+          <td style="padding:12px 16px;">
+            @forelse($client->clientPortalProjects as $cp)
+              <div style="margin-bottom:4px;">
+                <a href="{{ route('client-projects.show', $cp->id) }}" style="color:#2563eb;text-decoration:none;font-weight:700;font-size:.78rem;">{{ $cp->project_name }}</a>
+                <span style="font-size:.68rem;color:#7a82a8;margin-left:4px;text-transform:uppercase;">{{ $cp->status_label }}</span>
+              </div>
+            @empty
+              <span style="font-size:.74rem;color:#b8bfd4;font-style:italic;">No portal project yet</span>
+            @endforelse
+          </td>
           <td style="padding:12px 16px;text-align:center;">
             @php $isActive = ($client->status ?? 'active') === 'active'; @endphp
             <span style="display:inline-block;padding:3px 11px;border-radius:20px;font-size:.67rem;font-weight:700;background:{{ $isActive ? '#ecfdf5' : '#fef2f2' }};color:{{ $isActive ? '#059669' : '#dc2626' }};">

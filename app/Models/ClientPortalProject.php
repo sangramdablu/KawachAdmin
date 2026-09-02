@@ -90,4 +90,19 @@ class ClientPortalProject extends Model
     {
         return $this->hasMany(ClientPortalTeam::class)->orderBy('sort_order');
     }
+
+    public function designs()
+    {
+        return $this->hasMany(ClientPortalDesign::class);
+    }
+
+    public function changeRequests()
+    {
+        return $this->hasMany(ClientPortalChangeRequest::class);
+    }
+
+    public function bugs()
+    {
+        return $this->hasMany(ClientPortalBug::class);
+    }
 }
