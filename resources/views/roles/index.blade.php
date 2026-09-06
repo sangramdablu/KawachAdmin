@@ -520,6 +520,18 @@
         <textarea class="ram-textarea" id="editUserResponsibilities" rows="2" placeholder="Comma-separated or free text"></textarea>
       </div>
       <div class="ram-form-group">
+        <label class="ram-label"><i class="fas fa-quote-left"></i> Bio</label>
+        <textarea class="ram-textarea" id="editUserBio" rows="3" placeholder="Short professional bio shown on the public team page"></textarea>
+      </div>
+      <div class="ram-form-group">
+        <label class="ram-label"><i class="fab fa-linkedin"></i> LinkedIn URL</label>
+        <input type="url" class="ram-input" id="editUserLinkedin" placeholder="https://www.linkedin.com/in/username"/>
+      </div>
+      <div class="ram-form-group">
+        <label class="ram-label"><i class="fas fa-clock"></i> Years of Experience</label>
+        <input type="number" class="ram-input" id="editUserYearsExperience" min="0" max="80" placeholder="e.g. 8"/>
+      </div>
+      <div class="ram-form-group">
         <label class="ram-label"><i class="fas fa-camera"></i> Avatar</label>
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="ram-avatar" id="editUserAvatarPreview" style="width:46px;height:46px;font-size:.88rem;background-size:cover;background-position:center;"></div>
@@ -799,6 +811,9 @@ window.editUser = function (id) {
   document.getElementById('editUserDesignation').value      = u.designation || '';
   document.getElementById('editUserTeamRole').value         = u.teamRole || '';
   document.getElementById('editUserResponsibilities').value = u.responsibilities || '';
+  document.getElementById('editUserBio').value               = u.bio || '';
+  document.getElementById('editUserLinkedin').value          = u.linkedinUrl || '';
+  document.getElementById('editUserYearsExperience').value   = u.yearsExperience ?? '';
   document.getElementById('editUserAvatarFile').value       = '';
   const avatarPreview = document.getElementById('editUserAvatarPreview');
   if (u.avatarUrl) {
@@ -892,6 +907,10 @@ window.saveUserEdit = async function () {
   const designation      = document.getElementById('editUserDesignation').value.trim();
   const team_role        = document.getElementById('editUserTeamRole').value.trim();
   const responsibilities = document.getElementById('editUserResponsibilities').value.trim();
+  const bio              = document.getElementById('editUserBio').value.trim();
+  const linkedin_url     = document.getElementById('editUserLinkedin').value.trim();
+  const yearsRaw         = document.getElementById('editUserYearsExperience').value.trim();
+  const years_experience = yearsRaw === '' ? null : parseInt(yearsRaw, 10);
 
   if (!role) { toast('Please select a role.', 'var(--red)', 'fas fa-exclamation-circle'); return; }
 
@@ -899,6 +918,7 @@ window.saveUserEdit = async function () {
   try {
     const data = await api(`${ROUTES.userUpdate}/${id}`, 'PATCH', {
       role, status, is_team_member, designation, team_role, responsibilities,
+      bio, linkedin_url, years_experience,
     });
 
     // Update local array

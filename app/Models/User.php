@@ -30,6 +30,9 @@ class User extends Authenticatable
         'designation',
         'team_role',
         'responsibilities',
+        'bio',
+        'linkedin_url',
+        'years_experience',
         'avatar',
     ];
 
@@ -55,6 +58,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'last_login_at'     => 'datetime',
             'is_team_member'    => 'boolean',
+            'years_experience'  => 'integer',
         ];
     }
 

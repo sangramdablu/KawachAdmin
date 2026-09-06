@@ -105,6 +105,9 @@ class RoleAccessController extends Controller
             'designation'      => ['sometimes', 'nullable', 'string', 'max:120'],
             'team_role'        => ['sometimes', 'nullable', 'string', 'max:120'],
             'responsibilities' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'bio'              => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'linkedin_url'     => ['sometimes', 'nullable', 'url', 'max:255'],
+            'years_experience' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:80'],
         ]);
 
         $oldRole = $user->roles->first()?->name ?? '—';
@@ -115,7 +118,7 @@ class RoleAccessController extends Controller
             $user->syncRoles([$validated['role']]);
 
             $updateData = ['status' => $validated['status']];
-            foreach (['is_team_member', 'designation', 'team_role', 'responsibilities'] as $field) {
+            foreach (['is_team_member', 'designation', 'team_role', 'responsibilities', 'bio', 'linkedin_url', 'years_experience'] as $field) {
                 if (array_key_exists($field, $validated)) {
                     $updateData[$field] = $validated[$field];
                 }
@@ -523,6 +526,9 @@ class RoleAccessController extends Controller
             'designation'      => $user->designation,
             'teamRole'         => $user->team_role,
             'responsibilities' => $user->responsibilities,
+            'bio'              => $user->bio,
+            'linkedinUrl'      => $user->linkedin_url,
+            'yearsExperience'  => $user->years_experience,
         ];
     }
 
