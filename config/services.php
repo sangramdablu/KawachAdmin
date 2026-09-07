@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Kawawch_view (public site) — resumes uploaded via the Careers apply
+    // form live on that app's own disk. See app/Services/ResumeLinkService.
+    'public_site' => [
+        'url'            => env('PUBLIC_SITE_URL'),
+        'shared_secret'  => env('JOBS_SHARED_SECRET'),
+    ],
+
 ];

@@ -278,12 +278,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
     */
     Route::middleware('check-permission:jobs.view')->group(function () {
         Route::get('/jobs', [JobPostingController::class, 'index'])->name('jobs.index');
+        Route::get('/jobs/{job}/applications', [JobPostingController::class, 'applications'])->name('jobs.applications');
     });
     Route::middleware('check-permission:jobs.edit')->group(function () {
         Route::post('/jobs', [JobPostingController::class, 'store'])->name('jobs.store');
         Route::patch('/jobs/{job}', [JobPostingController::class, 'update'])->name('jobs.update');
         Route::patch('/jobs/{job}/toggle', [JobPostingController::class, 'toggleStatus'])->name('jobs.toggle-status');
         Route::delete('/jobs/{job}', [JobPostingController::class, 'destroy'])->name('jobs.destroy');
+        Route::patch('/applications/{application}/status', [JobPostingController::class, 'updateApplicationStatus'])->name('jobs.applications.status');
     });
 
     /*

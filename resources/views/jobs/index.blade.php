@@ -104,6 +104,21 @@
 @keyframes ramToastIn { from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:none;} }
 .ram-spinner { display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+
+.app-card{ border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px; }
+.app-card:last-child{ margin-bottom:0; }
+.app-card-top{ display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap; }
+.app-name{ font-weight:800;font-size:.92rem;color:var(--text-dark); }
+.app-email{ font-size:.78rem;color:var(--text-muted); }
+.app-meta{ display:flex;flex-wrap:wrap;gap:8px;margin-top:8px; }
+.app-meta span{ font-size:.74rem;color:var(--text-muted);background:var(--modal-header);border:1px solid var(--border);padding:3px 9px;border-radius:14px; }
+.app-cover{ font-size:.8rem;color:var(--text-dark);margin-top:10px;background:var(--modal-header);border-radius:8px;padding:10px 12px;white-space:pre-wrap; }
+.app-actions{ display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap; }
+.app-resume-btn{ font-size:.78rem;font-weight:700;color:var(--primary);text-decoration:none;display:inline-flex;align-items:center;gap:6px; }
+.app-resume-btn:hover{ text-decoration:underline; }
+.app-status-select{ font-size:.76rem;border:1px solid var(--border);border-radius:8px;padding:5px 9px;background:var(--input-bg);color:var(--input-color); }
+.app-status-badge{ font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:14px;background:var(--modal-header);color:var(--text-muted);white-space:nowrap; }
+.app-empty{ text-align:center;padding:40px 0;color:var(--text-muted); }
 </style>
 
 <div id="jobsPage">
@@ -217,7 +232,11 @@
                 </td>
                 <td><span class="job-meta-pill">{{ $job->type }}</span></td>
                 <td>{{ $job->openings }}</td>
-                <td>{{ $job->applications_count }}</td>
+                <td>
+                  <button class="job-status-toggle" onclick="viewApplications({{ $job->id }}, {{ Illuminate\Support\Js::from($job->title) }})">
+                    <i class="fas fa-file-lines"></i> {{ $job->applications_count }}
+                  </button>
+                </td>
                 <td>
                   @can('jobs.edit')
                   <button class="job-status-toggle" id="job-status-{{ $job->id }}" onclick="toggleJobStatus({{ $job->id }})">
@@ -362,6 +381,21 @@
 </div>
 @endcan
 
+{{-- Applications modal — resumes live on the public site's own disk, so
+     the download link is a signed cross-app URL (ResumeLinkService); this
+     panel never touches the file itself. --}}
+<div class="ram-modal-overlay" id="applicationsModal">
+  <div class="ram-modal" style="max-width:820px;">
+    <div class="ram-modal-header">
+      <h3><i class="fas fa-file-lines"></i> Applications — <span id="applicationsJobTitle"></span></h3>
+      <button class="ram-modal-close" onclick="closeModal('applicationsModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="ram-modal-body" id="applicationsBody">
+      <div style="text-align:center;padding:40px 0;color:var(--text-muted);"><span class="ram-spinner" style="border-top-color:var(--primary);border-color:rgba(26,115,232,.25);width:20px;height:20px;"></span></div>
+    </div>
+  </div>
+</div>
+
 <div class="ram-toast-stack" id="ramToastStack"></div>
 
 @push('scripts')
@@ -372,6 +406,7 @@
 const CSRF = '{{ csrf_token() }}';
 const STORE_URL = '{{ route('jobs.store') }}';
 const JOBS = @json($jobsJson);
+const CAN_EDIT_JOBS = @json(auth()->user()->can('jobs.edit'));
 
 function toast(msg, color, icon) {
   color = color || 'var(--primary)';
@@ -549,6 +584,76 @@ window.filterJobsByCountry = function (value) {
     }
     row.style.display = show ? '' : 'none';
   });
+};
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+function renderApplicationCard(app) {
+  const resumeBtn = app.resume_url
+    ? `<a href="${app.resume_url}" target="_blank" rel="noopener" class="app-resume-btn"><i class="fas fa-download"></i> ${escapeHtml(app.resume_original_name) || 'Resume'}</a>`
+    : `<span style="font-size:.78rem;color:var(--text-muted);">No resume on file</span>`;
+
+  const meta = [];
+  if (app.phone) meta.push(`<span><i class="fas fa-phone"></i> ${escapeHtml(app.phone)}</span>`);
+  if (app.experience) meta.push(`<span><i class="fas fa-layer-group"></i> ${escapeHtml(app.experience)}</span>`);
+  if (app.linkedin_url) meta.push(`<span><a href="${app.linkedin_url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;"><i class="fab fa-linkedin"></i> LinkedIn</a></span>`);
+  if (app.portfolio_url) meta.push(`<span><a href="${app.portfolio_url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;"><i class="fas fa-globe"></i> Portfolio</a></span>`);
+
+  const cover = app.cover_letter ? `<div class="app-cover">${escapeHtml(app.cover_letter)}</div>` : '';
+
+  const statuses = ['new', 'reviewed', 'shortlisted', 'rejected', 'hired'];
+  const statusControl = CAN_EDIT_JOBS
+    ? `<select class="app-status-select" onchange="updateApplicationStatus(${app.id}, this.value)">
+        ${statuses.map(s => `<option value="${s}" ${s === app.status ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`).join('')}
+      </select>`
+    : `<span class="app-status-badge">${app.status.charAt(0).toUpperCase() + app.status.slice(1)}</span>`;
+
+  return `
+    <div class="app-card">
+      <div class="app-card-top">
+        <div>
+          <div class="app-name">${escapeHtml(app.full_name)}</div>
+          <div class="app-email">${escapeHtml(app.email)} · applied ${app.applied_at}</div>
+        </div>
+        ${statusControl}
+      </div>
+      <div class="app-meta">${meta.join('')}</div>
+      ${cover}
+      <div class="app-actions">${resumeBtn}</div>
+    </div>
+  `;
+}
+
+window.viewApplications = async function (jobId, jobTitle) {
+  document.getElementById('applicationsJobTitle').textContent = jobTitle;
+  const body = document.getElementById('applicationsBody');
+  body.innerHTML = '<div style="text-align:center;padding:40px 0;"><span class="ram-spinner" style="border-top-color:var(--primary);border-color:rgba(26,115,232,.25);width:20px;height:20px;"></span></div>';
+  openModal('applicationsModal');
+
+  try {
+    const res = await fetch(`/jobs/${jobId}/applications`, { headers: { 'Accept': 'application/json' } });
+    const data = await res.json();
+    if (!data.applications.length) {
+      body.innerHTML = '<div class="app-empty"><i class="fas fa-inbox" style="font-size:2rem;opacity:.3;display:block;margin-bottom:10px;"></i>No applications yet for this role.</div>';
+      return;
+    }
+    body.innerHTML = data.applications.map(renderApplicationCard).join('');
+  } catch (e) {
+    body.innerHTML = `<div class="app-empty">Failed to load applications: ${e.message}</div>`;
+  }
+};
+
+window.updateApplicationStatus = async function (id, status) {
+  try {
+    await api(`/applications/${id}/status`, 'PATCH', { status });
+    toast('Status updated.', 'var(--green)', 'fas fa-check');
+  } catch (e) {
+    toast(e.message, 'var(--red)', 'fas fa-exclamation-circle');
+  }
 };
 
 window.deleteJob = async function (id, title) {

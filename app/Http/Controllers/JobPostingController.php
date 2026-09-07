@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JobApplication;
 use App\Models\JobPosting;
+use App\Services\ResumeLinkService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -67,6 +69,44 @@ class JobPostingController extends Controller
             'message' => "\"{$job->title}\" updated successfully.",
             'job'     => $job->fresh(),
         ]);
+    }
+
+    public function applications(JobPosting $job, ResumeLinkService $resumeLinks): JsonResponse
+    {
+        $applications = JobApplication::where('job_slug', $job->slug)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn ($app) => [
+                'id'                    => $app->id,
+                'full_name'             => $app->full_name,
+                'email'                 => $app->email,
+                'phone'                 => $app->phone,
+                'experience'            => $app->experience,
+                'linkedin_url'          => $app->linkedin_url,
+                'portfolio_url'         => $app->portfolio_url,
+                'cover_letter'          => $app->cover_letter,
+                'resume_original_name'  => $app->resume_original_name,
+                'resume_url'            => $resumeLinks->build($app),
+                'status'                => $app->status,
+                'applied_at'            => $app->created_at->format('d M Y, h:i A'),
+            ]);
+
+        return response()->json([
+            'success'      => true,
+            'job_title'    => $job->title,
+            'applications' => $applications,
+        ]);
+    }
+
+    public function updateApplicationStatus(Request $request, JobApplication $application): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => ['required', Rule::in(['new', 'reviewed', 'shortlisted', 'rejected', 'hired'])],
+        ]);
+
+        $application->update($validated);
+
+        return response()->json(['success' => true, 'status' => $application->status]);
     }
 
     public function toggleStatus(JobPosting $job): JsonResponse
