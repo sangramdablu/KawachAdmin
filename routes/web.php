@@ -20,6 +20,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\JobPostingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -264,6 +265,25 @@ Route::middleware(['auth', 'admin'])->group(function () {
     */
     Route::middleware('check-permission:users.view')->group(function () {
         Route::get('/team', [TeamController::class, 'index'])->name('team.index');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Job Postings
+    |----------------------------------------------------------------------
+    | Admin-managed careers listings — read by the public site (Kawawch_view)
+    | from the same shared database. jobs.view lists/reads; jobs.edit covers
+    | create/update/toggle-status/delete.
+    |----------------------------------------------------------------------
+    */
+    Route::middleware('check-permission:jobs.view')->group(function () {
+        Route::get('/jobs', [JobPostingController::class, 'index'])->name('jobs.index');
+    });
+    Route::middleware('check-permission:jobs.edit')->group(function () {
+        Route::post('/jobs', [JobPostingController::class, 'store'])->name('jobs.store');
+        Route::patch('/jobs/{job}', [JobPostingController::class, 'update'])->name('jobs.update');
+        Route::patch('/jobs/{job}/toggle', [JobPostingController::class, 'toggleStatus'])->name('jobs.toggle-status');
+        Route::delete('/jobs/{job}', [JobPostingController::class, 'destroy'])->name('jobs.destroy');
     });
 
     /*

@@ -201,6 +201,16 @@
     </div>
     @endcan
 
+    @can('jobs.view')
+    <!-- Jobs -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('jobs.index') }}"
+          class="nav-link-item {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
+          <i class="fas fa-briefcase nav-icon"></i> Jobs
+      </a>
+    </div>
+    @endcan
+
     @endhasrole
 
   </nav>

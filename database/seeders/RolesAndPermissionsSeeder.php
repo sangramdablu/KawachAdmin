@@ -62,6 +62,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'tasks.delete'         => 'Delete Tasks',
             'tasks.manage-columns' => 'Manage Task Columns',
         ],
+        'Jobs' => [
+            'jobs.view' => 'View Job Postings',
+            'jobs.edit' => 'Manage Job Postings',
+        ],
     ];
 
     // Default permission sets per role
@@ -75,6 +79,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.view','users.invite','users.edit',
             'settings.view',
             'tasks.view','tasks.create','tasks.edit','tasks.delete','tasks.manage-columns',
+            'jobs.view','jobs.edit',
         ],
         'editor' => [
             'pages.view','pages.create','pages.edit',
@@ -83,7 +88,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'media.view','media.upload',
             'tasks.view','tasks.create','tasks.edit',
         ],
-        'viewer'  => ['pages.view','blog.view','news.view','media.view','tasks.view'],
+        'viewer'  => ['pages.view','blog.view','news.view','media.view','tasks.view','jobs.view'],
         'content-manager' => [
             'pages.view','pages.create','pages.edit','pages.publish',
             'blog.view','blog.create','blog.edit','blog.publish',
@@ -91,6 +96,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'media.view','media.upload',
             'users.view',
             'tasks.view','tasks.create','tasks.edit',
+            'jobs.view','jobs.edit',
         ],
         'client' => [
             'clients.view',
