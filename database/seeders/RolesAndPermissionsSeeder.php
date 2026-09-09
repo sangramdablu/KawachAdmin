@@ -66,6 +66,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'jobs.view' => 'View Job Postings',
             'jobs.edit' => 'Manage Job Postings',
         ],
+        'Analytics' => [
+            'analytics.view' => 'View Visitor Analytics',
+        ],
     ];
 
     // Default permission sets per role
@@ -80,6 +83,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'settings.view',
             'tasks.view','tasks.create','tasks.edit','tasks.delete','tasks.manage-columns',
             'jobs.view','jobs.edit',
+            'analytics.view',
         ],
         'editor' => [
             'pages.view','pages.create','pages.edit',
@@ -97,6 +101,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.view',
             'tasks.view','tasks.create','tasks.edit',
             'jobs.view','jobs.edit',
+            'analytics.view',
         ],
         'client' => [
             'clients.view',

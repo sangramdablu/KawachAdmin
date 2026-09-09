@@ -211,6 +211,16 @@
     </div>
     @endcan
 
+    @can('analytics.view')
+    <!-- Visitors -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('visitors.index') }}"
+          class="nav-link-item {{ request()->routeIs('visitors.*') ? 'active' : '' }}">
+          <i class="fas fa-chart-line nav-icon"></i> Visitors
+      </a>
+    </div>
+    @endcan
+
     @endhasrole
 
   </nav>

@@ -21,6 +21,7 @@ use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\JobPostingController;
+use App\Http\Controllers\VisitorAnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -286,6 +287,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::patch('/jobs/{job}/toggle', [JobPostingController::class, 'toggleStatus'])->name('jobs.toggle-status');
         Route::delete('/jobs/{job}', [JobPostingController::class, 'destroy'])->name('jobs.destroy');
         Route::patch('/applications/{application}/status', [JobPostingController::class, 'updateApplicationStatus'])->name('jobs.applications.status');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Visitor Analytics
+    |----------------------------------------------------------------------
+    | Self-hosted replacement for Google Analytics — reads the
+    | kawach_visitors / kawach_visitor_pageviews tables written by
+    | Kawawch_view's TrackVisitor middleware. Read-only reporting, so a
+    | single view-only permission covers the whole module.
+    |----------------------------------------------------------------------
+    */
+    Route::middleware('check-permission:analytics.view')->group(function () {
+        Route::get('/visitors', [VisitorAnalyticsController::class, 'index'])->name('visitors.index');
+        Route::get('/visitors/{visitor}/pageviews', [VisitorAnalyticsController::class, 'pageviews'])->name('visitors.pageviews');
     });
 
     /*
