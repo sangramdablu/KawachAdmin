@@ -42,13 +42,20 @@ class VisitorAnalyticsController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        $topCountries = (clone $visitorsBase)
+        $countryTotals = (clone $visitorsBase)
             ->select('country', DB::raw('count(*) as total'))
             ->whereNotNull('country')
+            ->where('country', '!=', '')
             ->groupBy('country')
             ->orderByDesc('total')
-            ->limit(10)
             ->get();
+
+        // Uppercased ISO-2 code => count, for the world-map choropleth.
+        $countryTraffic = $countryTotals
+            ->mapWithKeys(fn ($row) => [strtoupper($row->country) => (int) $row->total])
+            ->all();
+
+        $topCountries = $countryTotals->take(10);
 
         $topSources = (clone $visitorsBase)
             ->select('utm_source', 'referrer', DB::raw('count(*) as total'))
@@ -60,22 +67,6 @@ class VisitorAnalyticsController extends Controller
             ->take(10)
             ->values();
 
-        $dailyChart = (clone $pageviewsBase)
-            ->select(DB::raw('DATE(created_at) as day'), DB::raw('count(distinct visitor_id) as visitors'))
-            ->where('created_at', '>=', $now->copy()->subDays(29)->startOfDay())
-            ->groupBy('day')
-            ->orderBy('day')
-            ->get()
-            ->keyBy('day');
-
-        $chartLabels = [];
-        $chartData = [];
-        for ($i = 29; $i >= 0; $i--) {
-            $day = $now->copy()->subDays($i)->toDateString();
-            $chartLabels[] = $now->copy()->subDays($i)->format('M j');
-            $chartData[] = (int) ($dailyChart[$day]->visitors ?? 0);
-        }
-
         $visitors = (clone $visitorsBase)
             ->orderByDesc('last_seen_at')
             ->paginate(25)
@@ -86,9 +77,8 @@ class VisitorAnalyticsController extends Controller
             'topPages'        => $topPages,
             'deviceBreakdown' => $deviceBreakdown,
             'topCountries'    => $topCountries,
+            'countryTraffic'  => $countryTraffic,
             'topSources'      => $topSources,
-            'chartLabels'     => $chartLabels,
-            'chartData'       => $chartData,
             'visitors'        => $visitors,
             'includeBots'     => $includeBots,
         ]);

@@ -221,6 +221,16 @@
     </div>
     @endcan
 
+    @can('contacts.view')
+    <!-- Contacts -->
+    <div class="nav-item-wrap">
+      <a href="{{ route('contacts.index') }}"
+          class="nav-link-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
+          <i class="fas fa-envelope-open-text nav-icon"></i> Contacts
+      </a>
+    </div>
+    @endcan
+
     @endhasrole
 
   </nav>

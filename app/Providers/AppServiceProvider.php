@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\View\Composers\NotificationComposer;
@@ -23,5 +24,10 @@ class AppServiceProvider extends ServiceProvider
     {
         // navbar is @included from master, so it inherits these vars — one query per page load.
         View::composer('layouts.master', NotificationComposer::class);
+
+        // Laravel 12 defaults to Tailwind pagination markup, which renders
+        // unstyled (oversized SVG arrows) in this Bootstrap-based admin.
+        Paginator::defaultView('vendor.pagination.admin');
+        Paginator::defaultSimpleView('vendor.pagination.admin');
     }
 }

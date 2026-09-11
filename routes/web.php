@@ -22,6 +22,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\JobPostingController;
 use App\Http\Controllers\VisitorAnalyticsController;
+use App\Http\Controllers\ContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -306,6 +307,24 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     /*
     |----------------------------------------------------------------------
+    | Contact Submissions
+    |----------------------------------------------------------------------
+    | Contact-form submissions from the public site (Kawawch_view), stored
+    | in the shared `contacts` table. contacts.view lists/reads;
+    | contacts.manage covers status changes and deletion.
+    |----------------------------------------------------------------------
+    */
+    Route::middleware('check-permission:contacts.view')->group(function () {
+        Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+        Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
+    });
+    Route::middleware('check-permission:contacts.manage')->group(function () {
+        Route::patch('/contacts/{contact}/status', [ContactController::class, 'updateStatus'])->name('contacts.status');
+        Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | Tasks (Kanban board) Routes
     |----------------------------------------------------------------------
     */
@@ -527,3 +546,10 @@ Route::middleware(['auth', 'check-role:super-admin,admin', 'check-permission:set
     Route::post('/billing/{uuid}/resend-invitation',[BillingAndAgreementController::class, 'resendSigningInvitation'])->name('billing.resend-invitation');
     Route::post('/billing/calculate',               [BillingAndAgreementController::class, 'calculate'])->name('billing.calculate');
 });
+
+
+
+
+
+
+

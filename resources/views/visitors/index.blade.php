@@ -69,6 +69,14 @@
 .vis-empty { text-align:center;padding:60px 20px;color:var(--text-muted); }
 .vis-empty i { font-size:2.6rem;opacity:.3;margin-bottom:14px;display:block; }
 
+/* ── world map ── */
+.vis-map { width:100%;height:340px; }
+.vis-map svg { width:100%;height:100%; }
+.vis-map-legend { display:flex;align-items:center;gap:10px;margin-top:10px;font-size:.72rem;color:var(--text-muted);font-weight:600;justify-content:center; }
+.vis-map-scale { width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,#cfe2ff,#1a73e8); }
+[data-theme="dark"] .vis-map-scale { background:linear-gradient(90deg,#24405f,#5b9dff); }
+.jvm-tooltip { background:var(--modal-bg) !important;color:var(--text-dark) !important;border:1px solid var(--border) !important;border-radius:8px !important;padding:6px 10px !important;font-family:'Open Sans',sans-serif !important;font-size:.78rem !important;font-weight:600 !important;box-shadow:0 6px 20px rgba(0,0,0,.15) !important; }
+
 /* ── ram-modal tokens (reused) ── */
 .ram-modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;align-items:center;justify-content:center;backdrop-filter:blur(3px);padding:20px; }
 .ram-modal-overlay.show { display:flex; }
@@ -131,8 +139,25 @@
 
   <div class="vis-row">
     <div class="vis-card">
-      <div class="vis-card-header"><h2><i class="fas fa-chart-area"></i> Unique Visitors — Last 30 Days</h2></div>
-      <div class="vis-card-body"><canvas id="visitorsChart" height="90"></canvas></div>
+      <div class="vis-card-header">
+        <h2><i class="fas fa-earth-americas"></i> Traffic by Country</h2>
+        <span class="vis-pill">{{ count($countryTraffic) }} {{ \Illuminate\Support\Str::plural('country', count($countryTraffic)) }}</span>
+      </div>
+      <div class="vis-card-body">
+        @if(empty($countryTraffic))
+          <div class="vis-empty" style="padding:40px 20px;">
+            <i class="fas fa-map-location-dot"></i>
+            <p>No location data yet. Country is resolved from each visitor's IP on the live site — local/private IPs aren't geolocated.</p>
+          </div>
+        @else
+          <div id="worldMap" class="vis-map"></div>
+          <div class="vis-map-legend">
+            <span>Fewer</span>
+            <span class="vis-map-scale"></span>
+            <span>More visitors</span>
+          </div>
+        @endif
+      </div>
     </div>
     <div class="vis-card">
       <div class="vis-card-header"><h2><i class="fas fa-mobile-screen"></i> Devices</h2></div>
@@ -259,33 +284,77 @@
 </div>
 
 @push('scripts')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/css/jsvectormap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/js/jsvectormap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/maps/world.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 (function () {
 'use strict';
 
-const chartLabels = @json($chartLabels);
-const chartData = @json($chartData);
+/* ── World map: traffic by country (GA-style choropleth) ── */
+const mapValues = @json((object) $countryTraffic);
+const mapEl = document.getElementById('worldMap');
+if (mapEl && typeof jsVectorMap !== 'undefined') {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+              || document.body.getAttribute('data-theme') === 'dark';
 
-new Chart(document.getElementById('visitorsChart'), {
-  type: 'line',
-  data: {
-    labels: chartLabels,
-    datasets: [{
-      label: 'Unique Visitors',
-      data: chartData,
-      borderColor: '#1a73e8',
-      backgroundColor: 'rgba(26,115,232,.12)',
-      fill: true,
-      tension: .35,
-      pointRadius: 0,
-    }],
-  },
-  options: {
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-  },
-});
+  // Interpolate #cfe2ff → #1a73e8 ourselves so equal values / single country
+  // don't break the library's built-in normalizer (which divides by range).
+  const nums = Object.values(mapValues);
+  const maxV = nums.length ? Math.max(...nums) : 1;
+  const minV = nums.length ? Math.min(...nums) : 0;
+  const lo = [207, 226, 255], hi = [26, 115, 232];
+  function colorFor(n) {
+    const t = maxV === minV ? 1 : (n - minV) / (maxV - minV);
+    const c = lo.map((x, i) => Math.round(x + (hi[i] - x) * (0.25 + 0.75 * t)));
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+  const regionColors = {};
+  Object.keys(mapValues).forEach(code => { regionColors[code] = colorFor(mapValues[code]); });
+
+  try {
+    const map = new jsVectorMap({
+      selector: '#worldMap',
+      map: 'world',
+      zoomButtons: true,
+      zoomOnScroll: false,
+      backgroundColor: 'transparent',
+      regionStyle: {
+        initial: { fill: isDark ? '#2b3644' : '#e4e9f0', stroke: isDark ? '#1c232d' : '#ffffff', strokeWidth: 0.4 },
+        hover: { fillOpacity: 1, fill: '#0f5bd1' },
+      },
+      onLoaded(mapInstance) {
+        const inst = mapInstance || map;
+        Object.keys(regionColors).forEach(code => {
+          const region = inst.regions && inst.regions[code];
+          const shape = region && (region.element ? (region.element.shape || region.element) : null);
+          if (shape && typeof shape.setStyle === 'function') shape.setStyle('fill', regionColors[code]);
+        });
+      },
+      onRegionTooltipShow(event, tooltip, code) {
+        try {
+          const n = mapValues[code] || 0;
+          const name = (typeof tooltip.text === 'function') ? tooltip.text() : code;
+          const label = `${name}: ${Number(n).toLocaleString()} visitor${n === 1 ? '' : 's'}`;
+          if (typeof tooltip.text === 'function') tooltip.text(label);
+          else if (tooltip._tooltip) tooltip._tooltip.innerHTML = label;
+        } catch (e) {}
+      },
+    });
+
+    // Fallback in case onLoaded fires before regions are attached
+    setTimeout(() => {
+      Object.keys(regionColors).forEach(code => {
+        const region = map.regions && map.regions[code];
+        const shape = region && (region.element ? (region.element.shape || region.element) : null);
+        if (shape && typeof shape.setStyle === 'function') shape.setStyle('fill', regionColors[code]);
+      });
+    }, 200);
+  } catch (e) {
+    mapEl.innerHTML = '<div class="vis-empty-mini">Map failed to load.</div>';
+  }
+}
 
 @if($deviceBreakdown->isNotEmpty())
 new Chart(document.getElementById('deviceChart'), {
