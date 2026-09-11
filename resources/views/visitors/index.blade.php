@@ -31,7 +31,7 @@
 .vis-stat-val { font-family:'Nunito',sans-serif;font-weight:900;font-size:1.5rem;color:var(--text-dark);line-height:1; }
 .vis-stat-lbl { font-size:.72rem;color:var(--text-muted);margin-top:2px; }
 
-.vis-row { display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px; }
+.vis-row { display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;align-items:start; }
 @media(max-width:991px){ .vis-row{ grid-template-columns:1fr; } }
 
 .vis-card { background:var(--card-bg);border:1px solid var(--border);border-radius:var(--card-radius);box-shadow:0 2px 14px rgba(26,115,232,.07);overflow:hidden; }
@@ -70,8 +70,10 @@
 .vis-empty i { font-size:2.6rem;opacity:.3;margin-bottom:14px;display:block; }
 
 /* ── world map ── */
-.vis-map { width:100%;height:340px; }
-.vis-map svg { width:100%;height:100%; }
+.vis-map { width:100%;aspect-ratio:16/9;min-height:360px;max-height:560px; }
+.vis-map svg { width:100% !important;height:100% !important; }
+.vis-map .jvm-container { width:100%;height:100%; }
+@media(max-width:600px){ .vis-map { aspect-ratio:4/3;min-height:280px; } }
 .vis-map-legend { display:flex;align-items:center;gap:10px;margin-top:10px;font-size:.72rem;color:var(--text-muted);font-weight:600;justify-content:center; }
 .vis-map-scale { width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,#cfe2ff,#1a73e8); }
 [data-theme="dark"] .vis-map-scale { background:linear-gradient(90deg,#24405f,#5b9dff); }
@@ -350,7 +352,12 @@ if (mapEl && typeof jsVectorMap !== 'undefined') {
         const shape = region && (region.element ? (region.element.shape || region.element) : null);
         if (shape && typeof shape.setStyle === 'function') shape.setStyle('fill', regionColors[code]);
       });
-    }, 200);
+      // The map card's height is set by aspect-ratio, which can settle a
+      // frame or two after jsVectorMap's own initial measurement — nudge it
+      // via the library's own resize listener rather than calling an
+      // internal method directly (that crashed on a missing container ref).
+      window.dispatchEvent(new Event('resize'));
+    }, 250);
   } catch (e) {
     mapEl.innerHTML = '<div class="vis-empty-mini">Map failed to load.</div>';
   }
